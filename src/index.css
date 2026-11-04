@@ -2,12 +2,28 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --color-brand-50: #eff4f7;
-  --color-brand-100: #dbe6ed;
-  --color-brand-500: #2a4457;
-  --color-brand-600: #213747;
-  --color-brand-700: #182a37;
-  --color-side: #1b2d3a;
+  /* MGC three-tone palette: teal (primary), deep ink (structure), brass (accent) */
+  --color-brand-50: #e8eef1;
+  --color-brand-100: #d3e0e5;
+  --color-brand-500: #264f5e;
+  --color-brand-600: #1f424e;
+  --color-brand-700: #1a3340;
+  --color-side: #1a3340;
+  --color-accent-300: #c9a469;
+  --color-accent-500: #b08a4e;
+  --color-accent-ink: #1f1609;
+}
+
+/* Tokens the shadcn-style Sidebar (src/components/ui/sidebar.tsx) reads, scoped to the app's ink sidebar. */
+.app-sidebar {
+  --background: var(--color-side);
+  --foreground: #f1f6f8;
+  --border: rgba(255, 255, 255, 0.08);
+  --muted-foreground: #9bb5be;
+  --primitive-text-secondary: rgba(230, 238, 241, 0.78);
+  --primitive-surface-hover: rgba(255, 255, 255, 0.06);
+  --primitive-surface-selected: rgba(255, 255, 255, 0.11);
+  --primitive-ring: var(--color-accent-300);
 }
 
 body { @apply bg-slate-50 text-slate-800 antialiased; }
