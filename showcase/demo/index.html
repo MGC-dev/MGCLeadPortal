@@ -9,23 +9,23 @@
 /* Layout: Apple-style app shell. Translucent sidebar (desktop) or tab bar (phone) as the functional layer, a glass toolbar with a large title, grouped content on a grouped background. Lead details open as an inspector on desktop and a bottom sheet on phones. Light and dark follow the system. */
 :root {
   color-scheme: light;
-  --bg: #F2F2F7; --surface: #FFFFFF; --fill: #E8E8ED; --fill-2: #F2F2F7;
+  --bg: #F1F5F7; --surface: #FFFFFF; --fill: #E4EBEE; --fill-2: #F1F5F7;
   --label: #1C1C1E; --label-2: #5C5C61; --label-3: #8E8E93;
   --separator: #C6C6C8; --separator-soft: #E0E0E4;
-  --tint: #24578A; --tint-ink: #FFFFFF; --tint-soft: #E3ECF6; --tint-soft-ink: #1D4A77;
+  --tint: #264F5E; --tint-ink: #FFFFFF; --tint-soft: #E8EEF1; --tint-soft-ink: #1F424E;
   --green: #17702F; --green-soft: #E2F3E6; --switch-on: #248A3D;
   --orange: #9A4F00; --orange-soft: #FCEEDD;
   --red: #C0261C; --red-soft: #FBE6E4; --red-ink: #FFFFFF;
   --sms: #34C759; --sms-ink: #FFFFFF; --sms-in: #E9E9EB;
   --knob: #FFFFFF;
-  --icon-a: #3A6EA5; --icon-b: #1D4A77; --icon-ink: #FFFFFF;
+  --icon-a: #264F5E; --icon-b: #264F5E; --icon-ink: #FFFFFF;
   --material: rgba(246, 246, 248, 0.78); --material-strong: rgba(250, 250, 252, 0.92); --material-edge: rgba(60, 60, 67, 0.12);
   --scrim: rgba(0, 0, 0, 0.28); --scrim-light: rgba(0, 0, 0, 0.08);
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.06), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
   --shadow-float: 0 10px 40px rgba(0, 0, 0, 0.16), 0 0 0 0.5px rgba(0, 0, 0, 0.08);
   --shadow-seg: 0 2px 6px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
   --shadow-hover: 0 4px 14px rgba(0, 0, 0, 0.1), 0 0 0 0.5px rgba(0, 0, 0, 0.05);
-  --focus: rgba(36, 87, 138, 0.55);
+  --focus: rgba(38, 79, 94, 0.55);
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-title: ui-serif, "New York", "Iowan Old Style", Georgia, serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
@@ -39,7 +39,7 @@
   --bg: #0B0B0D; --surface: #1C1C1E; --fill: #2C2C2E; --fill-2: #232325;
   --label: #F5F5F7; --label-2: #AEAEB2; --label-3: #8E8E93;
   --separator: #48484A; --separator-soft: #38383A;
-  --tint: #7AB2EC; --tint-ink: #0B1A2A; --tint-soft: #1E3247; --tint-soft-ink: #A9CDF3;
+  --tint: #8DBCCA; --tint-ink: #0E2129; --tint-soft: #1A3340; --tint-soft-ink: #B9D3DB;
   --green: #32D74B; --green-soft: #17301D; --switch-on: #30D158;
   --orange: #FFA530; --orange-soft: #3A2810;
   --red: #FF6B60; --red-soft: #3D1B19; --red-ink: #2A0806;
@@ -51,14 +51,14 @@
   --shadow-float: 0 12px 44px rgba(0, 0, 0, 0.55), 0 0 0 0.5px rgba(255, 255, 255, 0.1);
   --shadow-seg: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 0 0.5px rgba(255, 255, 255, 0.08);
   --shadow-hover: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 0 0.5px rgba(255, 255, 255, 0.1);
-  --focus: rgba(122, 178, 236, 0.6);
+  --focus: rgba(141, 188, 202, 0.6);
 } }
 :root[data-theme="dark"] {
   color-scheme: dark;
   --bg: #0B0B0D; --surface: #1C1C1E; --fill: #2C2C2E; --fill-2: #232325;
   --label: #F5F5F7; --label-2: #AEAEB2; --label-3: #8E8E93;
   --separator: #48484A; --separator-soft: #38383A;
-  --tint: #7AB2EC; --tint-ink: #0B1A2A; --tint-soft: #1E3247; --tint-soft-ink: #A9CDF3;
+  --tint: #8DBCCA; --tint-ink: #0E2129; --tint-soft: #1A3340; --tint-soft-ink: #B9D3DB;
   --green: #32D74B; --green-soft: #17301D; --switch-on: #30D158;
   --orange: #FFA530; --orange-soft: #3A2810;
   --red: #FF6B60; --red-soft: #3D1B19; --red-ink: #2A0806;
@@ -70,7 +70,7 @@
   --shadow-float: 0 12px 44px rgba(0, 0, 0, 0.55), 0 0 0 0.5px rgba(255, 255, 255, 0.1);
   --shadow-seg: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 0 0.5px rgba(255, 255, 255, 0.08);
   --shadow-hover: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 0 0.5px rgba(255, 255, 255, 0.1);
-  --focus: rgba(122, 178, 236, 0.6);
+  --focus: rgba(141, 188, 202, 0.6);
 }
 @media (prefers-contrast: more) { :root { --separator: #8E8E93; --separator-soft: #AEAEB2; --material: var(--surface); --material-strong: var(--surface); } }
 
