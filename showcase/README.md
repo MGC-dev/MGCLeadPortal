@@ -18,3 +18,11 @@ and pushes it to the `gh-pages` branch:
 
 One-time setup: Settings → Pages → Build and deployment → Source "Deploy from a branch",
 branch `gh-pages`, folder `/ (root)`.
+
+## Sidebar
+
+The app in `src/` uses the shadcn-style `Sidebar` component in `src/components/ui/sidebar.tsx`
+(collapsible, labelled sections, gliding active pill, user footer). The demo page rebuilds the same
+sidebar in plain HTML so it can stay a single file. After pulling this branch, run `npm install`
+once to fetch the component's packages (framer-motion, @base-ui/react, @tabler/icons-react, clsx,
+tailwind-merge).
