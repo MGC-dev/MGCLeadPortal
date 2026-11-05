@@ -580,7 +580,6 @@ function seed() {
       { id: 'gcal', name: 'Google Calendar', icon: 'calendar', on: false, desc: 'Consultations and follow-ups appear on each attorney’s calendar.' },
       { id: 'outlook', name: 'Microsoft Outlook', icon: 'mail', on: false, desc: 'Sync calendars and keep email threads on the lead’s timeline.' },
       { id: 'calls', name: 'Call Tracking', icon: 'phone', on: false, desc: 'Tracked calls become leads, with the number and source attached.' },
-      { id: 'clio', name: 'Clio', icon: 'arrow', on: false, desc: 'Signed clients are sent to Clio as new matters, so nobody types them twice.' },
     ],
     firm: { name: 'Example Family Law LLP', domainStatus: 'unverified', textStatus: 'unregistered' },
     leads,
@@ -689,7 +688,7 @@ const VIEWS = [
   { id: 'campaigns', label: 'Campaigns', icon: 'campaigns', sub: 'Automatic emails and texts, started by what happens in the pipeline.' },
   { id: 'documents', label: 'Documents', icon: 'folder', sub: 'Engagement letters, their signing status, and the templates they come from.' },
   { id: 'reports', label: 'Reports', icon: 'reports', sub: 'Where leads come from, what converts, and why leads are lost.' },
-  { id: 'integrations', label: 'Integrations', icon: 'plug', sub: 'Where leads come from, and where signed clients go next.' },
+  { id: 'integrations', label: 'Integrations', icon: 'plug', sub: 'Connect your lead sources and calendars.' },
   { id: 'setup', label: 'Settings', icon: 'gear', sub: 'Send from your own domain and number, with a separate reputation for every firm.' },
 ];
 const VIEW = Object.fromEntries(VIEWS.map((v) => [v.id, v]));
