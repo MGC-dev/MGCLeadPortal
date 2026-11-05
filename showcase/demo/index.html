@@ -522,7 +522,7 @@ const FIRM_DOMAIN = 'examplefamilylaw.com';
 const HOUR = 3600e3, DAY = 24 * HOUR;
 const dayAt = (d, hh, mm) => { const x = new Date(); x.setDate(x.getDate() + d); x.setHours(hh, mm, 0, 0); return +x; };
 const endOfToday = () => { const x = new Date(); x.setHours(23, 59, 59, 999); return +x; };
-const FIRMS = ['Example Family Law LLP', 'Harbor Injury Group', 'Northside Immigration Law'];
+const TEAM = [['Sarah Mitchell', 'Intake Manager', 'Admin'], ['David Cohen', 'Attorney', 'Member'], ['Priya Nair', 'Paralegal', 'Member'], ['James Okafor', 'Intake Specialist', 'Member']];
 const phoneNum = () => '(555) 01' + Math.floor(Math.random() * 10) + '-' + Math.floor(Math.random() * 9000 + 1000);
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -571,7 +571,7 @@ function seed() {
     collapsed: false, done: {},
     events: [
       { t: dayAt(3, 10, 0), title: 'Intake team weekly review', who: 'Whole intake team' },
-      { t: dayAt(4, 14, 30), title: 'Marketing check-in with MGC', who: 'Sarah Mitchell' },
+      { t: dayAt(4, 14, 30), title: 'Monthly marketing review', who: 'Sarah Mitchell and David Cohen' },
       { t: dayAt(6, 9, 30), title: 'Lead source review', who: 'David Cohen' },
     ],
     integrations: [
@@ -723,7 +723,7 @@ function renderSidebar() {
   const item = (v) => '<button type="button" class="sb-item" data-action="view" data-view="' + v.id + '"' + (v.id === S.view ? ' aria-current="page"' : '') + (c ? ' title="' + v.label + '"' : '') + '>' + ic(v.icon) + '<span class="sb-text">' + v.label + '</span>' + (extra[v.id] || '') + '</button>';
   document.getElementById('sb-list').innerHTML = NAV.map((s) => '<div class="sb-section" role="group" aria-label="' + s.label + '"><div class="sb-label" aria-hidden="true">' + s.label + '</div><div class="sb-items">' + s.ids.map((id) => item(VIEW[id])).join('') +
     (s.label === 'Firm' ? '<button type="button" class="sb-item" data-action="help"' + (c ? ' title="Help and Resources"' : '') + '>' + ic('help') + '<span class="sb-text">Help and Resources</span></button>' : '') + '</div></div>').join('');
-  document.getElementById('sb-foot').innerHTML = '<button type="button" class="sb-switch" data-action="firms" aria-label="Switch firm. Signed in as Sarah Mitchell, ' + esc(S.firm.name) + '"><span class="avatar" aria-hidden="true">SM</span><span class="sb-user"><b>Sarah Mitchell</b><small>' + esc(S.firm.name) + '</small></span>' + ic('updown') + '</button>';
+  document.getElementById('sb-foot').innerHTML = '<button type="button" class="sb-switch" data-action="account" aria-label="Account. Signed in as Sarah Mitchell, ' + esc(S.firm.name) + '"><span class="avatar" aria-hidden="true">SM</span><span class="sb-user"><b>Sarah Mitchell</b><small>' + esc(S.firm.name) + '</small></span>' + ic('updown') + '</button>';
   const pill = document.getElementById('sb-pill');
   const act = document.querySelector('#sb-list .sb-item[aria-current]');
   if (act) { pill.style.opacity = 1; pill.style.transform = 'translateY(' + act.offsetTop + 'px)'; pill.style.height = act.offsetHeight + 'px'; } else pill.style.opacity = 0;
@@ -1002,10 +1002,15 @@ function sheet(m) {
   if (m.type === 'help') return plain('Help and Resources', 'Demo data only. Nothing is sent.', '<ul class="group rows">' +
     rowBtn('data-action="tour-restart"', 'arrow', 'Take the Demo Tour', 'Seven steps, from firm onboarding to reports') +
     rowBtn('data-action="view" data-view="setup"', 'gear', 'Firm Setup Guide', 'Verify your email domain and register texting') +
-    rowBtn('data-action="support"', 'messages', 'Contact MGC Support', 'We reply within one business day') +
+    rowBtn('data-action="support"', 'messages', 'Contact Support', 'The MGC CRM team replies within one business day') +
     rowBtn('data-action="reset"', 'bolt', 'Reset Demo Data', 'Start again with the sample firm') + '</ul>');
-  if (m.type === 'firms') return plain('Switch Firm', 'MGC staff can move between the firms they manage.', '<ul class="group rows">' +
-    FIRMS.map((f) => rowBtn('data-action="firm" data-name="' + esc(f) + '"' + (f === S.firm.name ? ' aria-current="true"' : ''), 'contacts', esc(f), f === S.firm.name ? 'Current firm' : '', f === S.firm.name ? '<span class="tag tag--green">' + ic('check') + 'Current</span>' : '')).join('') + '</ul><p class="hint">In this demo every firm shows the same sample data.</p>');
+  if (m.type === 'account') return plain('Sarah Mitchell', 'Intake Manager, ' + esc(S.firm.name), '<ul class="group rows">' +
+    rowBtn('data-action="team"', 'leads', 'Team and Permissions', 'Your firm invites its own people and sets who can do what') +
+    rowBtn('data-action="view" data-view="setup"', 'gear', 'Firm Settings', 'Your sending domain, texting number and workspace') +
+    rowBtn('data-action="signout"', 'arrow', 'Sign Out', '') + '</ul><p class="hint">Each firm runs its own workspace: its own team, data, domain and number.</p>');
+  if (m.type === 'team') return plain('Team and Permissions', esc(S.firm.name) + ' manages who has access.', '<ul class="group rows">' +
+    TEAM.map(([n, r, p]) => '<li><div class="row" style="cursor:default"><span class="avatar" style="background:var(--tint-soft);color:var(--tint-soft-ink)" aria-hidden="true">' + n.split(' ').map((x) => x[0]).join('') + '</span><span class="row__main"><b>' + n + '</b><span>' + r + '</span></span><span class="tag' + (p === 'Admin' ? ' tag--accent' : '') + '">' + p + '</span></div></li>').join('') +
+    '</ul><div class="sheet__foot" style="padding:0"><button class="btn btn--prominent" type="button" data-action="invite">Invite Teammate</button></div>');
   return '';
 }
 
@@ -1072,9 +1077,11 @@ document.addEventListener('click', async (e) => {
     case 'side-toggle': S.collapsed = !S.collapsed; break;
     case 'more': S.modal = { type: 'more' }; break;
     case 'help': S.modal = { type: 'help' }; break;
-    case 'firms': S.modal = { type: 'firms' }; break;
-    case 'firm': if (b.dataset.name !== S.firm.name) { S.firm.name = b.dataset.name; toast('Switched to ' + b.dataset.name, 'Same sample data in this demo'); } S.modal = null; break;
-    case 'support': S.modal = null; toast('Message sent to MGC support', 'We reply within one business day'); break;
+    case 'account': S.modal = { type: 'account' }; break;
+    case 'team': S.modal = { type: 'team' }; break;
+    case 'invite': S.modal = null; toast('Invite sent', 'Your teammate gets an email to join ' + S.firm.name); break;
+    case 'signout': S.modal = null; toast('Signed out', 'Demo only, you stay signed in'); break;
+    case 'support': S.modal = null; toast('Message sent to support', 'The MGC CRM team replies within one business day'); break;
     case 'tour-restart': S.modal = null; S.open = null; S.tour = { ...S.tour, step: 0, min: false, dismissed: false }; break;
     case 'task-done': { if (isDone(l)) { delete S.done[l.id]; } else { S.done[l.id] = l.next.due; log(l, { type: 'stage', cls: 'good', title: 'Task done: ' + l.next.text, text: 'Ticked off by ' + l.owner + '.' }); toast('Task done', l.next.text + ', ' + l.name); } break; }
     case 'integ': { const x = S.integrations.find((i) => i.id === id); x.on = !x.on; toast(x.name + (x.on ? ' connected' : ' disconnected'), x.on ? 'Demo only, no account is linked' : ''); break; }
