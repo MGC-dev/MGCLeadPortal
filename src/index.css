@@ -27,3 +27,14 @@
 }
 
 body { @apply bg-slate-50 text-slate-800 antialiased; }
+
+:root { --scroll-thumb: rgba(15, 23, 42, 0.2); --scroll-thumb-hover: rgba(15, 23, 42, 0.35); }
+.app-sidebar { --scroll-thumb: rgba(255, 255, 255, 0.16); --scroll-thumb-hover: rgba(255, 255, 255, 0.28); }
+/* Slim scrollbars. Chrome and Safari use the ::-webkit-scrollbar rules (setting scrollbar-width there would override them with a wider bar); Firefox gets scrollbar-width. */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb { background-color: var(--scroll-thumb); border: 2px solid transparent; border-radius: 999px; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background-color: var(--scroll-thumb-hover); }
+.sidebar-nav::-webkit-scrollbar { width: 6px; }
+.sidebar-nav::-webkit-scrollbar-thumb { border-width: 1px; }
+@supports not selector(::-webkit-scrollbar) { * { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) transparent; } }

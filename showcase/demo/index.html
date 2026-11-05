@@ -19,6 +19,7 @@
   --sms: #34C759; --sms-ink: #FFFFFF; --sms-in: #E9E9EB;
   --side-bg: #1A3340; --side-fg: #F1F6F8; --side-text: rgba(230, 238, 241, 0.78); --side-muted: #9BB5BE; --side-hover: rgba(255, 255, 255, 0.06); --side-selected: rgba(255, 255, 255, 0.11); --side-border: rgba(255, 255, 255, 0.08);
   --accent: #B08A4E; --accent-side: #C9A469; --accent-on: #1F1609; --accent-text: #8A6A35; --accent-soft: #F2EBDD; --accent-soft-ink: #6E521F;
+  --scroll-thumb: rgba(0, 0, 0, 0.18); --scroll-thumb-hover: rgba(0, 0, 0, 0.32);
   --knob: #FFFFFF;
   --icon-a: #264F5E; --icon-b: #264F5E; --icon-ink: #FFFFFF;
   --material: rgba(246, 246, 248, 0.78); --material-strong: rgba(250, 250, 252, 0.92); --material-edge: rgba(60, 60, 67, 0.12);
@@ -49,6 +50,7 @@
   --sms: #30D158; --sms-ink: #04210C; --sms-in: #2C2C2E;
   --side-bg: #13232B; --side-fg: #F1F6F8; --side-text: rgba(230, 238, 241, 0.78); --side-muted: #9BB5BE; --side-hover: rgba(255, 255, 255, 0.06); --side-selected: rgba(255, 255, 255, 0.1); --side-border: rgba(255, 255, 255, 0.07);
   --accent: #C9A469; --accent-side: #C9A469; --accent-on: #1F1609; --accent-text: #D4B37A; --accent-soft: #3A2E1A; --accent-soft-ink: #E8D3AE;
+  --scroll-thumb: rgba(255, 255, 255, 0.18); --scroll-thumb-hover: rgba(255, 255, 255, 0.32);
   --knob: #FFFFFF;
   --material: rgba(30, 30, 32, 0.72); --material-strong: rgba(36, 36, 38, 0.9); --material-edge: rgba(255, 255, 255, 0.1);
   --scrim: rgba(0, 0, 0, 0.5); --scrim-light: rgba(0, 0, 0, 0.3);
@@ -70,6 +72,7 @@
   --sms: #30D158; --sms-ink: #04210C; --sms-in: #2C2C2E;
   --side-bg: #13232B; --side-fg: #F1F6F8; --side-text: rgba(230, 238, 241, 0.78); --side-muted: #9BB5BE; --side-hover: rgba(255, 255, 255, 0.06); --side-selected: rgba(255, 255, 255, 0.1); --side-border: rgba(255, 255, 255, 0.07);
   --accent: #C9A469; --accent-side: #C9A469; --accent-on: #1F1609; --accent-text: #D4B37A; --accent-soft: #3A2E1A; --accent-soft-ink: #E8D3AE;
+  --scroll-thumb: rgba(255, 255, 255, 0.18); --scroll-thumb-hover: rgba(255, 255, 255, 0.32);
   --knob: #FFFFFF;
   --material: rgba(30, 30, 32, 0.72); --material-strong: rgba(36, 36, 38, 0.9); --material-edge: rgba(255, 255, 255, 0.1);
   --scrim: rgba(0, 0, 0, 0.5); --scrim-light: rgba(0, 0, 0, 0.3);
@@ -103,6 +106,16 @@ button { -webkit-tap-highlight-color: transparent; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .only-phone, .only-phone-inline { display: none; }
 
+/* Slim scrollbars. Chrome and Safari use the ::-webkit-scrollbar rules (setting scrollbar-width there would override them with a wider bar); Firefox gets scrollbar-width. */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb { background-color: var(--scroll-thumb); border: 2px solid transparent; border-radius: 999px; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background-color: var(--scroll-thumb-hover); }
+.sb-nav::-webkit-scrollbar { width: 6px; }
+.sb-nav::-webkit-scrollbar-thumb { border-width: 1px; }
+@supports not selector(::-webkit-scrollbar) { * { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) transparent; } }
+.sidebar { --scroll-thumb: rgba(255, 255, 255, 0.16); --scroll-thumb-hover: rgba(255, 255, 255, 0.28); }
+
 /* ---------- shell ---------- */
 .app { display: grid; grid-template-columns: var(--side-w) minmax(0, 1fr); min-height: 100%; transition: grid-template-columns 240ms cubic-bezier(0.23, 1, 0.32, 1); }
 :root[data-side="collapsed"] { --side-w: var(--sb-rail); }
@@ -119,8 +132,7 @@ button { -webkit-tap-highlight-color: transparent; }
 .sb-toggle .icon { width: 17px; height: 17px; vertical-align: 0; }
 .is-collapsed .sb-head { justify-content: center; padding: 0; margin: 4px 8px 0; border-radius: 10px; cursor: pointer; border: 0; background: transparent; color: inherit; width: auto; }
 .is-collapsed .sb-head:hover { background: var(--side-hover); }
-.sb-nav { position: relative; flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior-y: contain; padding: 8px 0; scrollbar-width: thin; scrollbar-color: transparent transparent; }
-.sb-nav:hover { scrollbar-color: rgba(255, 255, 255, 0.11) transparent; }
+.sb-nav { position: relative; flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior-y: contain; padding: 8px 0; }
 .sb-pill { position: absolute; top: 0; left: 8px; right: 8px; height: 34px; border-radius: 10px; background: var(--side-selected); pointer-events: none; opacity: 0; transition: transform 320ms var(--spring), height 320ms var(--spring), opacity 150ms ease; }
 .sb-pill.no-anim { transition: none; }
 .sb-section { padding: 4px 0; }
