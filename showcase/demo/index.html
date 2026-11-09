@@ -227,28 +227,60 @@ button { -webkit-tap-highlight-color: transparent; }
 .tile b { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 
 /* board */
+.boardbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3); }
+.search { display: flex; align-items: center; gap: var(--s2); flex: 0 1 340px; min-width: 200px; height: 38px; padding: 0 var(--s3); border-radius: 999px; background: var(--surface); box-shadow: var(--shadow-card); color: var(--label-2); }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--label); font: inherit; font-size: 14px; outline: none; }
+.search:focus-within { box-shadow: 0 0 0 2px var(--tint); }
+.ownerpick { display: flex; align-items: center; gap: 4px; padding: 3px; border-radius: 999px; background: var(--fill); }
+.ownerpick button { height: 32px; min-width: 32px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; color: var(--label-2); font: 600 12px var(--font); cursor: pointer; }
+.ownerpick__btn { padding: 0 !important; width: 32px; }
+.ownerpick button[aria-pressed="true"] { background: var(--surface); color: var(--label); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
+.ownerpick__btn[aria-pressed="true"] { background: var(--tint) !important; color: var(--tint-ink) !important; }
+.boardbar__sum { margin-left: auto; font-variant-numeric: tabular-nums; }
+.boardbar__hint { display: inline-flex; align-items: center; gap: 4px; }
 .board-wrap { overflow-x: auto; margin-inline: calc(-1 * var(--s6)); padding: 0 var(--s6) var(--s3); scroll-snap-type: x proximity; }
-.board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(240px, 1fr); gap: var(--s3); min-width: min-content; }
-.col { display: flex; flex-direction: column; gap: var(--s2); min-height: 440px; padding: var(--s3); background: var(--fill); border-radius: var(--r-l); scroll-snap-align: start; transition: background-color 150ms var(--ease), box-shadow 150ms var(--ease); }
-.col--lost .col__head b { color: var(--red); }
-.col--lost .card { opacity: 0.85; }
-.col__hint { padding: var(--s2) var(--s1); }
-.card__next.is-lost { color: var(--red); }
-.col.is-over, .lostbar.is-over { box-shadow: inset 0 0 0 2px var(--tint); background: var(--tint-soft); }
-.col__head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s2); padding: 2px var(--s1) var(--s1); }
-.col__head b { font-size: 13px; font-weight: 600; }
-.col__head span { font-size: 12px; color: var(--label-2); }
-.card { display: grid; gap: 6px; width: 100%; padding: var(--s3); background: var(--surface); border: 0; border-radius: var(--r); text-align: left; cursor: pointer; box-shadow: var(--shadow-card); transition: transform 150ms var(--ease), box-shadow 150ms var(--ease); }
-.card:hover { box-shadow: var(--shadow-hover); }
-.card:active { transform: scale(0.985); }
+.board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(264px, 1fr); gap: var(--s3); min-width: min-content; }
+.col { display: flex; flex-direction: column; gap: var(--s3); min-height: calc(100dvh - 250px); padding: var(--s3); background: var(--fill-2); border-radius: var(--r-l); min-width: 0; scroll-snap-align: start; transition: background-color 150ms var(--ease), box-shadow 150ms var(--ease); }
+.col__head { display: flex; justify-content: space-between; align-items: center; gap: var(--s2); padding: var(--s1) var(--s1) 0; }
+.col__title { display: flex; align-items: center; gap: var(--s2); }
+.col__title::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--tone); }
+.col__title b { font-size: 13px; font-weight: 600; }
+.col__count { min-width: 22px; padding: 1px 7px; border-radius: 999px; background: var(--surface); font-size: 12px; font-weight: 600; color: var(--label-2); text-align: center; font-variant-numeric: tabular-nums; }
+.col__value { font-size: 12px; color: var(--label-2); }
+.col__cards { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s2); align-content: start; }
+.col__head { padding-bottom: var(--s1); border-bottom: 2px solid var(--tone); margin-bottom: var(--s1); padding-inline: var(--s1); }
+.col__empty { display: grid; place-items: center; min-height: 96px; padding: var(--s3); border: 1.5px dashed var(--separator); border-radius: var(--r); font-size: 13px; color: var(--label-3); text-align: center; }
+.col__add { display: flex; align-items: center; justify-content: center; gap: 6px; height: 36px; border: 0; border-radius: var(--r); background: transparent; color: var(--tint); font: 600 13px var(--font); cursor: pointer; }
+.col__add:hover { background: var(--tint-soft); }
+.col.is-over { box-shadow: inset 0 0 0 2px var(--tint); background: var(--tint-soft); }
+.col--lost .col__title b { color: var(--red); }
+.col--lost .card { opacity: 0.8; }
+.card { display: grid; gap: var(--s2); width: 100%; min-width: 0; padding: var(--s3); background: var(--surface); border: 0; border-radius: var(--r); text-align: left; color: inherit; font: inherit; cursor: grab; box-shadow: var(--shadow-card); transition: transform 150ms var(--ease), box-shadow 150ms var(--ease); }
+.card:hover { box-shadow: var(--shadow-hover); transform: translateY(-1px); }
+.card:active { cursor: grabbing; transform: scale(0.985); }
 .card.is-new { animation: arrive 700ms var(--spring); }
 @keyframes arrive { from { opacity: 0; transform: translateY(-10px) scale(0.97); } to { opacity: 1; transform: none; } }
-.card__name { font-weight: 600; font-size: 15px; }
-.card__meta { font-size: 13px; color: var(--label-2); }
-.card__row { display: flex; justify-content: space-between; align-items: center; gap: var(--s2); font-size: 13px; }
-.card__next { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--label-2); padding-top: 6px; border-top: 0.5px solid var(--separator-soft); }
-.card__next.is-due { color: var(--red); font-weight: 500; }
-.card__next .icon { vertical-align: 0; }
+.card__top { display: flex; align-items: flex-start; gap: var(--s2); }
+.card__avatar { width: 32px; height: 32px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: var(--tint-soft); color: var(--tint-soft-ink); font-size: 12px; font-weight: 700; }
+.card__who { flex: 1; min-width: 0; display: grid; gap: 1px; }
+.card__name { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card__fresh { padding: 1px 6px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-soft-ink); font-style: normal; font-size: 10.5px; font-weight: 700; }
+.card__meta { font-size: 12.5px; color: var(--label-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card__value { font-size: 13px; font-weight: 600; }
+.card__tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px var(--s2); }
+.card__src { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; color: var(--label-3); }
+.card__src .icon { width: 12px; height: 12px; vertical-align: 0; }
+.card__foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px var(--s2); padding-top: var(--s2); border-top: 0.5px solid var(--separator-soft); }
+.card__next { flex: 1 1 100%; min-width: 0; font-size: 12px; color: var(--label-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card__owner { width: 22px; height: 22px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: var(--fill); color: var(--label-2); font-size: 9.5px; font-weight: 700; margin-left: auto; }
+.chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; background: var(--fill); color: var(--label-2); font-size: 11.5px; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+.chip .icon, .card__src .icon { --w-r: none; --w-b: inline; }
+.chip .icon { width: 11px; height: 11px; vertical-align: 0; }
+.chip--soft { background: var(--tint-soft); color: var(--tint-soft-ink); font-weight: 500; }
+.chip--accent { background: var(--accent-soft); color: var(--accent-soft-ink); }
+.chip--red { background: var(--red-soft); color: var(--red); }
+.chip--green { background: var(--green-soft); color: var(--green); }
+@media (max-width: 760px) { .boardbar__hint, .boardbar__sum { display: none; } .search { flex: 1 1 100%; } .col { min-height: 360px; } }
 .lostbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); min-height: 52px; padding: var(--s2) var(--s3); border-radius: var(--r-l); background: var(--fill); }
 
 /* table (desktop) and list (phone) */
@@ -379,6 +411,73 @@ td b { font-weight: 600; }
 .bar b { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
 
 /* dashboard, tasks, calendar, contacts, documents, integrations */
+.banner { display: flex; align-items: center; gap: var(--s3); padding: var(--s3) var(--s4); border-radius: var(--r); background: var(--orange-soft); color: var(--label); font-size: 14px; }
+.banner > .icon { color: var(--orange); }
+.banner > span { flex: 1; }
+.banner .btn { flex-shrink: 0; }
+.kpis { display: grid; grid-template-columns: 1.3fr repeat(3, minmax(0, 1fr)); gap: var(--s4); }
+.kpi { display: grid; align-content: start; justify-items: start; gap: var(--s2); padding: var(--s5); background: var(--surface); border-radius: var(--r-l); box-shadow: var(--shadow-card); }
+.kpi__label { font-size: 13px; color: var(--label-2); }
+.kpi__value { font-size: 32px; line-height: 1.05; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.kpi__value small { font-size: 16px; font-weight: 500; color: var(--label-2); letter-spacing: 0; }
+.kpi__sub { font-size: 13px; color: var(--label-2); }
+.kpi--hero { background: var(--side-bg); color: var(--side-fg); box-shadow: none; }
+.kpi--hero .kpi__label { color: var(--side-muted); }
+.kpi--hero .kpi__value { font-size: 44px; color: #FFFFFF; }
+.kpi__delta { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.kpi__delta .icon { width: 12px; height: 12px; vertical-align: 0; transform: rotate(-45deg); }
+.kpi__delta.is-down .icon { transform: rotate(45deg); }
+.kpi--hero .kpi__delta { background: var(--accent-side); color: var(--accent-on); }
+.dash { display: grid; gap: var(--s4); align-items: start; }
+.dash--a { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
+.dash--b { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr); }
+.dash--c { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
+.panel { padding-bottom: var(--s2); }
+.panel__head { display: flex; justify-content: space-between; align-items: start; gap: var(--s3); padding: var(--s4) var(--s5) var(--s3); }
+.panel__head h2 { font-size: 16px; font-weight: 600; }
+.panel__foot { padding: var(--s2) var(--s5) var(--s3); }
+.chart { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: var(--s2); padding: var(--s2) var(--s5) var(--s3); height: 230px; }
+.chart__y { display: flex; flex-direction: column; justify-content: space-between; padding-bottom: 22px; font-size: 11px; color: var(--label-3); text-align: right; font-variant-numeric: tabular-nums; }
+.chart__y span { transform: translateY(-50%); }
+.chart__y span:last-child { transform: translateY(50%); }
+.chart__plot { position: relative; height: 100%; }
+.chart__plot::before { content: ""; position: absolute; left: 0; right: 0; top: 0; bottom: 22px; background-image: linear-gradient(to bottom, var(--separator-soft) 1px, transparent 1px); background-size: 100% 50%; border-bottom: 1px solid var(--separator); }
+.vbar { position: absolute; top: 0; bottom: 22px; display: flex; align-items: flex-end; justify-content: center; outline: none; cursor: default; }
+.vbar > span { display: block; width: 62%; max-width: 30px; border-radius: 4px 4px 0 0; background: var(--tint); opacity: 0.6; transition: opacity 150ms var(--ease); }
+.vbar.is-today > span { opacity: 1; background: var(--accent); }
+.vbar:hover > span, .vbar:focus-visible > span { opacity: 1; }
+.vbar:focus-visible { box-shadow: inset 0 0 0 2px var(--focus); border-radius: 4px; }
+.vbar__x { position: absolute; bottom: 0; height: 18px; font-style: normal; font-size: 11px; color: var(--label-3); text-align: center; white-space: nowrap; }
+.vbar__x.is-today { color: var(--accent-text); font-weight: 600; }
+.vbar[data-tip]:hover::after, .vbar[data-tip]:focus-visible::after { content: attr(data-tip); position: absolute; bottom: calc(var(--h, 0%) + 8px); left: 50%; transform: translateX(-50%); padding: 6px 10px; border-radius: 8px; background: var(--side-bg); color: var(--side-fg); font-size: 12px; white-space: nowrap; z-index: 3; pointer-events: none; }
+.agenda { list-style: none; margin: 0; padding: 0 var(--s3) var(--s2); display: grid; gap: 2px; }
+.agenda li > button, .agenda li > div { width: 100%; display: flex; align-items: center; gap: var(--s3); padding: var(--s2); border: 0; border-radius: var(--r-s); background: transparent; color: inherit; text-align: left; font: inherit; }
+.agenda li > button { cursor: pointer; }
+.agenda li > button:hover { background: var(--fill-2); }
+.agenda__time { width: 76px; flex-shrink: 0; font-size: 12px; font-weight: 600; color: var(--label-2); font-variant-numeric: tabular-nums; }
+.agenda__bar { width: 3px; align-self: stretch; border-radius: 2px; background: var(--tint); }
+.agenda li.is-firm .agenda__bar { background: var(--accent); }
+.agenda__main { flex: 1; min-width: 0; display: grid; }
+.agenda__main b { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.agenda__main span { font-size: 12px; color: var(--label-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.funnel, .hbars { list-style: none; margin: 0; padding: var(--s1) var(--s5) var(--s3); display: grid; gap: var(--s3); }
+.funnel li, .hbars li { display: grid; grid-template-columns: 112px minmax(0, 1fr) 28px; align-items: center; gap: var(--s3); font-size: 13px; }
+.hbars li { grid-template-columns: 104px minmax(0, 1fr) 24px 58px; }
+.funnel__label, .hbars__label { color: var(--label-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.funnel__track, .hbars__track { height: 10px; border-radius: 5px; background: var(--fill-2); overflow: hidden; }
+.funnel__track span, .hbars__track span { display: block; height: 100%; border-radius: 5px; background: var(--tint); }
+.funnel li.is-lost .funnel__track span { background: var(--red); opacity: 0.7; }
+.funnel b, .hbars b { font-variant-numeric: tabular-nums; text-align: right; font-weight: 600; }
+.hbars__sub { font-size: 12px; color: var(--label-2); }
+.linkbtn { padding: 0; border: 0; background: none; color: var(--tint); font: inherit; cursor: pointer; }
+.linkbtn:hover { text-decoration: underline; }
+.campmini { display: grid; gap: 2px; margin: 0 var(--s5); padding: var(--s4); border-radius: var(--r); background: var(--fill-2); }
+.campmini > b { font-size: 15px; font-weight: 600; }
+.campmini__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s2); margin-top: var(--s3); }
+.campmini__stats span { display: grid; font-size: 12px; color: var(--label-2); }
+.campmini__stats b { font-size: 20px; font-weight: 600; color: var(--label); font-variant-numeric: tabular-nums; }
+@media (max-width: 1100px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dash--b { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .dash--b > :first-child { grid-column: 1 / -1; } }
+@media (max-width: 760px) { .kpis, .dash--a, .dash--b, .dash--c { grid-template-columns: minmax(0, 1fr); } .kpi--hero { grid-column: 1 / -1; } .chart { height: 190px; padding-inline: var(--s3); } .vbar__x { font-size: 9px; } }
 .tile--accent { box-shadow: inset 0 3px 0 var(--accent), var(--shadow-card); }
 .tile--accent b { color: var(--accent-text); }
 .tag--accent { background: var(--accent-soft); color: var(--accent-soft-ink); }
@@ -856,22 +955,43 @@ function tagFor(l) {
   if (l.stage === 'contract') return '<span class="tag tag--orange">' + ic('doc') + 'Contract Sent</span>';
   return '<span class="tag tag--tint">' + STAGE[l.stage].label + '</span>';
 }
+const initials = (n) => n.split(' ').map((p) => p[0]).join('').slice(0, 2).toUpperCase();
+const SRC_ICON = { web: 'globe', email: 'mail', text: 'messages', manual: 'phone', referral: 'leads', ads: 'bolt' };
+function dueChip(l) {
+  if (l.stage === 'lost') return '<span class="chip chip--red">' + ic('x') + esc(l.lostReason || 'Closed as lost') + '</span>';
+  if (!l.next?.due) return '<span class="chip">' + esc(l.next?.text || '') + '</span>';
+  if (isDone(l)) return '<span class="chip chip--green">' + ic('check') + 'Done</span>';
+  const d = l.next.due;
+  const cls = d < Date.now() ? ' chip--red' : d <= endOfToday() ? ' chip--accent' : '';
+  return '<span class="chip' + cls + '">' + ic(d < Date.now() ? 'alert' : 'clock') + (d < Date.now() ? 'Overdue' : esc(when(d))) + '</span>';
+}
 function card(l) {
-  return '<button type="button" class="card' + (S.fresh === l.id ? ' is-new' : '') + '" draggable="true" data-action="open" data-id="' + l.id + '">' +
-    '<span class="card__name">' + esc(l.name) + '</span>' +
-    '<span class="card__meta">' + esc(l.matter) + '</span>' +
-    '<span class="card__row"><span class="num">' + money(l.value) + '</span><span class="caption">' + esc(SOURCES[l.source]) + ', ' + ago(l.created) + '</span></span>' +
-    (l.stage === 'lost' ? '<span class="card__next is-lost">' + ic('x', 'icon--s') + '<span>' + esc(l.lostReason || 'Closed as lost') + '</span></span>' :
-    '<span class="card__next' + (l.stage === 'new' ? ' is-due' : '') + '">' + ic(l.stage === 'contract' ? 'doc' : 'calendar', 'icon--s') + '<span>' + esc(l.next?.due ? when(l.next.due) + ': ' : '') + esc(l.next?.text || '') + '</span></span>') +
+  const fresh = Date.now() - l.created < DAY && l.stage === 'new';
+  return '<button type="button" class="card' + (S.fresh === l.id ? ' is-new' : '') + '" draggable="true" data-action="open" data-id="' + l.id + '" data-search="' + esc((l.name + ' ' + l.matter + ' ' + l.practice + ' ' + l.owner).toLowerCase()) + '">' +
+    '<span class="card__top"><span class="card__avatar" aria-hidden="true">' + initials(l.name) + '</span><span class="card__who"><span class="card__name">' + esc(l.name) + '</span><span class="card__meta">' + esc(l.matter) + '</span></span><span class="card__value num">' + money(l.value) + '</span></span>' +
+    '<span class="card__tags">' + (fresh ? '<i class="card__fresh">New</i>' : '') + '<span class="chip chip--soft">' + esc(l.practice) + '</span><span class="card__src">' + ic(SRC_ICON[l.source] || 'globe', 'icon--s') + esc(SOURCES[l.source]) + ' · ' + esc(ago(l.created)) + '</span></span>' +
+    '<span class="card__foot">' + (l.stage === 'lost' ? '' : '<span class="card__next">' + esc(l.next?.text || '') + '</span>') + dueChip(l) + '<span class="card__owner" title="' + esc(l.owner) + '" aria-label="Owner ' + esc(l.owner) + '">' + initials(l.owner) + '</span></span>' +
     '</button>';
 }
 function vPipeline() {
-  const col = (id, label, extra) => {
-    const ls = S.leads.filter((l) => l.stage === id);
-    return '<section class="col' + (extra || '') + '" data-drop="' + id + '" aria-label="' + label + '"><div class="col__head"><b>' + label + '</b><span class="num">' + ls.length + ' · ' + money(ls.reduce((a, l) => a + l.value, 0)) + '</span></div>' + ls.map(card).join('') +
-      (id === 'lost' && !ls.length ? '<p class="footnote col__hint">Drop a card here to mark it as lost.</p>' : '') + '</section>';
+  const pf = S.pf || (S.pf = { owner: 'all', q: '' });
+  const q = pf.q.trim().toLowerCase();
+  const match = (l) => (pf.owner === 'all' || l.owner === pf.owner) && (!q || (l.name + ' ' + l.matter + ' ' + l.practice + ' ' + l.owner).toLowerCase().includes(q));
+  const STEPS = STAGES.length;
+  const col = (id, label, i) => {
+    const all = S.leads.filter((l) => l.stage === id), ls = all.filter(match);
+    const tone = id === 'lost' ? 'var(--red)' : 'color-mix(in srgb, var(--tint) ' + Math.round(35 + (i / (STEPS - 1)) * 65) + '%, var(--surface))';
+    return '<section class="col' + (id === 'lost' ? ' col--lost' : '') + '" data-drop="' + id + '" aria-label="' + label + '" style="--tone:' + tone + '">' +
+      '<div class="col__head"><div class="col__title"><b>' + label + '</b><span class="col__count">' + ls.length + (ls.length !== all.length ? '/' + all.length : '') + '</span></div><span class="col__value num">' + money(ls.reduce((a, l) => a + l.value, 0)) + '</span></div>' +
+      '<div class="col__cards">' + ls.map(card).join('') + (ls.length ? '' : '<div class="col__empty">' + (all.length ? 'No matches' : id === 'lost' ? 'Drop a lead here to mark it as lost' : 'Drop a lead here') + '</div>') + '</div>' +
+      (id === 'new' ? '<button type="button" class="col__add" data-action="quick-intake">' + ic('plus', 'icon--s') + 'Add Enquiry</button>' : '') + '</section>';
   };
-  return '<div class="board-wrap"><div class="board">' + STAGES.map((s) => col(s.id, s.label)).join('') + col('lost', 'Lost', ' col--lost') + '</div></div>';
+  const owners = '<div class="ownerpick" role="group" aria-label="Filter by owner"><button type="button" class="ownerpick__all" data-action="pf-owner" data-owner="all" aria-pressed="' + (pf.owner === 'all') + '">Everyone</button>' +
+    OWNERS.map((o) => '<button type="button" class="ownerpick__btn" data-action="pf-owner" data-owner="' + esc(o) + '" aria-pressed="' + (pf.owner === o) + '" title="' + esc(o) + '" aria-label="Only ' + esc(o) + '">' + initials(o) + '</button>').join('') + '</div>';
+  const shown = S.leads.filter(match).filter((l) => !['delivered', 'lost'].includes(l.stage));
+  const bar = '<div class="boardbar"><label class="search">' + ic('leads', 'icon--s') + '<span class="vh">Search leads</span><input id="pq" type="search" placeholder="Search name, matter or practice area" value="' + esc(pf.q) + '" autocomplete="off"></label>' + owners +
+    '<span class="boardbar__sum footnote">' + shown.length + ' open · ' + money(shown.reduce((a, l) => a + l.value, 0)) + '</span><span class="boardbar__hint caption">' + ic('arrow', 'icon--s') + 'Drag a card to move it</span></div>';
+  return bar + '<div class="board-wrap"><div class="board">' + STAGES.map((s, i) => col(s.id, s.label, i)).join('') + col('lost', 'Lost', STEPS) + '</div></div>';
 }
 function filteredLeads() {
   const f = S.filter.leads;
@@ -1014,25 +1134,91 @@ function taskRow(l) {
   return '<li><div class="row task' + (done ? ' is-done' : '') + '"><button class="check" type="button" role="checkbox" aria-checked="' + done + '" aria-label="Done: ' + esc(l.next.text) + ' for ' + esc(l.name) + '" data-action="task-done" data-id="' + l.id + '">' + ic('check') + '</button>' +
     '<button class="task__open" type="button" data-action="open" data-id="' + l.id + '"><span class="row__main"><b>' + esc(l.next.text) + '</b><span>' + esc(l.name) + ' · ' + esc(l.matter) + '</span></span><span class="row__end">' + dueTag(l) + '<span class="caption">' + esc(l.owner) + '</span></span></button></div></li>';
 }
+// sample history for the overview charts (the demo has only a handful of real leads)
+const ENQ_HISTORY = [3, 4, 2, 5, 3, 1, 1, 4, 6, 3, 5, 4, 2];
+function enquirySeries() {
+  return Array.from({ length: 14 }, (_, i) => {
+    const d = 13 - i, s = dayAt(-d, 0, 0), e = s + DAY;
+    const real = S.leads.filter((l) => l.created >= s && l.created < e).length;
+    return { day: new Date(s), n: (d === 0 ? 0 : ENQ_HISTORY[i] || 0) + real };
+  });
+}
 function vDashboard() {
   const now = Date.now();
-  const fresh = S.leads.filter((l) => now - l.created < DAY);
+  const series = enquirySeries();
+  const thisWeek = series.slice(7).reduce((a, x) => a + x.n, 0), lastWeek = series.slice(0, 7).reduce((a, x) => a + x.n, 0);
+  const delta = lastWeek ? Math.round((thisWeek - lastWeek) / lastWeek * 100) : 0;
   const open = S.leads.filter((l) => !['delivered', 'lost'].includes(l.stage));
-  const attention = taskList().filter((l) => !isDone(l) && l.next.due <= endOfToday()).slice(0, 6);
+  const won = S.leads.filter(isWon), reached = S.leads.filter((l) => l.stage === 'lost' ? l.activities.some((a) => a.type === 'meeting') : STAGE[l.stage].i >= 2);
+  const conv = reached.length ? Math.round(won.length / reached.length * 100) : 0;
   const live = canEmail() && canText();
-  const setup = live ? '' : '<div class="group callout"><div class="callout__text">' + ic('alert') + '<div><b>Finish setting up sending</b><p class="footnote">Campaign emails and texts are held until ' + [!canEmail() ? 'your email domain is verified' : null, !canText() ? 'your texting number is registered' : null].filter(Boolean).join(' and ') + '.</p></div></div><button class="btn btn--sm" type="button" data-action="view" data-view="setup">Open Settings</button></div>';
-  const tiles = '<div class="summary">' +
-    '<div class="tile tile--accent"><span>New Enquiries, 24 Hours</span><b>' + fresh.length + '</b></div>' +
-    '<div class="tile"><span>Follow-Ups Due Today</span><b>' + dueSoon() + '</b></div>' +
-    '<div class="tile"><span>Awaiting Signature</span><b>' + S.leads.filter((l) => l.stage === 'contract').length + '</b></div>' +
-    '<div class="tile"><span>Open Pipeline</span><b>' + money(open.reduce((a, l) => a + l.value, 0)) + '</b></div>' +
-    '<div class="tile"><span>Signed Clients</span><b>' + S.leads.filter(isWon).length + '</b></div></div>';
-  const att = '<section class="group"><div class="group__head"><h2>Needs Attention</h2><button class="btn btn--plain btn--sm" type="button" data-action="view" data-view="tasks">All Tasks</button></div>' +
-    (attention.length ? '<ul class="rows">' + attention.map(taskRow).join('') + '</ul>' : '<div class="empty">' + ic('check') + '<p>You are all caught up for today.</p></div>') + '</section>';
-  const newest = S.leads.slice().sort((x, y) => y.created - x.created).slice(0, 5);
-  const enq = '<section class="group"><div class="group__head"><h2>Newest Enquiries</h2><button class="btn btn--plain btn--sm" type="button" data-action="view" data-view="leads">All Leads</button></div><ul class="rows">' +
-    newest.map((l) => '<li><button type="button" class="row" data-action="open" data-id="' + l.id + '"><span class="row__main"><b>' + esc(l.name) + '</b><span>' + esc(l.matter) + ' · ' + esc(SOURCES[l.source]) + '</span></span><span class="row__end">' + (now - l.created < DAY ? '<span class="tag tag--accent">New</span>' : tagFor(l)) + '<span class="caption">' + esc(ago(l.created)) + '</span></span></button></li>').join('') + '</ul></section>';
-  return setup + tiles + '<div class="grid2">' + att + enq + '</div>';
+  const trend = (up, txt) => '<span class="kpi__delta ' + (up ? 'is-up' : 'is-down') + '">' + ic('arrow', 'icon--s') + txt + '</span>';
+
+  const setup = live ? '' : '<div class="banner">' + ic('alert') + '<span><b>Sending is not set up yet.</b> Campaign messages are held until ' + [!canEmail() ? 'your email domain is verified' : null, !canText() ? 'your texting number is registered' : null].filter(Boolean).join(' and ') + '.</span><button class="btn btn--sm" type="button" data-action="view" data-view="setup">Finish Setup</button></div>';
+
+  const kpis = '<div class="kpis">' +
+    '<div class="kpi kpi--hero"><span class="kpi__label">New Enquiries, This Week</span><b class="kpi__value">' + thisWeek + '</b>' + trend(delta >= 0, Math.abs(delta) + '% vs last week') + '</div>' +
+    '<div class="kpi"><span class="kpi__label">Median First Response</span><b class="kpi__value">14<small> min</small></b><span class="tag tag--green">' + ic('check') + 'Under 1 hour target</span></div>' +
+    '<div class="kpi"><span class="kpi__label">Consultation to Signed</span><b class="kpi__value">' + conv + '<small>%</small></b><span class="kpi__sub">' + won.length + ' of ' + reached.length + ' consultations</span></div>' +
+    '<div class="kpi"><span class="kpi__label">Open Pipeline</span><b class="kpi__value">' + money(open.reduce((a, l) => a + l.value, 0)) + '</b><span class="kpi__sub">' + open.length + ' open leads</span></div></div>';
+
+  // enquiries bar chart, single series, hover tooltips
+  const max = Math.max(...series.map((x) => x.n), 1);
+  const bars = series.map((x, i) => {
+    const lab = x.day.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const isToday = i === 13;
+    const pos = 'left:calc(' + i + ' * 100% / 14);width:calc(100% / 14)';
+    const ht = Math.max(x.n / max * 100, x.n ? 3 : 0);
+    return '<div class="vbar' + (isToday ? ' is-today' : '') + '" style="' + pos + ';--h:' + ht + '%" tabindex="0" role="img" aria-label="' + lab + ': ' + x.n + ' enquiries" data-tip="' + lab + ' · ' + x.n + (x.n === 1 ? ' enquiry' : ' enquiries') + '"><span style="height:' + ht + '%"></span></div>' +
+      '<em class="vbar__x' + (isToday ? ' is-today' : '') + '" style="' + pos + '">' + (i % 2 === 1 || isToday ? (isToday ? 'Today' : x.day.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })) : '') + '</em>';
+  }).join('');
+  const ticks = [max, Math.round(max / 2), 0];
+  const chart = '<section class="group panel panel--chart"><div class="panel__head"><div><h2>Enquiries</h2><p class="footnote">Last 14 days, all sources</p></div><button class="btn btn--plain btn--sm" type="button" data-action="view" data-view="reports">Reports</button></div>' +
+    '<div class="chart"><div class="chart__y">' + ticks.map((t) => '<span>' + t + '</span>').join('') + '</div><div class="chart__plot">' + bars + '</div></div>' +
+    '<table class="vh"><caption>Enquiries per day</caption><tbody>' + series.map((x) => '<tr><th>' + x.day.toDateString() + '</th><td>' + x.n + '</td></tr>').join('') + '</tbody></table></section>';
+
+  // today
+  const eod = endOfToday(), sod = dayAt(0, 0, 0);
+  const tm = (t) => new Date(t).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const todays = calEvents().filter((x) => x.t >= sod && x.t <= eod).sort((x, y) => x.t - y.t);
+  const nextUp = todays.length ? todays : calEvents().filter((x) => x.t > eod).sort((x, y) => x.t - y.t).slice(0, 4);
+  const agenda = '<section class="group panel"><div class="panel__head"><div><h2>' + (todays.length ? 'Today' : 'Coming Up') + '</h2><p class="footnote">' + new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) + '</p></div><button class="btn btn--plain btn--sm" type="button" data-action="view" data-view="calendar">Calendar</button></div>' +
+    (nextUp.length ? '<ul class="agenda">' + nextUp.map((x) => '<li' + (x.firm ? ' class="is-firm"' : '') + '>' + (x.id ? '<button type="button" data-action="open" data-id="' + x.id + '">' : '<div>') + '<span class="agenda__time">' + (todays.length ? tm(x.t) : new Date(x.t).toLocaleDateString('en-US', { weekday: 'short' }) + ' ' + tm(x.t)) + '</span><span class="agenda__bar" aria-hidden="true"></span><span class="agenda__main"><b>' + esc(x.title) + '</b><span>' + esc(x.who || '') + '</span></span>' + (x.late ? '<span class="tag tag--red">Overdue</span>' : '') + (x.id ? '</button>' : '</div>') + '</li>').join('') + '</ul>'
+      : '<div class="empty"><p>Nothing booked.</p></div>') + '</section>';
+
+  // funnel
+  const funnelStages = STAGES.slice(0, 5);
+  const counts = funnelStages.map((s) => S.leads.filter((l) => l.stage !== 'lost' && STAGE[l.stage].i >= STAGE[s.id].i).length);
+  const fmax = Math.max(...counts, 1);
+  const funnel = '<section class="group panel"><div class="panel__head"><div><h2>Pipeline</h2><p class="footnote">Leads that reached each stage</p></div><button class="btn btn--plain btn--sm" type="button" data-action="view" data-view="pipeline">Board</button></div>' +
+    '<ol class="funnel">' + funnelStages.map((s, i) => '<li><span class="funnel__label">' + s.label + '</span><span class="funnel__track"><span style="width:' + (counts[i] / fmax * 100) + '%"></span></span><b>' + counts[i] + '</b></li>').join('') +
+    '<li class="is-lost"><span class="funnel__label">Lost</span><span class="funnel__track"><span style="width:' + (S.leads.filter((l) => l.stage === 'lost').length / fmax * 100) + '%"></span></span><b>' + S.leads.filter((l) => l.stage === 'lost').length + '</b></li></ol></section>';
+
+  // sources
+  const src = Object.keys(SOURCES).map((k) => { const ls = S.leads.filter((l) => l.source === k); return { k, n: ls.length, w: ls.filter(isWon).length }; }).filter((x) => x.n).sort((x, y) => y.n - x.n);
+  const smax = Math.max(...src.map((x) => x.n), 1);
+  const sources = '<section class="group panel"><div class="panel__head"><div><h2>Lead Sources</h2><p class="footnote">Leads and how many signed</p></div></div>' +
+    '<ul class="hbars">' + src.map((x) => '<li><span class="hbars__label">' + SOURCES[x.k] + '</span><span class="hbars__track"><span style="width:' + (x.n / smax * 100) + '%"></span></span><b>' + x.n + '</b><span class="hbars__sub">' + (x.w ? x.w + ' signed' : '–') + '</span></li>').join('') + '</ul></section>';
+
+  // attention
+  const attention = taskList().filter((l) => !isDone(l) && l.next.due <= eod).slice(0, 5);
+  const att = '<section class="group panel"><div class="panel__head"><div><h2>Needs Attention</h2><p class="footnote">' + (attention.length ? attention.length + ' follow-up' + (attention.length === 1 ? '' : 's') + ' due today' : 'Nothing due today') + '</p></div><button class="btn btn--plain btn--sm" type="button" data-action="view" data-view="tasks">Tasks</button></div>' +
+    (attention.length ? '<ul class="rows">' + attention.map(taskRow).join('') + '</ul>' : '<div class="empty">' + ic('check') + '<p>You are all caught up.</p></div>') + '</section>';
+
+  // activity feed
+  const feed = S.leads.flatMap((l) => l.activities.map((a) => ({ ...a, l }))).filter((a) => a.t <= now).sort((x, y) => y.t - x.t).slice(0, 6);
+  const activity = '<section class="group panel"><div class="panel__head"><div><h2>Recent Activity</h2><p class="footnote">Across every lead</p></div></div><ul class="timeline">' +
+    feed.map((a) => '<li class="' + (a.cls || '') + '"><span class="dot">' + ic(ACT_ICON[a.type] || 'arrow') + '</span><div><b>' + esc(a.title) + '</b><p class="footnote"><button type="button" class="linkbtn" data-action="open" data-id="' + a.l.id + '">' + esc(a.l.name) + '</button> · ' + esc(ago(a.t)) + '</p></div></li>').join('') + '</ul></section>';
+
+  // campaigns
+  const autos = S.campaigns.filter((c) => c.kind === 'auto'), on = autos.filter((c) => c.active).length;
+  const lastSend = S.campaigns.filter((c) => c.kind === 'broadcast' && c.sentAt).sort((x, y) => y.sentAt - x.sentAt)[0];
+  const ls = lastSend ? campStats(lastSend) : null;
+  const camps = '<section class="group panel"><div class="panel__head"><div><h2>Campaigns</h2><p class="footnote">' + on + ' of ' + autos.length + ' automatic campaigns on</p></div><button class="btn btn--plain btn--sm" type="button" data-action="view" data-view="campaigns">Campaigns</button></div>' +
+    (lastSend ? '<div class="campmini"><span class="caption">Last one-off send</span><b>' + esc(lastSend.name) + '</b><span class="footnote">' + when(lastSend.sentAt) + '</span><div class="campmini__stats"><span><b>' + ls.sent + '</b>Delivered</span><span><b>' + (ls.email ? Math.round(ls.opened / ls.email * 100) + '%' : '–') + '</b>Opened</span><span><b>' + ls.replied + '</b>Replied</span></div></div>' : '') +
+    '<div class="panel__foot"><button class="btn btn--sm btn--prominent" type="button" data-action="new-camp" data-kind="broadcast">' + ic('plus', 'icon--s') + 'New Campaign</button></div></section>';
+
+  return setup + kpis + '<div class="dash dash--a">' + chart + agenda + '</div><div class="dash dash--b">' + att + funnel + sources + '</div><div class="dash dash--c">' + activity + camps + '</div>';
 }
 function vTasks() {
   const all = taskList(), now = Date.now(), eod = endOfToday();
@@ -1281,6 +1467,7 @@ document.addEventListener('click', (e) => {
   if (e.target.closest('[data-test]')) { e.stopImmediatePropagation(); const d = Object.fromEntries(new FormData(f)); toast('Test sent to you', [/Text/.test(d.channel) ? 'Text to your phone' : null, /Email/.test(d.channel) ? 'email to sarah@' + FIRM_DOMAIN : null].filter(Boolean).join(' and ')); }
 }, true);
 ['input', 'change'].forEach((t) => document.addEventListener(t, (e) => { const f = e.target.closest('[data-form="newcamp"]'); if (f) campPreview(f); }));
+document.addEventListener('input', (e) => { if (e.target.id !== 'pq') return; S.pf.q = e.target.value; const pos = e.target.selectionStart; render(); const i = document.getElementById('pq'); if (i) { i.focus(); i.setSelectionRange(pos, pos); } });
 // remember where the cursor was in the message so merge fields go there
 ['keyup', 'mouseup', 'input'].forEach((t) => document.addEventListener(t, (e) => { if (e.target.id === 'nc-body') { e.target.dataset.caret = e.target.selectionStart; e.target.dataset.caretEnd = e.target.selectionEnd; } }));
 document.addEventListener('click', async (e) => {
@@ -1307,6 +1494,7 @@ document.addEventListener('click', async (e) => {
     case 'compose': S.modal = { type: 'compose', id }; break;
     case 'reminder': S.modal = { type: 'reminder', id }; break;
     case 'lost': S.modal = { type: 'lost', id }; break;
+    case 'pf-owner': S.pf.owner = b.dataset.owner; break;
     case 'new-camp': S.modal = { type: 'newcamp', kind: b.dataset.kind || 'broadcast' }; break;
     case 'camp-results': S.modal = { type: 'camp', id }; break;
     case 'toggle-camp': { const c = S.campaigns.find((x) => x.id === id); c.active = !c.active; toast(c.name + (c.active ? ' turned on' : ' turned off')); break; }
