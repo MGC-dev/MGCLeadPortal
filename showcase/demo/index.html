@@ -230,6 +230,10 @@ button { -webkit-tap-highlight-color: transparent; }
 .board-wrap { overflow-x: auto; margin-inline: calc(-1 * var(--s6)); padding: 0 var(--s6) var(--s3); scroll-snap-type: x proximity; }
 .board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(240px, 1fr); gap: var(--s3); min-width: min-content; }
 .col { display: flex; flex-direction: column; gap: var(--s2); min-height: 440px; padding: var(--s3); background: var(--fill); border-radius: var(--r-l); scroll-snap-align: start; transition: background-color 150ms var(--ease), box-shadow 150ms var(--ease); }
+.col--lost .col__head b { color: var(--red); }
+.col--lost .card { opacity: 0.85; }
+.col__hint { padding: var(--s2) var(--s1); }
+.card__next.is-lost { color: var(--red); }
 .col.is-over, .lostbar.is-over { box-shadow: inset 0 0 0 2px var(--tint); background: var(--tint-soft); }
 .col__head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s2); padding: 2px var(--s1) var(--s1); }
 .col__head b { font-size: 13px; font-weight: 600; }
@@ -334,6 +338,26 @@ td b { font-weight: 600; }
 .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s4); }
 .camp { display: grid; gap: var(--s3); padding: var(--s5); align-content: start; }
 .camp__top { display: flex; justify-content: space-between; align-items: start; gap: var(--s3); }
+.camp__meta { display: flex; gap: var(--s2); flex-wrap: wrap; align-items: center; }
+.camp__results { margin-left: auto; }
+.camp--new { place-content: center; justify-items: center; text-align: center; min-height: 180px; border: 1.5px dashed var(--separator); background: transparent; box-shadow: none; color: var(--label); font: inherit; cursor: pointer; }
+.camp--new:hover { border-color: var(--tint); color: var(--tint); }
+.camp--new > .icon { width: 28px; height: 28px; color: var(--tint); }
+.camp--new b { font-size: 16px; }
+.camp-builder { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: var(--s5); align-items: start; }
+.camp-builder__form { display: grid; gap: var(--s3); }
+.camp-builder__preview { position: sticky; top: 0; display: grid; gap: var(--s3); padding: var(--s4); border-radius: var(--r-l); background: var(--fill-2); }
+.camp-builder [hidden] { display: none !important; }
+.merge { display: flex; flex-wrap: wrap; gap: var(--s2); align-items: center; padding: 0 var(--s4); }
+.phone { display: grid; gap: var(--s2); padding: var(--s4); border-radius: 22px; background: var(--surface); box-shadow: var(--shadow-card); }
+.phone .bubble { max-width: 100%; white-space: pre-line; }
+.mail { display: grid; gap: var(--s2); padding: var(--s4); border-radius: var(--r-m, 12px); background: var(--surface); box-shadow: var(--shadow-card); }
+.mail p { white-space: pre-line; font-size: 14px; }
+.sendbar { display: grid; gap: var(--s2); padding: var(--s3) var(--s4); border-radius: var(--r-s); background: var(--tint-soft); }
+.sendbar__track { height: 6px; border-radius: 3px; background: var(--surface); overflow: hidden; }
+.sendbar__track span { display: block; height: 100%; background: var(--tint); transition: width 300ms var(--ease); }
+.summary--sheet { margin: 0; }
+@media (max-width: 760px) { .camp-builder { grid-template-columns: minmax(0, 1fr); } .camp-builder__preview { position: static; } }
 .camp__preview { padding: var(--s3); border-radius: var(--r-s); background: var(--fill-2); font-size: 14px; white-space: pre-line; }
 .switch { position: relative; width: 51px; height: 31px; flex-shrink: 0; border: 0; border-radius: 16px; background: var(--fill); box-shadow: inset 0 0 0 1px var(--separator-soft); cursor: pointer; transition: background-color 200ms var(--ease); }
 .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: var(--knob); box-shadow: var(--shadow-seg); transition: transform 220ms var(--spring); }
@@ -366,6 +390,39 @@ td b { font-weight: 600; }
 .check .icon { width: 13px; height: 13px; vertical-align: 0; }
 .task__open { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--s3); padding: var(--s1) 0; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer; }
 .task.is-done .row__main b { text-decoration: line-through; color: var(--label-3); }
+.cal { padding: 0; overflow: hidden; }
+.cal__bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3); padding: var(--s3) var(--s4); border-bottom: 1px solid var(--separator); }
+.cal__bar h2 { font-size: 18px; font-weight: 600; }
+.cal__nav { display: flex; gap: 2px; }
+.cal__nav .btn:first-child .icon { transform: scaleX(-1); }
+.cal__legend { margin-left: auto; display: flex; align-items: center; gap: var(--s2); font-size: 12px; color: var(--label-2); }
+.cal__legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; margin-left: var(--s2); }
+.cal__legend i.is-lead { background: var(--tint); }
+.cal__legend i.is-firm { background: var(--accent); }
+.cal__head, .cal__body { display: grid; grid-template-columns: 56px minmax(0, 1fr); }
+.cal__head { grid-template-columns: 56px repeat(var(--days), minmax(0, 1fr)); border-bottom: 1px solid var(--separator); }
+.cal__day { display: grid; justify-items: center; gap: 2px; padding: var(--s2) 0 var(--s3); border-left: 1px solid var(--separator); }
+.cal__day span { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; color: var(--label-2); }
+.cal__day b { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; font-size: 20px; font-weight: 500; }
+.cal__day.is-today span { color: var(--tint); }
+.cal__day.is-today b { background: var(--tint); color: var(--tint-ink); }
+.cal__gutter { position: relative; height: calc(var(--row) * var(--hours)); }
+.cal__gutter span { position: absolute; right: 8px; transform: translateY(-50%); font-size: 11px; color: var(--label-2); white-space: nowrap; }
+.cal__grid { display: grid; grid-template-columns: repeat(var(--days), minmax(0, 1fr)); height: calc(var(--row) * var(--hours)); background-image: linear-gradient(to bottom, var(--separator) 1px, transparent 1px); background-size: 100% var(--row); }
+.cal__col { position: relative; border-left: 1px solid var(--separator); }
+.cal__evt { position: absolute; display: grid; align-content: start; gap: 1px; padding: 3px 6px; overflow: hidden; border: 0; border-radius: 6px; background: var(--tint); color: var(--tint-ink); text-align: left; font: inherit; cursor: pointer; box-shadow: 0 0 0 1px var(--surface); }
+.cal__evt b { font-size: 12px; font-weight: 600; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cal__evt span { font-size: 11px; line-height: 1.25; opacity: 0.9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cal__evt.is-short { grid-auto-flow: column; justify-content: start; align-items: center; gap: 6px; padding-block: 0; }
+.cal__evt.is-firm { background: var(--accent-soft); color: var(--accent-soft-ink); box-shadow: inset 3px 0 0 var(--accent), 0 0 0 1px var(--surface); cursor: default; }
+.cal__evt.is-late { background: var(--red); color: #FFFFFF; }
+.cal__evt.is-done { background: var(--fill); color: var(--label-2); }
+.cal__evt.is-done b { text-decoration: line-through; }
+.cal__evt:hover:not(.is-firm) { filter: brightness(1.08); }
+.cal__now { position: absolute; left: -1px; right: 0; height: 2px; background: var(--red); z-index: 2; pointer-events: none; }
+.cal__now::before { content: ""; position: absolute; left: -6px; top: -5px; width: 12px; height: 12px; border-radius: 50%; background: var(--red); }
+.cal__note { padding: var(--s3) var(--s4); border-top: 1px solid var(--separator); }
+@media (max-width: 760px) { .cal__legend { display: none; } .cal__bar h2 { font-size: 16px; width: 100%; order: 3; } }
 .day { display: grid; gap: var(--s2); }
 .day__head { display: flex; align-items: center; gap: var(--s2); padding: 0 var(--s4); }
 .day__head b { font-size: 15px; font-weight: 600; }
@@ -534,6 +591,8 @@ const FIRM_NUMBER = '(555) 010-0142';
 const FIRM_DOMAIN = 'examplefamilylaw.com';
 const HOUR = 3600e3, DAY = 24 * HOUR;
 const dayAt = (d, hh, mm) => { const x = new Date(); x.setDate(x.getDate() + d); x.setHours(hh, mm, 0, 0); return +x; };
+// n working days from today (skips weekends), at hh:mm
+const bizAt = (n, hh, mm) => { const x = new Date(); x.setHours(hh, mm, 0, 0); let k = 0; while (k < n || x.getDay() % 6 === 0) { x.setDate(x.getDate() + 1); if (x.getDay() % 6) k++; } return +x; };
 const endOfToday = () => { const x = new Date(); x.setHours(23, 59, 59, 999); return +x; };
 const TEAM = [['Sarah Mitchell', 'Intake Manager', 'Admin'], ['David Cohen', 'Attorney', 'Member'], ['Priya Nair', 'Paralegal', 'Member'], ['James Okafor', 'Intake Specialist', 'Member']];
 const phoneNum = () => '(555) 01' + Math.floor(Math.random() * 10) + '-' + Math.floor(Math.random() * 9000 + 1000);
@@ -579,13 +638,19 @@ function seed() {
     if (l.stage === 'lost') l.activities.push({ t: l.created + 5 * DAY, type: 'lost', cls: 'bad', title: 'Marked as lost', text: 'Reason: ' + l.lostReason + '.' });
     l.next = nextFor(l);
   });
+  // spread booked follow-ups over working hours so the calendar reads like a real week
+  const SLOT = { 'Rachel Greene': null, 'Marcus Webb': 30, 'Tom Alvarez': [1, 10, 0], 'Elena Petrova': [1, 14, 30], 'Hannah Lee': [2, 11, 0], 'Omar Haddad': [3, 15, 30], 'Linda Park': [2, 16, 0] };
+  leads.forEach((l) => { const s = SLOT[l.name]; if (!l.next?.due || s == null) return; l.next.due = Array.isArray(s) ? bizAt(...s) : l.next.due + s * 60e3; });
+  leads.find((l) => l.name === 'Gary Nolan').optedOut = true;
   return {
-    view: 'dashboard', open: null, modal: null, menu: false, filter: { leads: 'all', inbox: 'all', contacts: 'all' },
+    view: 'dashboard', open: null, modal: null, menu: false, filter: { leads: 'all', inbox: 'all', contacts: 'all', calmode: matchMedia('(max-width: 760px)').matches ? 'day' : 'week' }, calAt: dayAt(0, 0, 0),
     collapsed: false, done: {},
     events: [
-      { t: dayAt(3, 10, 0), title: 'Intake team weekly review', who: 'Whole intake team' },
-      { t: dayAt(4, 14, 30), title: 'Monthly marketing review', who: 'Sarah Mitchell and David Cohen' },
-      { t: dayAt(6, 9, 30), title: 'Lead source review', who: 'David Cohen' },
+      { t: bizAt(1, 9, 0), dur: 30, title: 'Intake team huddle', who: 'Whole intake team' },
+      { t: bizAt(2, 13, 0), dur: 60, title: 'Partners lunch', who: 'David Cohen' },
+      { t: bizAt(3, 10, 0), dur: 60, title: 'Intake team weekly review', who: 'Whole intake team' },
+      { t: bizAt(4, 14, 30), dur: 90, title: 'Monthly marketing review', who: 'Sarah Mitchell and David Cohen' },
+      { t: bizAt(5, 9, 0), dur: 30, title: 'Intake team huddle', who: 'Whole intake team' },
     ],
     integrations: [
       { id: 'web', name: 'Website Form', icon: 'globe', on: true, desc: 'Enquiries from your website arrive as leads and get the instant reply.' },
@@ -604,8 +669,17 @@ function seed() {
       { id: 'c5', name: 'Monthly Newsletter', trigger: 'The first Monday of the month', channel: 'Email', steps: 1, active: false, sent: 0, body: 'News and updates from Example Family Law.' },
     ],
     tour: { step: 0, min: isPhone(), leadId: null, dismissed: false },
+    sending: null,
     fresh: null,
   };
+}
+function withCampaignDefaults(st) {
+  st.campaigns.forEach((c) => { c.kind = c.kind || 'auto'; c.recipients = c.recipients || []; });
+  const past = st.leads.filter((l) => l.stage === 'signed' || l.stage === 'delivered');
+  st.campaigns.push({ id: 'c6', kind: 'broadcast', name: 'Year-End Estate Planning Check-In', audience: 'clients', channel: 'Email', steps: 1, sent: past.length, sentAt: Date.now() - 12 * DAY,
+    subject: 'Is your estate plan up to date, {first}?', body: 'Hi {first},\n\nThe end of the year is a good time to review your will and beneficiaries. Reply to this email and we will set up a short call.',
+    recipients: past.map((l, i) => ({ id: l.id, name: l.name, channel: 'Email', status: 'delivered', opened: true, replied: i === 0 })) });
+  return st;
 }
 function nextFor(l) {
   if (l.stage === 'lost') return { text: 'Closed as lost', due: null };
@@ -624,10 +698,12 @@ function fire(trigger, l) {
   S.campaigns.filter((c) => c.active && c.trigger === trigger).forEach((c) => {
     const body = c.body.replace('{first}', first(l.name)).replace('{matter}', l.matter.toLowerCase());
     if (/Text/.test(c.channel)) {
+      c.recipients.unshift({ id: l.id, name: l.name, channel: 'Text', status: canText() ? 'delivered' : 'held', at: Date.now() });
       if (canText()) { c.sent++; log(l, { type: 'text', cls: 'auto', title: c.name + ' text sent', text: 'From ' + FIRM_NUMBER + ', automatically.', quote: body }); toast('Text sent to ' + first(l.name), 'From ' + FIRM_NUMBER + ' by ' + c.name); }
       else log(l, { type: 'text', cls: 'bad', title: c.name + ' text held', text: 'Register your texting number in Settings to send it.' });
     }
     if (/Email/.test(c.channel)) {
+      c.recipients.unshift({ id: l.id, name: l.name, channel: 'Email', status: canEmail() ? 'delivered' : 'held', at: Date.now() });
       if (canEmail()) { c.sent++; log(l, { type: 'email', cls: 'auto', title: c.name + ' email sent', text: 'From intake@' + FIRM_DOMAIN + ', automatically.', quote: (() => { const t = body.replace(/\s+/g, ' '); return t.length > 140 ? t.slice(0, 140).replace(/[\s.,]+$/, '') + '…' : t; })() }); }
       else log(l, { type: 'email', cls: 'bad', title: c.name + ' email held', text: 'Verify your email domain in Settings to send it.' });
     }
@@ -695,10 +771,10 @@ const VIEWS = [
   { id: 'pipeline', label: 'Pipeline', icon: 'pipeline', sub: 'Every lead from enquiry to services provided. Drag a card or open it to work it.' },
   { id: 'leads', label: 'Leads', icon: 'leads', sub: 'Every enquiry with its source, owner and next step.' },
   { id: 'contacts', label: 'Contacts', icon: 'contacts', sub: 'Everyone who has contacted the firm: leads, clients and past clients.' },
-  { id: 'calendar', label: 'Calendar', icon: 'calendar', sub: 'Calls, consultations and follow-ups booked from the pipeline, for the next 7 days.' },
+  { id: 'calendar', label: 'Calendar', icon: 'calendar', sub: 'Calls and follow-ups booked from the pipeline, alongside your firm’s own events.' },
   { id: 'tasks', label: 'Tasks', icon: 'tasks', sub: 'Every follow-up in one list. Tick them off as you go.' },
   { id: 'inbox', label: 'Messages', icon: 'messages', sub: 'Emails and texts, sent from your firm’s own domain and number.' },
-  { id: 'campaigns', label: 'Campaigns', icon: 'campaigns', sub: 'Automatic emails and texts, started by what happens in the pipeline.' },
+  { id: 'campaigns', label: 'Campaigns', icon: 'campaigns', sub: 'One-off and automatic emails and texts, from your firm’s own domain and number.' },
   { id: 'documents', label: 'Documents', icon: 'folder', sub: 'Engagement letters, their signing status, and the templates they come from.' },
   { id: 'reports', label: 'Reports', icon: 'reports', sub: 'Where leads come from, what converts, and why leads are lost.' },
   { id: 'integrations', label: 'Integrations', icon: 'plug', sub: 'Connect your lead sources and calendars.' },
@@ -751,6 +827,7 @@ function render() {
   document.getElementById('toolbar-actions').innerHTML = toolbarActions();
   document.getElementById('view').innerHTML = ({ dashboard: vDashboard, pipeline: vPipeline, leads: vLeads, contacts: vContacts, calendar: vCalendar, tasks: vTasks, inbox: vInbox, campaigns: vCampaigns, documents: vDocuments, reports: vReports, integrations: vIntegrations, setup: vSetup })[S.view]();
   renderLayer();
+  const nc = document.querySelector('[data-form="newcamp"]'); if (nc) campPreview(nc);
   renderTour();
   S.fresh = null;
 }
@@ -758,6 +835,7 @@ function toolbarActions() {
   let seg = '';
   if (S.view === 'leads') seg = segmented('leads', [['all', 'All'], ['open', 'Open'], ['won', 'Signed'], ['lost', 'Lost']]);
   if (S.view === 'inbox') seg = segmented('inbox', [['all', 'All'], ['text', 'Texts'], ['email', 'Emails']]);
+  if (S.view === 'calendar') seg = segmented('calmode', [['day', 'Day'], ['week', 'Week']]);
   if (S.view === 'contacts') seg = segmented('contacts', [['all', 'All'], ['lead', 'Leads'], ['client', 'Clients'], ['lost', 'Lost']]);
   const setupBtn = '<button class="btn btn--icon only-phone-inline" type="button" data-action="view" data-view="setup" aria-label="Settings">' + ic('gear') + '</button>';
   const menu = '<div class="menu"><button class="btn btn--prominent" type="button" data-action="toggle-menu" aria-haspopup="menu" aria-expanded="' + S.menu + '" id="enq-btn">' + ic('plus', 'icon--s') + 'New Enquiry</button>' +
@@ -766,7 +844,8 @@ function toolbarActions() {
       '<li><button type="button" role="menuitem" data-action="enquiry" data-channel="email">' + ic('mail') + '<span>Email<small>Someone writes to your intake inbox</small></span></button></li>' +
       '<li><button type="button" role="menuitem" data-action="enquiry" data-channel="text">' + ic('messages') + '<span>Text Message<small>Someone texts your firm’s number</small></span></button></li>' +
       '<li><button type="button" role="menuitem" data-action="quick-intake">' + ic('pencil') + '<span>Quick Intake<small>Staff log a call or walk-in</small></span></button></li></ul>' : '') + '</div>';
-  return seg + setupBtn + menu;
+  const campBtn = S.view === 'campaigns' ? '<button class="btn" type="button" data-action="new-camp" data-kind="broadcast">' + ic('plus', 'icon--s') + 'New Campaign</button>' : '';
+  return seg + campBtn + setupBtn + menu;
 }
 function segmented(key, opts) {
   return '<div class="seg" role="group" aria-label="Filter">' + opts.map(([v, t]) => '<button type="button" data-action="filter" data-key="' + key + '" data-val="' + v + '" aria-pressed="' + (S.filter[key] === v) + '">' + t + '</button>').join('') + '</div>';
@@ -782,17 +861,17 @@ function card(l) {
     '<span class="card__name">' + esc(l.name) + '</span>' +
     '<span class="card__meta">' + esc(l.matter) + '</span>' +
     '<span class="card__row"><span class="num">' + money(l.value) + '</span><span class="caption">' + esc(SOURCES[l.source]) + ', ' + ago(l.created) + '</span></span>' +
-    '<span class="card__next' + (l.stage === 'new' ? ' is-due' : '') + '">' + ic(l.stage === 'contract' ? 'doc' : 'calendar', 'icon--s') + '<span>' + esc(l.next?.due ? when(l.next.due) + ': ' : '') + esc(l.next?.text || '') + '</span></span>' +
+    (l.stage === 'lost' ? '<span class="card__next is-lost">' + ic('x', 'icon--s') + '<span>' + esc(l.lostReason || 'Closed as lost') + '</span></span>' :
+    '<span class="card__next' + (l.stage === 'new' ? ' is-due' : '') + '">' + ic(l.stage === 'contract' ? 'doc' : 'calendar', 'icon--s') + '<span>' + esc(l.next?.due ? when(l.next.due) + ': ' : '') + esc(l.next?.text || '') + '</span></span>') +
     '</button>';
 }
 function vPipeline() {
-  const lost = S.leads.filter((l) => l.stage === 'lost');
-  const cols = STAGES.map((s) => {
-    const ls = S.leads.filter((l) => l.stage === s.id);
-    return '<section class="col" data-drop="' + s.id + '" aria-label="' + s.label + '"><div class="col__head"><b>' + s.label + '</b><span class="num">' + ls.length + ' · ' + money(ls.reduce((a, l) => a + l.value, 0)) + '</span></div>' + ls.map(card).join('') + '</section>';
-  }).join('');
-  const lostBar = '<div><p class="section-title">Lost (' + lost.length + ')</p><div class="lostbar" data-drop="lost">' + (lost.length ? lost.map((l) => '<button type="button" class="btn btn--sm" data-action="open" data-id="' + l.id + '">' + esc(l.name) + '</button>').join('') : '<span class="footnote">Drop a card here to mark it as lost.</span>') + '</div></div>';
-  return '<div class="board-wrap"><div class="board">' + cols + '</div></div>' + lostBar;
+  const col = (id, label, extra) => {
+    const ls = S.leads.filter((l) => l.stage === id);
+    return '<section class="col' + (extra || '') + '" data-drop="' + id + '" aria-label="' + label + '"><div class="col__head"><b>' + label + '</b><span class="num">' + ls.length + ' · ' + money(ls.reduce((a, l) => a + l.value, 0)) + '</span></div>' + ls.map(card).join('') +
+      (id === 'lost' && !ls.length ? '<p class="footnote col__hint">Drop a card here to mark it as lost.</p>' : '') + '</section>';
+  };
+  return '<div class="board-wrap"><div class="board">' + STAGES.map((s) => col(s.id, s.label)).join('') + col('lost', 'Lost', ' col--lost') + '</div></div>';
 }
 function filteredLeads() {
   const f = S.filter.leads;
@@ -818,13 +897,93 @@ function vInbox() {
   const list = items.map(({ l, a }) => '<li><button type="button" class="row" data-action="open" data-id="' + l.id + '"><span class="row__main"><b>' + esc(l.name) + '</b><span>' + esc(a.quote || a.title) + '</span></span><span class="row__end"><span class="caption">' + esc(ago(a.t)) + '</span>' + kind(a) + '</span></button></li>').join('');
   return '<div class="group only-desk"><div class="table-wrap"><table style="min-width:720px"><thead><tr><th>Contact</th><th>Type</th><th>Message</th><th>When</th></tr></thead><tbody>' + rows + '</tbody></table></div></div><ul class="group rows only-phone">' + list + '</ul>';
 }
+const AUDIENCES = {
+  open: ['Open leads', 'Everyone still in the pipeline', (l) => !['signed', 'delivered', 'lost'].includes(l.stage)],
+  consult: ['Booked or due a consultation', 'Contacted and Consultation stages', (l) => l.stage === 'contacted' || l.stage === 'consult'],
+  clients: ['Clients and past clients', 'Signed and Services Provided', (l) => l.stage === 'signed' || l.stage === 'delivered'],
+  lost: ['Lost leads', 'A win-back message', (l) => l.stage === 'lost'],
+  all: ['Everyone', 'Every contact in the firm', () => true],
+};
+const TRIGGERS = ['A new enquiry arrives', 'A consultation is booked', 'A contract is unsigned after 2 days', 'A lead is marked as lost', 'A client is signed'];
+const audienceOf = (key) => S.leads.filter(AUDIENCES[key][2]);
+const fillIn = (s, l) => s.replace(/\{first\}/g, l ? first(l.name) : 'Rachel').replace(/\{matter\}/g, l ? l.matter.toLowerCase() : 'custody question').replace(/\{firm\}/g, S.firm.name);
+function campStats(c) {
+  const r = c.recipients;
+  return { sent: r.filter((x) => x.status === 'delivered').length, held: r.filter((x) => x.status === 'held').length, skipped: r.filter((x) => x.status === 'skipped').length,
+    opened: r.filter((x) => x.opened).length, replied: r.filter((x) => x.replied).length, email: r.filter((x) => x.channel === 'Email' && x.status === 'delivered').length };
+}
 function vCampaigns() {
   const locked = !canEmail() || !canText();
   const note = locked ? '<div class="group callout"><div class="callout__text">' + ic('alert') + '<div><b>Some campaign messages are held</b><p class="footnote">They send once ' + [!canEmail() ? 'your email domain is verified' : null, !canText() ? 'your texting number is registered' : null].filter(Boolean).join(' and ') + '.</p></div></div><button class="btn btn--sm" type="button" data-action="view" data-view="setup">Open Settings</button></div>' : '';
-  return note + '<div class="grid2">' + S.campaigns.map((c) => '<article class="group camp"><div class="camp__top"><div style="display:grid;gap:2px"><h3>' + esc(c.name) + '</h3><span class="footnote">When ' + esc(c.trigger.charAt(0).toLowerCase() + c.trigger.slice(1)) + '</span></div><div class="switchrow"><span aria-hidden="true">' + (c.active ? 'On' : 'Off') + '</span><button type="button" class="switch" role="switch" aria-checked="' + c.active + '" aria-label="' + esc(c.name) + '" data-action="toggle-camp" data-id="' + c.id + '"></button></div></div>' +
-    '<p class="camp__preview">' + esc(c.body.replace('{first}', 'Rachel').replace('{matter}', 'custody question')) + '</p>' +
-    '<div style="display:flex;gap:var(--s2);flex-wrap:wrap;align-items:center"><span class="tag">' + esc(c.channel) + '</span><span class="tag">' + c.steps + (c.steps === 1 ? ' Step' : ' Steps') + '</span><span class="footnote num">' + c.sent + ' sent in this demo</span></div>' +
-    '<p class="footnote">From ' + [/Text/.test(c.channel) ? FIRM_NUMBER : null, /Email/.test(c.channel) ? 'intake@' + FIRM_DOMAIN : null].filter(Boolean).join(' and ') + '</p></article>').join('') + '</div>';
+  const card = (c) => {
+    const st = campStats(c);
+    const head = c.kind === 'broadcast'
+      ? '<div style="display:grid;gap:2px"><h3>' + esc(c.name) + '</h3><span class="footnote">' + (c.sentAt ? 'Sent ' + when(c.sentAt) + ' to ' + esc(AUDIENCES[c.audience][0].toLowerCase()) : 'Sending now…') + '</span></div><span class="tag tag--accent">One-Off</span>'
+      : '<div style="display:grid;gap:2px"><h3>' + esc(c.name) + '</h3><span class="footnote">When ' + esc(c.trigger.charAt(0).toLowerCase() + c.trigger.slice(1)) + '</span></div><div class="switchrow"><span aria-hidden="true">' + (c.active ? 'On' : 'Off') + '</span><button type="button" class="switch" role="switch" aria-checked="' + c.active + '" aria-label="' + esc(c.name) + '" data-action="toggle-camp" data-id="' + c.id + '"></button></div>';
+    return '<article class="group camp"><div class="camp__top">' + head + '</div>' +
+      '<p class="camp__preview">' + (c.subject ? '<b>' + esc(fillIn(c.subject)) + '</b>\n' : '') + esc(fillIn(c.body)) + '</p>' +
+      '<div class="camp__meta"><span class="tag">' + esc(c.channel) + '</span>' + (c.kind === 'auto' ? '<span class="tag">' + c.steps + (c.steps === 1 ? ' Step' : ' Steps') + '</span>' : '') +
+      '<span class="footnote num">' + st.sent + ' sent' + (st.opened ? ' · ' + st.opened + ' opened' : '') + (st.replied ? ' · ' + st.replied + ' replied' : '') + (st.held ? ' · ' + st.held + ' held' : '') + '</span>' +
+      '<button class="btn btn--plain btn--sm camp__results" type="button" data-action="camp-results" data-id="' + c.id + '">View Results</button></div></article>';
+  };
+  const auto = S.campaigns.filter((c) => c.kind === 'auto'), one = S.campaigns.filter((c) => c.kind === 'broadcast');
+  return note + '<div><p class="section-title">One-Off Sends (' + one.length + ')</p><div class="grid2">' + one.map(card).join('') +
+    '<button type="button" class="group camp camp--new" data-action="new-camp" data-kind="broadcast">' + ic('plus') + '<b>New One-Off Send</b><span class="footnote">Email or text a group of contacts once, now.</span></button></div></div>' +
+    '<div><p class="section-title">Automatic (' + auto.length + ')</p><div class="grid2">' + auto.map(card).join('') +
+    '<button type="button" class="group camp camp--new" data-action="new-camp" data-kind="auto">' + ic('plus') + '<b>New Automatic Campaign</b><span class="footnote">Runs by itself when something happens in the pipeline.</span></button></div></div>';
+}
+function campPreview(f) {
+  const d = Object.fromEntries(new FormData(f));
+  const auto = d.kind === 'auto';
+  f.querySelectorAll('[data-show]').forEach((el) => { el.hidden = el.dataset.show === 'auto' ? !auto : el.dataset.show === 'broadcast' ? auto : el.dataset.show === 'email' ? !/Email/.test(d.channel) : false; });
+  const people = auto ? [] : audienceOf(d.audience);
+  const sample = auto ? S.leads[0] : people.find((l) => !l.optedOut) || S.leads[0];
+  const optedOut = people.filter((l) => l.optedOut).length;
+  const isText = /Text/.test(d.channel);
+  const body = fillIn(d.body || '', sample);
+  const stop = isText && !/\bSTOP\b/i.test(d.body || '') ? ' Reply STOP to opt out.' : '';
+  f.querySelector('#nc-count').textContent = auto ? '' : people.length - optedOut + (people.length - optedOut === 1 ? ' person' : ' people') + (optedOut ? ', ' + optedOut + ' opted out and skipped' : '');
+  const segs = Math.max(1, Math.ceil((body + stop).length / 160));
+  f.querySelector('#nc-preview').innerHTML = '<p class="caption">Preview for ' + esc(sample.name) + '</p>' +
+    (isText ? '<div class="phone"><span class="caption">' + FIRM_NUMBER + '</span><p class="bubble">' + esc(body + stop) + '</p><span class="caption">' + (body + stop).length + ' characters · ' + segs + (segs === 1 ? ' text' : ' texts') + (stop ? ' · opt-out line added for you' : '') + '</span></div>' : '') +
+    (/Email/.test(d.channel) ? '<div class="mail"><span class="caption">From intake@' + FIRM_DOMAIN + '</span><b>' + esc(fillIn(d.subject || '(No subject)', sample)) + '</b><p>' + esc(body) + '</p></div>' : '');
+  const btn = f.querySelector('[type=submit]');
+  btn.textContent = auto ? 'Turn On' : 'Send to ' + (people.length - optedOut) + (people.length - optedOut === 1 ? ' Person' : ' People');
+  btn.disabled = !auto && people.length - optedOut === 0;
+}
+function sendBroadcast(c) {
+  const people = audienceOf(c.audience);
+  S.sending = { id: c.id, total: people.length, done: 0 };
+  S.modal = { type: 'camp', id: c.id };
+  const REPLIES = ['Yes, please call me tomorrow.', 'Thanks, I will book a time.', 'Can we talk next week?'];
+  let i = 0;
+  const step = () => {
+    if (S.view !== 'campaigns' && !S.modal) { /* keep sending in the background */ }
+    const l = people[i];
+    const chans = c.channel === 'Text and Email' ? ['Text', 'Email'] : [c.channel];
+    chans.forEach((ch) => {
+      const ok = ch === 'Text' ? canText() : canEmail();
+      const r = { id: l.id, name: l.name, channel: ch, status: l.optedOut ? 'skipped' : ok ? 'delivered' : 'held', at: Date.now() };
+      if (r.status === 'delivered') {
+        c.sent++;
+        r.opened = ch === 'Email' && Math.random() < 0.65;
+        r.replied = Math.random() < 0.25;
+        const body = fillIn(c.body, l) + (ch === 'Text' && !/\bSTOP\b/i.test(c.body) ? ' Reply STOP to opt out.' : '');
+        log(l, { type: ch === 'Text' ? 'text' : 'email', cls: 'auto', title: c.name + (ch === 'Text' ? ' text sent' : ' email sent'), text: 'From ' + (ch === 'Text' ? FIRM_NUMBER : 'intake@' + FIRM_DOMAIN) + ', one-off campaign.', quote: body.length > 140 ? body.slice(0, 140) + '…' : body });
+        if (r.replied) log(l, { type: ch === 'Text' ? 'text' : 'email', title: 'Reply from ' + first(l.name), text: 'Replied to ' + c.name + '.', quote: REPLIES[i % REPLIES.length] });
+      }
+      c.recipients.push(r);
+    });
+    i++; S.sending.done = i;
+    if (i < people.length) { if (!S.modal || S.modal.type === 'camp') render(); setTimeout(step, 420); }
+    else {
+      c.sentAt = Date.now(); S.sending = null;
+      const st = campStats(c);
+      toast(c.name + ' sent', st.sent + ' delivered' + (st.held ? ', ' + st.held + ' held' : '') + (st.skipped ? ', ' + st.skipped + ' skipped' : ''));
+      render();
+    }
+  };
+  setTimeout(step, 300);
 }
 function vReports() {
   const src = {}; S.leads.forEach((l) => { (src[l.source] ||= []).push(l); });
@@ -881,23 +1040,60 @@ function vTasks() {
   const out = groups.filter(([, ls]) => ls.length).map(([t, ls]) => '<div><p class="section-title">' + t + ' (' + ls.length + ')</p><ul class="group rows">' + ls.map(taskRow).join('') + '</ul></div>').join('');
   return out || '<div class="group empty">' + ic('tasks') + '<p>No follow-ups booked.</p></div>';
 }
-function vCalendar() {
+const CAL_START = 7, CAL_END = 20, CAL_ROW = 52;
+function calEvents() {
   const ICON = { new: 'phone', contacted: 'calendar', consult: 'doc', contract: 'pencil', signed: 'check' };
-  const evts = taskList().map((l) => ({ t: l.next.due, l })).concat(S.events.map((e) => ({ t: e.t, e })));
+  return taskList().map((l) => ({ t: l.next.due, dur: l.stage === 'contacted' ? 60 : 30, title: l.next.text, who: l.name, icon: ICON[l.stage] || 'calendar', id: l.id, done: isDone(l), late: !isDone(l) && l.next.due < Date.now() }))
+    .concat(S.events.map((e) => ({ t: e.t, dur: e.dur || 60, title: e.title, who: e.who, icon: 'leads', firm: true })));
+}
+function vCalendar() {
+  const mode = S.filter.calmode;
+  const anchor = new Date(S.calAt);
+  const start = new Date(anchor);
+  if (mode === 'week') start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+  start.setHours(0, 0, 0, 0);
+  const n = mode === 'week' ? 7 : 1;
+  const days = Array.from({ length: n }, (_, i) => { const d = new Date(start); d.setDate(d.getDate() + i); return d; });
+  const today = new Date().toDateString();
+  const last = days[n - 1];
+  const fmt = (d, o) => d.toLocaleDateString('en-US', o);
+  const range = n === 1 ? fmt(start, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+    : start.getMonth() === last.getMonth() ? fmt(start, { month: 'long' }) + ' ' + start.getDate() + ' – ' + last.getDate() + ', ' + last.getFullYear()
+    : fmt(start, { month: 'short', day: 'numeric' }) + ' – ' + fmt(last, { month: 'short', day: 'numeric' }) + ', ' + last.getFullYear();
+  const evts = calEvents();
+  const hours = CAL_END - CAL_START;
+  const hh = (hr) => (hr % 12 || 12) + ' ' + (hr < 12 ? 'AM' : 'PM');
   const tm = (t) => new Date(t).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-  let html = '';
-  for (let d = 0; d < 7; d++) {
-    const s = dayAt(d, 0, 0), e = s + DAY;
+  const head = '<div class="cal__corner"></div>' + days.map((d) => '<div class="cal__day' + (d.toDateString() === today ? ' is-today' : '') + '"><span>' + fmt(d, { weekday: 'short' }).toUpperCase() + '</span><b>' + d.getDate() + '</b></div>').join('');
+  const gutter = '<div class="cal__gutter">' + Array.from({ length: hours }, (_, i) => '<span style="top:' + (i * CAL_ROW) + 'px">' + (i ? hh(CAL_START + i) : '') + '</span>').join('') + '</div>';
+  const cols = days.map((d) => {
+    const s = +d, e = s + DAY;
     const list = evts.filter((x) => x.t >= s && x.t < e).sort((x, y) => x.t - y.t);
-    const date = new Date(s);
-    const label = d === 0 ? 'Today' : d === 1 ? 'Tomorrow' : date.toLocaleDateString('en-US', { weekday: 'long' });
-    html += '<section class="day"><div class="day__head"><b>' + label + '</b><span class="footnote">' + date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + '</span>' + (list.length ? '<span class="caption">· ' + list.length + (list.length === 1 ? ' item' : ' items') + '</span>' : '') + '</div>' +
-      (list.length ? '<ul class="group rows">' + list.map((x) => x.l
-        ? '<li><button type="button" class="row" data-action="open" data-id="' + x.l.id + '"><span class="evt__time">' + tm(x.t) + '</span><span class="evt__icon">' + ic(ICON[x.l.stage] || 'calendar') + '</span><span class="row__main"><b>' + esc(x.l.next.text) + '</b><span>' + esc(x.l.name) + ' · ' + esc(x.l.owner) + '</span></span>' + (isDone(x.l) ? '<span class="tag tag--green">' + ic('check') + 'Done</span>' : '') + '</button></li>'
-        : '<li><div class="row" style="cursor:default"><span class="evt__time">' + tm(x.t) + '</span><span class="evt__icon is-firm">' + ic('leads') + '</span><span class="row__main"><b>' + esc(x.e.title) + '</b><span>' + esc(x.e.who) + '</span></span></div></li>').join('') + '</ul>'
-        : '<p class="footnote day__empty">Nothing booked.</p>') + '</section>';
-  }
-  return html;
+    // lanes for overlapping events, Google-style side by side
+    const lanes = [];
+    list.forEach((x) => { x.end = x.t + x.dur * 60e3; let li = lanes.findIndex((end) => end <= x.t); if (li < 0) { li = lanes.length; lanes.push(0); } lanes[li] = x.end; x.lane = li; });
+    list.forEach((x) => { x.lanes = Math.max(...list.filter((y) => y.t < x.end && y.end > x.t).map((y) => y.lane)) + 1; });
+    const blocks = list.map((x) => {
+      const dt = new Date(x.t);
+      const mins = Math.min(Math.max((dt.getHours() - CAL_START) * 60 + dt.getMinutes(), 0), hours * 60 - 20);
+      const top = mins / 60 * CAL_ROW, height = Math.max(x.dur / 60 * CAL_ROW - 2, 22);
+      const w = 100 / x.lanes;
+      const cls = 'cal__evt' + (x.firm ? ' is-firm' : '') + (x.done ? ' is-done' : '') + (x.late ? ' is-late' : '') + (height < 40 ? ' is-short' : '');
+      const inner = '<b>' + esc(x.title) + '</b><span>' + tm(x.t) + (x.who ? ' · ' + esc(x.who) : '') + '</span>';
+      const style = 'top:' + top + 'px;height:' + height + 'px;left:calc(' + (x.lane * w) + '% + 2px);width:calc(' + w + '% - 6px)';
+      return x.id ? '<button type="button" class="' + cls + '" style="' + style + '" data-action="open" data-id="' + x.id + '" aria-label="' + esc(x.title) + ', ' + esc(x.who) + ', ' + fmt(dt, { weekday: 'long' }) + ' ' + tm(x.t) + '">' + inner + '</button>'
+        : '<div class="' + cls + '" style="' + style + '" aria-label="' + esc(x.title) + ', ' + fmt(dt, { weekday: 'long' }) + ' ' + tm(x.t) + '">' + inner + '</div>';
+    }).join('');
+    let now = '';
+    if (d.toDateString() === today) { const t = new Date(); const m = (t.getHours() - CAL_START) * 60 + t.getMinutes(); if (m >= 0 && m <= hours * 60) now = '<div class="cal__now" style="top:' + (m / 60 * CAL_ROW) + 'px" aria-hidden="true"></div>'; }
+    return '<div class="cal__col' + (d.toDateString() === today ? ' is-today' : '') + '">' + blocks + now + '</div>';
+  }).join('');
+  const early = evts.filter((x) => x.t >= +start && x.t < +start + n * DAY && (new Date(x.t).getHours() < CAL_START || new Date(x.t).getHours() >= CAL_END)).length;
+  return '<div class="group cal" style="--days:' + n + ';--row:' + CAL_ROW + 'px;--hours:' + hours + '">' +
+    '<div class="cal__bar"><button class="btn btn--sm" type="button" data-action="cal-today">Today</button><div class="cal__nav"><button class="btn btn--icon btn--sm" type="button" data-action="cal-prev" aria-label="Previous ' + mode + '">' + ic('chev') + '</button><button class="btn btn--icon btn--sm" type="button" data-action="cal-next" aria-label="Next ' + mode + '">' + ic('chev') + '</button></div><h2>' + range + '</h2>' +
+    '<span class="cal__legend"><i class="is-lead"></i>Follow-ups <i class="is-firm"></i>Firm events</span></div>' +
+    '<div class="cal__head">' + head + '</div><div class="cal__body">' + gutter + '<div class="cal__grid">' + cols + '</div></div>' +
+    (early ? '<p class="footnote cal__note">' + early + ' item' + (early === 1 ? '' : 's') + ' outside 7 AM to 8 PM are pinned to the edge of the day.</p>' : '') + '</div>';
 }
 function contactType(l) { return l.stage === 'delivered' ? ['Past Client', 'tag--tint'] : l.stage === 'signed' ? ['Client', 'tag--green'] : l.stage === 'lost' ? ['Lost', 'tag--red'] : ['Lead', '']; }
 function vContacts() {
@@ -981,6 +1177,35 @@ function sheet(m) {
   const l = m.id ? lead(m.id) : null;
   const head = (t, sub) => '<span class="grabber" aria-hidden="true"></span><div class="sheet-head"><div class="sheet-head__title"><h2 id="m-title">' + t + '</h2>' + (sub ? '<span class="footnote">' + sub + '</span>' : '') + '</div><button class="closebtn" type="button" data-action="close-modal" aria-label="Cancel">' + ic('x') + '</button></div>';
   const foot = (primary, danger) => '<div class="sheet__foot"><button class="btn" type="button" data-action="close-modal">Cancel</button><button class="btn ' + (danger ? 'btn--danger' : 'btn--prominent') + '" type="submit">' + primary + '</button></div>';
+  const plain = (t, sub, body) => '<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="m-title">' + head(t, sub) + '<div class="sheet__body">' + body + '</div></div>';
+  const rowBtn = (attrs, icon, t, sub, end) => '<li><button type="button" class="row" ' + attrs + '>' + ic(icon) + '<span class="row__main"><b>' + t + '</b>' + (sub ? '<span>' + sub + '</span>' : '') + '</span>' + (end || ic('chev', 'icon--s chev')) + '</button></li>';
+  if (m.type === 'newcamp') {
+    const k = m.kind;
+    const opt = (v, t, sel) => '<option value="' + esc(v) + '"' + (v === sel ? ' selected' : '') + '>' + esc(t) + '</option>';
+    return '<form class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="m-title" data-form="newcamp">' + head('New Campaign', 'Messages go out from your firm’s own domain and number.') +
+      '<div class="sheet__body camp-builder"><div class="camp-builder__form">' +
+      '<div class="formgroup"><div class="field"><label for="nc-name">Name</label><input id="nc-name" name="name" required autocomplete="off" value="' + (k === 'auto' ? 'Lost Lead Check-In' : 'Free Consultation Week') + '"></div>' +
+      '<div class="field"><label for="nc-kind">Type</label><select id="nc-kind" name="kind">' + opt('broadcast', 'One-off send, now', k) + opt('auto', 'Automatic, when something happens', k) + '</select></div>' +
+      '<div class="field" data-show="broadcast"><label for="nc-aud">Send To</label><select id="nc-aud" name="audience">' + Object.entries(AUDIENCES).map(([v, [t]]) => opt(v, t + ' (' + audienceOf(v).length + ')', 'open')).join('') + '</select></div>' +
+      '<div class="field" data-show="auto"><label for="nc-trig">When</label><select id="nc-trig" name="trigger">' + TRIGGERS.map((t) => opt(t, t, 'A lead is marked as lost')).join('') + '</select></div>' +
+      '<div class="field"><label for="nc-chan">Channel</label><select id="nc-chan" name="channel">' + opt('Email', 'Email', 'Text') + opt('Text', 'Text', 'Text') + opt('Text and Email', 'Text and email', 'Text') + '</select></div></div>' +
+      '<p class="hint" id="nc-count" data-show="broadcast"></p>' +
+      '<div class="formgroup"><div class="field field--stack" data-show="email"><label for="nc-subj">Email Subject</label><input id="nc-subj" name="subject" value="A free 20-minute consultation, {first}"></div>' +
+      '<div class="field field--stack"><label for="nc-body">Message</label><textarea id="nc-body" name="body" rows="5">' + (k === 'auto' ? 'Hi {first}, we are sorry we could not help with your {matter} this time. If anything changes, we are here. {firm}' : 'Hi {first}, this week {firm} is offering free 20-minute consultations. Reply YES and we will call you to book a time.') + '</textarea></div></div>' +
+      '<div class="merge"><span class="caption">Insert</span><button type="button" class="btn btn--sm" data-merge="{first}">First Name</button><button type="button" class="btn btn--sm" data-merge="{matter}">Matter</button><button type="button" class="btn btn--sm" data-merge="{firm}">Firm Name</button></div>' +
+      '</div><div class="camp-builder__preview" id="nc-preview" aria-live="polite"></div></div>' +
+      '<div class="sheet__foot"><button class="btn" type="button" data-action="close-modal">Cancel</button><button class="btn" type="button" data-test>Send Test to Me</button><button class="btn btn--prominent" type="submit">Send</button></div></form>';
+  }
+  if (m.type === 'camp') {
+    const c = S.campaigns.find((x) => x.id === m.id), st = campStats(c), sending = S.sending && S.sending.id === c.id;
+    const status = (r) => r.status === 'skipped' ? '<span class="tag">Skipped, opted out</span>' : r.status === 'held' ? '<span class="tag tag--orange">Held</span>' : r.replied ? '<span class="tag tag--green">' + ic('check') + 'Replied</span>' : r.opened ? '<span class="tag tag--tint">Opened</span>' : '<span class="tag">Delivered</span>';
+    const tiles = [['Delivered', st.sent], ...(st.email ? [['Opened', st.email ? Math.round(st.opened / st.email * 100) + '%' : '–']] : []), ['Replied', st.replied], ['Held', st.held], ['Skipped', st.skipped]];
+    return plain(esc(c.name), c.kind === 'broadcast' ? 'One-off ' + esc(c.channel.toLowerCase()) + ' to ' + esc(AUDIENCES[c.audience][0].toLowerCase()) : 'Automatic ' + esc(c.channel.toLowerCase()) + ', when ' + esc(c.trigger.charAt(0).toLowerCase() + c.trigger.slice(1)),
+      (sending ? '<div class="sendbar"><div class="sendbar__track"><span style="width:' + Math.round(S.sending.done / S.sending.total * 100) + '%"></span></div><span class="footnote num">Sending ' + S.sending.done + ' of ' + S.sending.total + '…</span></div>' : '') +
+      '<div class="summary summary--sheet">' + tiles.map(([t, v]) => '<div class="tile"><span>' + t + '</span><b>' + v + '</b></div>').join('') + '</div>' +
+      (c.recipients.length ? '<ul class="group rows">' + c.recipients.slice(0, 40).map((r) => '<li><button type="button" class="row" data-action="open" data-id="' + r.id + '"><span class="row__main"><b>' + esc(r.name) + '</b><span>' + esc(r.channel) + (r.at ? ' · ' + esc(ago(r.at)) : '') + '</span></span><span class="row__end">' + status(r) + '</span></button></li>').join('') + '</ul>'
+        : '<div class="group empty">' + ic('campaigns') + '<p>' + (c.kind === 'auto' ? 'Nobody has received this yet. It sends by itself when ' + esc(c.trigger.charAt(0).toLowerCase() + c.trigger.slice(1)) + '.' : 'No recipients yet.') + '</p></div>'));
+  }
   if (m.type === 'intake') return '<form class="sheet" role="dialog" aria-modal="true" aria-labelledby="m-title" data-form="intake">' + head('Quick Intake', 'Log a phone call or walk-in as a new lead.') +
     '<div class="sheet__body"><div class="formgroup"><div class="field"><label for="qi-name">Name</label><input id="qi-name" name="name" required autofocus autocomplete="off" value="Priya Shah"></div><div class="field"><label for="qi-phone">Phone</label><input id="qi-phone" name="phone" type="tel" inputmode="tel" value="(555) 014-2290"></div>' +
     '<div class="field"><label for="qi-practice">Practice Area</label><select id="qi-practice" name="practice"><option>Family law</option><option>Personal injury</option><option>Immigration</option><option>Estate planning</option><option>Employment</option><option>Criminal defense</option><option>Business law</option></select></div><div class="field"><label for="qi-value">Estimated Fee</label><input id="qi-value" name="value" inputmode="numeric" value="4500"></div><div class="field"><label for="qi-matter">Matter</label><input id="qi-matter" name="matter" value="Child support review"></div></div>' +
@@ -999,8 +1224,6 @@ function sheet(m) {
       (signed ? '<span class="signed">' + ic('check') + 'Signed by ' + esc(l.doc.by) + '</span>' : '<div class="sig"><label for="sig" class="footnote">Type your full name to sign</label><input id="sig" name="sig" autocomplete="off" required autofocus value="' + esc(l.name) + '"></div>') + '</div></div>' +
       '<div class="sheet__foot">' + (signed ? '<button class="btn btn--prominent" type="button" data-action="close-modal">Done</button>' : '<button class="btn" type="button" data-action="close-modal">Not Now</button><button class="btn btn--prominent" type="submit">Sign as ' + esc(first(l.name)) + '</button>') + '</div></form>';
   }
-  const plain = (t, sub, body) => '<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="m-title">' + head(t, sub) + '<div class="sheet__body">' + body + '</div></div>';
-  const rowBtn = (attrs, icon, t, sub, end) => '<li><button type="button" class="row" ' + attrs + '>' + ic(icon) + '<span class="row__main"><b>' + t + '</b>' + (sub ? '<span>' + sub + '</span>' : '') + '</span>' + (end || ic('chev', 'icon--s chev')) + '</button></li>';
   if (m.type === 'more') return plain('More', '', '<ul class="group rows">' + VIEWS.filter((x) => !TABS.includes(x.id)).map((x) => rowBtn('data-action="view" data-view="' + x.id + '"', x.icon, x.label, esc(x.sub))).join('') + rowBtn('data-action="help"', 'help', 'Help and Resources', 'The demo tour, setup guide and support') + '</ul>');
   if (m.type === 'help') return plain('Help and Resources', 'Demo data only. Nothing is sent.', '<ul class="group rows">' +
     rowBtn('data-action="tour-restart"', 'arrow', 'Take the Demo Tour', 'Seven steps, from firm onboarding to reports') +
@@ -1050,6 +1273,16 @@ function renderTour() {
 }
 
 /* ---------- events ---------- */
+// campaign builder: live preview, merge fields and test sends update in place so typing is never lost
+document.addEventListener('click', (e) => {
+  const f = e.target.closest('[data-form="newcamp"]'); if (!f) return;
+  const m = e.target.closest('[data-merge]');
+  if (m) { e.stopImmediatePropagation(); const ta = f.querySelector('#nc-body'); if (ta.dataset.caret === undefined) { ta.value = ta.value.replace(/\s*$/, ' ') + m.dataset.merge; } else { const s = +ta.dataset.caret, en = +ta.dataset.caretEnd; ta.setRangeText(m.dataset.merge, s, en, 'end'); } ta.dataset.caret = ta.selectionStart; ta.dataset.caretEnd = ta.selectionEnd; ta.focus(); campPreview(f); return; }
+  if (e.target.closest('[data-test]')) { e.stopImmediatePropagation(); const d = Object.fromEntries(new FormData(f)); toast('Test sent to you', [/Text/.test(d.channel) ? 'Text to your phone' : null, /Email/.test(d.channel) ? 'email to sarah@' + FIRM_DOMAIN : null].filter(Boolean).join(' and ')); }
+}, true);
+['input', 'change'].forEach((t) => document.addEventListener(t, (e) => { const f = e.target.closest('[data-form="newcamp"]'); if (f) campPreview(f); }));
+// remember where the cursor was in the message so merge fields go there
+['keyup', 'mouseup', 'input'].forEach((t) => document.addEventListener(t, (e) => { if (e.target.id === 'nc-body') { e.target.dataset.caret = e.target.selectionStart; e.target.dataset.caretEnd = e.target.selectionEnd; } }));
 document.addEventListener('click', async (e) => {
   const b = e.target.closest('[data-action]');
   if (!b) { if (S.menu && !e.target.closest('.menu')) { S.menu = false; render(); } return; }
@@ -1059,6 +1292,8 @@ document.addEventListener('click', async (e) => {
     case 'noop': e.preventDefault(); return;
     case 'view': S.view = b.dataset.view; S.open = null; S.modal = null; window.scrollTo(0, 0); break;
     case 'filter': S.filter[b.dataset.key] = b.dataset.val; break;
+    case 'cal-today': S.calAt = dayAt(0, 0, 0); break;
+    case 'cal-prev': case 'cal-next': { const d = new Date(S.calAt); d.setDate(d.getDate() + (a === 'cal-next' ? 1 : -1) * (S.filter.calmode === 'week' ? 7 : 1)); S.calAt = +d; break; }
     case 'toggle-menu': S.menu = !S.menu; break;
     case 'enquiry': S.view = 'pipeline'; createLead(b.dataset.channel); break;
     case 'quick-intake': S.modal = { type: 'intake' }; break;
@@ -1072,11 +1307,13 @@ document.addEventListener('click', async (e) => {
     case 'compose': S.modal = { type: 'compose', id }; break;
     case 'reminder': S.modal = { type: 'reminder', id }; break;
     case 'lost': S.modal = { type: 'lost', id }; break;
+    case 'new-camp': S.modal = { type: 'newcamp', kind: b.dataset.kind || 'broadcast' }; break;
+    case 'camp-results': S.modal = { type: 'camp', id }; break;
     case 'toggle-camp': { const c = S.campaigns.find((x) => x.id === id); c.active = !c.active; toast(c.name + (c.active ? ' turned on' : ' turned off')); break; }
     case 'verify-domain': verifyDomain(); return;
     case 'register-text': S.firm.textStatus = 'review'; toast('Registration submitted', 'Carriers usually take days to weeks'); break;
     case 'approve-text': approveText(); return;
-    case 'reset': { const c = S.collapsed; S = seed(); S.collapsed = c; toast('Demo reset'); break; }
+    case 'reset': { const c = S.collapsed; S = withCampaignDefaults(seed()); S.collapsed = c; toast('Demo reset'); break; }
     case 'side-toggle': S.collapsed = !S.collapsed; break;
     case 'more': S.modal = { type: 'more' }; break;
     case 'help': S.modal = { type: 'help' }; break;
@@ -1104,8 +1341,15 @@ document.addEventListener('submit', (e) => {
     case 'intake': { if (!d.name.trim()) return; const n = createLead('manual', { name: d.name.trim(), phone: d.phone, practice: d.practice, matter: d.matter || d.practice, value: +String(d.value).replace(/\D/g, '') || 3000, note: d.note }); S.modal = null; S.view = 'pipeline'; S.open = n.id; break; }
     case 'compose': if (canText()) { log(l, { type: 'text', title: 'Text sent by ' + l.owner, text: 'From ' + FIRM_NUMBER + '.', quote: d.body }); toast('Text sent to ' + first(l.name), 'From ' + FIRM_NUMBER); } else { log(l, { type: 'text', cls: 'bad', title: 'Text held', text: 'Your texting number is not registered yet.', quote: d.body }); toast('Text held', 'Register your number in Settings'); } S.modal = null; break;
     case 'reminder': { const t = Date.now() + (+d.when) * HOUR; l.next = { text: d.title, due: t }; log(l, { type: 'reminder', title: 'Reminder added: ' + d.title, text: 'Due ' + when(t) + ', on ' + l.owner + '’s agenda.' }); toast('Reminder added', when(t)); S.modal = null; break; }
-    case 'lost': l.lostReason = d.reason; setStage(l, 'lost', true); log(l, { type: 'lost', cls: 'bad', title: 'Marked as lost', text: 'Reason: ' + d.reason + '.' }); l.next = nextFor(l); toast(l.name + ' marked as lost', d.reason); S.modal = null; break;
+    case 'lost': l.lostReason = d.reason; setStage(l, 'lost', true); log(l, { type: 'lost', cls: 'bad', title: 'Marked as lost', text: 'Reason: ' + d.reason + '.' }); l.next = nextFor(l); fire('A lead is marked as lost', l); toast(l.name + ' marked as lost', d.reason); S.modal = null; break;
     case 'sign': if (!(d.sig || '').trim()) return; signContract(l, d.sig.trim()); break;
+    case 'newcamp': {
+      if (!d.name.trim() || !d.body.trim()) return;
+      const c = { id: uid(), kind: d.kind, name: d.name.trim(), channel: d.channel, steps: 1, sent: 0, subject: /Email/.test(d.channel) ? d.subject : '', body: d.body, recipients: [] };
+      if (d.kind === 'auto') { c.trigger = d.trigger; c.active = true; S.campaigns.push(c); S.modal = null; toast(c.name + ' is on', 'Sends when ' + c.trigger.charAt(0).toLowerCase() + c.trigger.slice(1)); }
+      else { c.audience = d.audience; S.campaigns.unshift(c); sendBroadcast(c); }
+      break;
+    }
   }
   render();
 });
@@ -1127,7 +1371,7 @@ document.addEventListener('drop', (e) => {
 document.addEventListener('dragend', () => { dragId = null; document.querySelectorAll('.is-over').forEach((x) => x.classList.remove('is-over')); });
 matchMedia('(max-width: 760px)').addEventListener('change', () => render());
 
-S = seed();
+S = withCampaignDefaults(seed());
 render();
 })();
 </script>
