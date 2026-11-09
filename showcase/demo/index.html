@@ -786,22 +786,13 @@ function card(l) {
     '</button>';
 }
 function vPipeline() {
-  const open = S.leads.filter((l) => !['delivered', 'lost'].includes(l.stage));
-  const closed = S.leads.filter((l) => isWon(l) || l.stage === 'lost');
-  const won = S.leads.filter(isWon);
   const lost = S.leads.filter((l) => l.stage === 'lost');
-  const tiles = '<div class="summary">' +
-    '<div class="tile"><span>Open Leads</span><b>' + open.length + '</b></div>' +
-    '<div class="tile"><span>Open Pipeline</span><b>' + money(open.reduce((a, l) => a + l.value, 0)) + '</b></div>' +
-    '<div class="tile"><span>Awaiting Signature</span><b>' + S.leads.filter((l) => l.stage === 'contract').length + '</b></div>' +
-    '<div class="tile"><span>Signed Clients</span><b>' + won.length + '</b></div>' +
-    '<div class="tile"><span>Signed of Closed</span><b>' + (closed.length ? Math.round(won.length / closed.length * 100) : 0) + '%</b></div></div>';
   const cols = STAGES.map((s) => {
     const ls = S.leads.filter((l) => l.stage === s.id);
     return '<section class="col" data-drop="' + s.id + '" aria-label="' + s.label + '"><div class="col__head"><b>' + s.label + '</b><span class="num">' + ls.length + ' · ' + money(ls.reduce((a, l) => a + l.value, 0)) + '</span></div>' + ls.map(card).join('') + '</section>';
   }).join('');
   const lostBar = '<div><p class="section-title">Lost (' + lost.length + ')</p><div class="lostbar" data-drop="lost">' + (lost.length ? lost.map((l) => '<button type="button" class="btn btn--sm" data-action="open" data-id="' + l.id + '">' + esc(l.name) + '</button>').join('') : '<span class="footnote">Drop a card here to mark it as lost.</span>') + '</div></div>';
-  return tiles + '<div class="board-wrap"><div class="board">' + cols + '</div></div>' + lostBar;
+  return '<div class="board-wrap"><div class="board">' + cols + '</div></div>' + lostBar;
 }
 function filteredLeads() {
   const f = S.filter.leads;
