@@ -17,7 +17,7 @@
   --orange: #B04A0A; --orange-soft: #FDE9DC;
   --red: #C0261C; --red-soft: #FBE6E4; --red-ink: #FFFFFF;
   --sms: #34C759; --sms-ink: #FFFFFF; --sms-in: #E9E9EB;
-  --side-bg: #1A3340; --side-fg: #F1F6F8; --side-text: rgba(230, 238, 241, 0.78); --side-muted: #9BB5BE; --side-hover: rgba(255, 255, 255, 0.06); --side-selected: rgba(255, 255, 255, 0.11); --side-border: rgba(255, 255, 255, 0.08);
+  --side-bg: #1A3340; --side-fg: #F1F6F8; --side-text: rgba(230, 238, 241, 0.78); --side-muted: #9BB5BE; --side-hover: rgba(255, 255, 255, 0.06); --side-selected: rgba(255, 255, 255, 0.11); --side-active-bg: #FFFFFF; --side-active-fg: #1A3340; --side-active-icon: #264F5E; --side-border: rgba(255, 255, 255, 0.08);
   --accent: #B08A4E; --accent-side: #C9A469; --accent-on: #1F1609; --accent-text: #8A6A35; --accent-soft: #F2EBDD; --accent-soft-ink: #6E521F;
   --scroll-thumb: rgba(0, 0, 0, 0.18); --scroll-thumb-hover: rgba(0, 0, 0, 0.32);
   --knob: #FFFFFF;
@@ -48,7 +48,7 @@
   --orange: #FFA530; --orange-soft: #3A2810;
   --red: #FF6B60; --red-soft: #3D1B19; --red-ink: #2A0806;
   --sms: #30D158; --sms-ink: #04210C; --sms-in: #2C2C2E;
-  --side-bg: #13232B; --side-fg: #F1F6F8; --side-text: rgba(230, 238, 241, 0.78); --side-muted: #9BB5BE; --side-hover: rgba(255, 255, 255, 0.06); --side-selected: rgba(255, 255, 255, 0.1); --side-border: rgba(255, 255, 255, 0.07);
+  --side-bg: #13232B; --side-fg: #F1F6F8; --side-text: rgba(230, 238, 241, 0.78); --side-muted: #9BB5BE; --side-hover: rgba(255, 255, 255, 0.06); --side-selected: rgba(255, 255, 255, 0.1); --side-active-bg: #E6EEF1; --side-active-fg: #13232B; --side-active-icon: #264F5E; --side-border: rgba(255, 255, 255, 0.07);
   --accent: #C9A469; --accent-side: #C9A469; --accent-on: #1F1609; --accent-text: #D4B37A; --accent-soft: #3A2E1A; --accent-soft-ink: #E8D3AE;
   --scroll-thumb: rgba(255, 255, 255, 0.18); --scroll-thumb-hover: rgba(255, 255, 255, 0.32);
   --knob: #FFFFFF;
@@ -70,7 +70,7 @@
   --orange: #FFA530; --orange-soft: #3A2810;
   --red: #FF6B60; --red-soft: #3D1B19; --red-ink: #2A0806;
   --sms: #30D158; --sms-ink: #04210C; --sms-in: #2C2C2E;
-  --side-bg: #13232B; --side-fg: #F1F6F8; --side-text: rgba(230, 238, 241, 0.78); --side-muted: #9BB5BE; --side-hover: rgba(255, 255, 255, 0.06); --side-selected: rgba(255, 255, 255, 0.1); --side-border: rgba(255, 255, 255, 0.07);
+  --side-bg: #13232B; --side-fg: #F1F6F8; --side-text: rgba(230, 238, 241, 0.78); --side-muted: #9BB5BE; --side-hover: rgba(255, 255, 255, 0.06); --side-selected: rgba(255, 255, 255, 0.1); --side-active-bg: #E6EEF1; --side-active-fg: #13232B; --side-active-icon: #264F5E; --side-border: rgba(255, 255, 255, 0.07);
   --accent: #C9A469; --accent-side: #C9A469; --accent-on: #1F1609; --accent-text: #D4B37A; --accent-soft: #3A2E1A; --accent-soft-ink: #E8D3AE;
   --scroll-thumb: rgba(255, 255, 255, 0.18); --scroll-thumb-hover: rgba(255, 255, 255, 0.32);
   --knob: #FFFFFF;
@@ -133,18 +133,19 @@ button { -webkit-tap-highlight-color: transparent; }
 .is-collapsed .sb-head { justify-content: center; padding: 0; margin: 4px 8px 0; border-radius: 10px; cursor: pointer; border: 0; background: transparent; color: inherit; width: auto; }
 .is-collapsed .sb-head:hover { background: var(--side-hover); }
 .sb-nav { position: relative; flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior-y: contain; padding: 8px 0; }
-.sb-pill { position: absolute; top: 0; left: 8px; right: 8px; height: 34px; border-radius: 10px; background: var(--side-selected); pointer-events: none; opacity: 0; transition: transform 320ms var(--spring), height 320ms var(--spring), opacity 150ms ease; }
+.sb-pill { position: absolute; top: 0; left: 8px; right: 8px; height: 34px; border-radius: 10px; background: var(--side-active-bg); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); pointer-events: none; opacity: 0; transition: transform 320ms var(--spring), height 320ms var(--spring), opacity 150ms ease; }
 .sb-pill.no-anim { transition: none; }
 .sb-section { padding: 4px 0; }
 .sb-label { display: flex; align-items: flex-end; height: 26px; padding: 0 18px 6px; font-size: 10.5px; font-weight: 500; line-height: 1; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-muted); white-space: nowrap; transition: opacity 120ms ease; }
 .sb-items { display: flex; flex-direction: column; gap: 1px; padding: 0 8px; }
-.sb-item { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 12px; border: 0; border-radius: 10px; background: transparent; color: var(--side-text); font: 500 13.5px/20px var(--font); text-align: left; white-space: nowrap; cursor: pointer; user-select: none; transition: color 150ms cubic-bezier(0.23, 1, 0.32, 1), background-color 150ms cubic-bezier(0.23, 1, 0.32, 1); }
+.sb-item { position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 12px; border: 0; border-radius: 10px; background: transparent; color: var(--side-text); font: 500 13.5px/20px var(--font); text-align: left; white-space: nowrap; cursor: pointer; user-select: none; transition: color 150ms cubic-bezier(0.23, 1, 0.32, 1), background-color 150ms cubic-bezier(0.23, 1, 0.32, 1); }
 .sb-item:hover { color: var(--side-fg); background: var(--side-hover); }
-.sb-item[aria-current="page"] { color: var(--side-fg); }
+.sb-item[aria-current="page"] { color: var(--side-active-fg); font-weight: 600; }
 .sb-item[aria-current="page"]:hover { background: transparent; }
 .sb-item .icon { width: 18px; height: 18px; flex-shrink: 0; margin: 1px; vertical-align: 0; color: var(--side-muted); transition: color 150ms ease; }
 .sb-item:hover .icon { color: var(--side-fg); }
-.sb-item[aria-current="page"] .icon { color: var(--accent-side); }
+.sb-item[aria-current="page"] .icon { color: var(--side-active-icon); }
+.sb-item[aria-current="page"] .sb-count { background: rgba(26, 51, 64, 0.08); color: var(--side-active-fg); }
 .sb-text { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; transition: opacity 120ms ease; }
 .sb-count, .sb-badge { flex-shrink: 0; padding: 2px 6px; border-radius: 6px; font-size: 10.5px; line-height: 1.2; font-variant-numeric: tabular-nums; transition: opacity 120ms ease; }
 .sb-count { background: rgba(255, 255, 255, 0.07); color: var(--side-muted); font-weight: 500; }
