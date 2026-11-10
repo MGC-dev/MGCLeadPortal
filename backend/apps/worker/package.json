@@ -1,0 +1,25 @@
+{
+  "name": "@mgc/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@mgc/core": "workspace:*",
+    "@mgc/db": "workspace:*",
+    "@mgc/flows": "workspace:*",
+    "@mgc/jobs": "workspace:*",
+    "@mgc/messaging": "workspace:*",
+    "@mgc/twenty": "workspace:*",
+    "bullmq": "5.81.5",
+    "tsx": "4.23.15",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@mgc/config": "workspace:*"
+  }
+}

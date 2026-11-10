@@ -1,0 +1,63 @@
+# Local stack for the backend: Redis (job queues), and Twenty (the hidden lead engine) with its Postgres.
+# Supabase runs separately through its CLI (pnpm --filter @mgc/db db:start), which brings its own containers.
+#
+#   pnpm stack:up      start everything
+#   pnpm stack:down    stop it
+#
+# Pin TWENTY_VERSION to the release you have tested before staging uses this file.
+name: mgc-crm
+
+services:
+  redis:
+    image: redis:7.4-alpine
+    ports: ["6379:6379"]
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redis-data:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  twenty-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: twenty
+      POSTGRES_PASSWORD: twenty
+      POSTGRES_DB: twenty
+    volumes: [twenty-db:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U twenty"]
+      interval: 5s
+      retries: 10
+
+  twenty:
+    image: twentycrm/twenty:${TWENTY_VERSION:-latest}
+    ports: ["3000:3000"]
+    environment:
+      SERVER_URL: http://localhost:3000
+      PG_DATABASE_URL: postgres://twenty:twenty@twenty-db:5432/twenty
+      REDIS_URL: redis://redis:6379/1
+      APP_SECRET: ${TWENTY_APP_SECRET:-change-me-local-only}
+      STORAGE_TYPE: local
+      IS_MULTIWORKSPACE_ENABLED: "true"
+    volumes: [twenty-storage:/app/packages/twenty-server/.local-storage]
+    depends_on:
+      twenty-db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+
+  twenty-worker:
+    image: twentycrm/twenty:${TWENTY_VERSION:-latest}
+    command: ["yarn", "worker:prod"]
+    environment:
+      SERVER_URL: http://localhost:3000
+      PG_DATABASE_URL: postgres://twenty:twenty@twenty-db:5432/twenty
+      REDIS_URL: redis://redis:6379/1
+      APP_SECRET: ${TWENTY_APP_SECRET:-change-me-local-only}
+      STORAGE_TYPE: local
+      DISABLE_DB_MIGRATIONS: "true"
+    depends_on: [twenty]
+
+volumes:
+  redis-data:
+  twenty-db:
+  twenty-storage:

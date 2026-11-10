@@ -1,0 +1,20 @@
+{
+  "name": "@mgc/messaging",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@mgc/core": "workspace:*",
+    "resend": "4.8.0",
+    "twilio": "5.13.1"
+  },
+  "devDependencies": {
+    "@mgc/config": "workspace:*"
+  }
+}

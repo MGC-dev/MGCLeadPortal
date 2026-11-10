@@ -1,0 +1,30 @@
+{
+  "name": "mgc-crm-backend",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "vitest run",
+    "stack:up": "docker compose -f infra/docker/docker-compose.yml up -d",
+    "stack:down": "docker compose -f infra/docker/docker-compose.yml down",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "turbo": "2.11.10",
+    "typescript": "5.9.3",
+    "vitest": "3.2.7",
+    "@types/node": "22.20.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "msgpackr-extract",
+      "supabase"
+    ]
+  }
+}

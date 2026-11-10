@@ -1,0 +1,24 @@
+{
+  "name": "@mgc/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "gen:types": "supabase gen types typescript --project-id fzpzyftefquczmcydmzz --schema public > src/database.types.ts",
+    "test:sql": "bash scripts/test-sql.sh",
+    "db:start": "supabase start",
+    "db:reset": "supabase db reset"
+  },
+  "dependencies": {
+    "@mgc/core": "workspace:*",
+    "@supabase/supabase-js": "2.118.0"
+  },
+  "devDependencies": {
+    "@mgc/config": "workspace:*",
+    "supabase": "2.122.0"
+  }
+}
