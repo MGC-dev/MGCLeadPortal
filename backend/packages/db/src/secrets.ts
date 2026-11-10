@@ -1,5 +1,5 @@
 /**
- * AES-256-GCM encryption for per-firm secrets stored in the database (for example, Twenty API keys).
+ * AES-256-GCM encryption for per-firm secrets stored in the database (for example, Twilio subaccount auth tokens).
  * The key comes from APP_ENCRYPTION_KEY (32 bytes, base64) held in AWS Secrets Manager, never in the database.
  * Format: v1.<iv>.<tag>.<ciphertext>, each part base64url.
  */

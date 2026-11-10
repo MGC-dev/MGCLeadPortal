@@ -1,5 +1,5 @@
 /**
- * Interfaces the API and worker depend on. Real implementations live in @mgc/db, @mgc/twenty,
+ * Interfaces the API and worker depend on. Real implementations live in @mgc/db,
  * @mgc/messaging and @mgc/jobs; in-memory fakes make every flow testable without vendors.
  */
 import type { Channel, ChannelStatus } from './consent';
@@ -29,10 +29,34 @@ export interface Contact {
   email: string | null;
   phone: string | null;
   timeZone: string | null;
-  twentyPersonId: string | null;
-  twentyOpportunityId: string | null;
   smsOptedOut: boolean;
   emailOptedOut: boolean;
+}
+
+export interface Lead {
+  id: string;
+  firmId: string;
+  contactId: string;
+  title: string;
+  stage: Stage;
+  source: Source;
+  practiceArea: string | null;
+  valueCents: number;
+  ownerId: string | null;
+  intakeMessage: string | null;
+  lostReason: string | null;
+  custom: Record<string, unknown>;
+  createdAt: Date;
+}
+
+export interface Task {
+  id: string;
+  firmId: string;
+  leadId: string | null;
+  title: string;
+  dueAt: Date | null;
+  status: 'open' | 'done' | 'cancelled';
+  assigneeId: string | null;
 }
 
 export type MessageStatus = 'queued' | 'held' | 'deferred' | 'sent' | 'delivered' | 'failed' | 'skipped' | 'received';
@@ -65,6 +89,17 @@ export interface Repos {
     create(c: Omit<Contact, 'id' | 'smsOptedOut' | 'emailOptedOut'>): Promise<Contact>;
     update(id: string, patch: Partial<Omit<Contact, 'id' | 'firmId'>>): Promise<Contact>;
   };
+  leads: {
+    get(id: string): Promise<Lead | null>;
+    create(l: { firmId: string; contactId: string; title: string; source: Source; practiceArea: string | null; intakeMessage: string | null; valueCents?: number; ownerId?: string | null }): Promise<Lead>;
+    /** Stage history is written by the database; stage rules are enforced there and in canMove(). */
+    setStage(id: string, stage: Stage, lostReason?: string): Promise<Lead>;
+  };
+  tasks: {
+    create(t: { firmId: string; leadId: string | null; title: string; dueAt: Date | null; assigneeId?: string | null }): Promise<Task>;
+    /** Open tasks for a lead, soonest first. */
+    openForLead(leadId: string): Promise<Task[]>;
+  };
   consents: {
     record(c: { firmId: string; contactId: string; channel: Channel; status: 'granted' | 'revoked'; source: string; evidence?: Record<string, unknown> }): Promise<void>;
     /** Latest consent for a channel; null = never asked. */
@@ -81,14 +116,6 @@ export interface Repos {
     recordOnce(e: { source: string; externalId: string; firmId: string | null; signatureOk: boolean; payload: unknown }): Promise<boolean>;
   };
   audit(e: { firmId: string; actor: string | null; action: string; entity: string; entityId?: string; data?: Record<string, unknown> }): Promise<void>;
-}
-
-/** The hidden engine. Each firm has its own workspace; the implementation picks it by firmId. */
-export interface TwentyPort {
-  upsertPerson(firmId: string, p: { name: string; email: string | null; phone: string | null; existingId?: string | null }): Promise<{ id: string }>;
-  createLead(firmId: string, l: { personId: string; title: string; stage: Stage; source: Source; practiceArea: string | null; notes: string | null }): Promise<{ id: string }>;
-  setStage(firmId: string, leadId: string, stage: Stage, lostReason?: string): Promise<void>;
-  createTask(firmId: string, t: { leadId: string; title: string; dueAt: Date }): Promise<{ id: string }>;
 }
 
 export interface SmsSender {

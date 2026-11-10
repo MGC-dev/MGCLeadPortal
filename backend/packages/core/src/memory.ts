@@ -1,6 +1,7 @@
 /** In-memory implementations of the ports, for tests and for running locally without vendors. */
 import type { Channel } from './consent';
-import type { Contact, EmailSender, Firm, Message, QueuePort, Repos, SendingSetup, SmsSender, TwentyPort } from './ports';
+import type { Contact, EmailSender, Firm, Lead, Message, QueuePort, Repos, SendingSetup, SmsSender, Task } from './ports';
+import { canMove, type Stage } from './stages';
 
 let seq = 0;
 const nextId = (p: string) => `${p}_${(++seq).toString(36)}`;
@@ -9,6 +10,9 @@ export interface MemoryStore {
   firms: Firm[];
   sending: SendingSetup[];
   contacts: Contact[];
+  leads: Lead[];
+  leadEvents: { leadId: string; kind: string; from: Stage | null; to: Stage | null }[];
+  tasks: Task[];
   consents: { firmId: string; contactId: string; channel: Channel; status: 'granted' | 'revoked'; source: string; at: number }[];
   messages: Message[];
   webhooks: { source: string; externalId: string }[];
@@ -16,7 +20,7 @@ export interface MemoryStore {
 }
 
 export function memoryRepos(seed: Partial<MemoryStore> = {}): Repos & { store: MemoryStore } {
-  const s: MemoryStore = { firms: [], sending: [], contacts: [], consents: [], messages: [], webhooks: [], audit: [], ...seed };
+  const s: MemoryStore = { firms: [], sending: [], contacts: [], leads: [], leadEvents: [], tasks: [], consents: [], messages: [], webhooks: [], audit: [], ...seed };
   return {
     store: s,
     firms: {
@@ -49,6 +53,38 @@ export function memoryRepos(seed: Partial<MemoryStore> = {}): Repos & { store: M
         return row;
       },
     },
+    leads: {
+      get: async (id) => s.leads.find((l) => l.id === id) ?? null,
+      create: async (l) => {
+        const row: Lead = {
+          id: nextId('lead'), firmId: l.firmId, contactId: l.contactId, title: l.title, stage: 'new', source: l.source,
+          practiceArea: l.practiceArea, valueCents: l.valueCents ?? 0, ownerId: l.ownerId ?? null, intakeMessage: l.intakeMessage,
+          lostReason: null, custom: {}, createdAt: new Date(),
+        };
+        s.leads.push(row);
+        s.leadEvents.push({ leadId: row.id, kind: 'created', from: null, to: 'new' });
+        return row;
+      },
+      setStage: async (id, stage, lostReason) => {
+        const row = s.leads.find((l) => l.id === id);
+        if (!row) throw new Error(`lead ${id} not found`);
+        if (!canMove(row.stage, stage)) throw new Error(`A lead cannot move from ${row.stage} to ${stage}`);
+        if (stage === 'lost' && !lostReason) throw new Error('A lost lead needs a reason');
+        s.leadEvents.push({ leadId: id, kind: 'stage_changed', from: row.stage, to: stage });
+        row.stage = stage;
+        row.lostReason = stage === 'lost' ? lostReason ?? null : null;
+        return row;
+      },
+    },
+    tasks: {
+      create: async (t) => {
+        const row: Task = { id: nextId('task'), firmId: t.firmId, leadId: t.leadId, title: t.title, dueAt: t.dueAt, status: 'open', assigneeId: t.assigneeId ?? null };
+        s.tasks.push(row);
+        return row;
+      },
+      openForLead: async (leadId) =>
+        s.tasks.filter((t) => t.leadId === leadId && t.status === 'open').sort((a, b) => (a.dueAt?.getTime() ?? Infinity) - (b.dueAt?.getTime() ?? Infinity)),
+    },
     consents: {
       record: async (c) => void s.consents.push({ ...c, at: Date.now() + s.consents.length }),
       latest: async (contactId, channel) =>
@@ -76,33 +112,6 @@ export function memoryRepos(seed: Partial<MemoryStore> = {}): Repos & { store: M
       },
     },
     audit: async (e) => void s.audit.push(e),
-  };
-}
-
-export function memoryTwenty(): TwentyPort & { people: Map<string, unknown>; leads: Map<string, { stage: string; personId: string; title: string }>; tasks: { leadId: string; title: string; dueAt: Date }[] } {
-  const people = new Map<string, unknown>();
-  const leads = new Map<string, { stage: string; personId: string; title: string }>();
-  const tasks: { leadId: string; title: string; dueAt: Date }[] = [];
-  return {
-    people, leads, tasks,
-    upsertPerson: async (_f, p) => {
-      const id = p.existingId ?? nextId('person');
-      people.set(id, p);
-      return { id };
-    },
-    createLead: async (_f, l) => {
-      const id = nextId('lead');
-      leads.set(id, { stage: l.stage, personId: l.personId, title: l.title });
-      return { id };
-    },
-    setStage: async (_f, id, stage) => {
-      const l = leads.get(id);
-      if (l) l.stage = stage;
-    },
-    createTask: async (_f, t) => {
-      tasks.push(t);
-      return { id: nextId('task') };
-    },
   };
 }
 

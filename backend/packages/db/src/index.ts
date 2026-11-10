@@ -1,7 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import type { Contact, Firm, Message, Repos, SendingSetup } from '@mgc/core';
+import type { Contact, Firm, Lead, Message, Repos, SendingSetup, Source, Task } from '@mgc/core';
 import type { Database } from './database.types';
-import { decryptSecret } from './secrets';
 
 export type { Database } from './database.types';
 export { encryptSecret, decryptSecret } from './secrets';
@@ -22,8 +21,15 @@ type Row<T extends keyof Database['public']['Tables']> = Database['public']['Tab
 const toFirm = (r: Row<'firms'>): Firm => ({ id: r.id, name: r.name, slug: r.slug, timeZone: r.time_zone, instantReply: r.instant_reply });
 const toContact = (r: Row<'contacts'>): Contact => ({
   id: r.id, firmId: r.firm_id, name: r.name, email: r.email, phone: r.phone_e164, timeZone: r.time_zone,
-  twentyPersonId: r.twenty_person_id, twentyOpportunityId: r.twenty_opportunity_id,
   smsOptedOut: r.sms_opted_out, emailOptedOut: r.email_opted_out,
+});
+const toLead = (r: Row<'leads'>): Lead => ({
+  id: r.id, firmId: r.firm_id, contactId: r.contact_id, title: r.title, stage: r.stage, source: r.source as Source,
+  practiceArea: r.practice_area, valueCents: r.value_cents, ownerId: r.owner_id, intakeMessage: r.intake_message,
+  lostReason: r.lost_reason, custom: (r.custom ?? {}) as Record<string, unknown>, createdAt: new Date(r.created_at),
+});
+const toTask = (r: Row<'tasks'>): Task => ({
+  id: r.id, firmId: r.firm_id, leadId: r.lead_id, title: r.title, dueAt: r.due_at ? new Date(r.due_at) : null, status: r.status, assigneeId: r.assignee_id,
 });
 const toMessage = (r: Row<'messages'>): Message => ({
   id: r.id, firmId: r.firm_id, contactId: r.contact_id, channel: r.channel, direction: r.direction, status: r.status,
@@ -91,7 +97,6 @@ export function supabaseRepos(db: Db): Repos {
       create: async (c) =>
         toContact(must(await db.from('contacts').insert({
           firm_id: c.firmId, name: c.name, email: c.email, phone_e164: c.phone, time_zone: c.timeZone,
-          twenty_person_id: c.twentyPersonId, twenty_opportunity_id: c.twentyOpportunityId,
         }).select('*').single(), 'create contact')),
       update: async (id, p) =>
         toContact(must(await db.from('contacts').update({
@@ -99,11 +104,36 @@ export function supabaseRepos(db: Db): Repos {
           ...(p.email !== undefined && { email: p.email }),
           ...(p.phone !== undefined && { phone_e164: p.phone }),
           ...(p.timeZone !== undefined && { time_zone: p.timeZone }),
-          ...(p.twentyPersonId !== undefined && { twenty_person_id: p.twentyPersonId }),
-          ...(p.twentyOpportunityId !== undefined && { twenty_opportunity_id: p.twentyOpportunityId }),
           ...(p.smsOptedOut !== undefined && { sms_opted_out: p.smsOptedOut }),
           ...(p.emailOptedOut !== undefined && { email_opted_out: p.emailOptedOut }),
         }).eq('id', id).select('*').single(), 'update contact')),
+    },
+    leads: {
+      get: async (id) => {
+        const { data, error } = await db.from('leads').select('*').eq('id', id).maybeSingle();
+        if (error) throw new Error(`lead: ${error.message}`);
+        return data ? toLead(data) : null;
+      },
+      // The database writes the 'created' history event and enforces the same-firm contact link.
+      create: async (l) =>
+        toLead(must(await db.from('leads').insert({
+          firm_id: l.firmId, contact_id: l.contactId, title: l.title, source: l.source, practice_area: l.practiceArea,
+          intake_message: l.intakeMessage, value_cents: l.valueCents ?? 0, owner_id: l.ownerId ?? null,
+        }).select('*').single(), 'create lead')),
+      // Stage rules (final stages, lost needs a reason) are enforced by the leads_stage_guard trigger.
+      setStage: async (id, stage, lostReason) =>
+        toLead(must(await db.from('leads').update({ stage, lost_reason: stage === 'lost' ? lostReason ?? null : null }).eq('id', id).select('*').single(), 'set stage')),
+    },
+    tasks: {
+      create: async (t) =>
+        toTask(must(await db.from('tasks').insert({
+          firm_id: t.firmId, lead_id: t.leadId, title: t.title, due_at: t.dueAt?.toISOString() ?? null, assignee_id: t.assigneeId ?? null,
+        }).select('*').single(), 'create task')),
+      openForLead: async (leadId) => {
+        const { data, error } = await db.from('tasks').select('*').eq('lead_id', leadId).eq('status', 'open').order('due_at', { ascending: true, nullsFirst: false });
+        if (error) throw new Error(`open tasks: ${error.message}`);
+        return (data ?? []).map(toTask);
+      },
     },
     consents: {
       record: async (c) => {
@@ -167,14 +197,5 @@ export function supabaseRepos(db: Db): Repos {
       });
       if (error) throw new Error(`audit: ${error.message}`);
     },
-  };
-}
-
-/** Look up a firm's Twenty workspace and decrypt its API key. Server-only. */
-export function twentyCredentials(db: Db, encryptionKey: string) {
-  return async (firmId: string) => {
-    const { data, error } = await db.from('firm_twenty').select('base_url, api_key_encrypted').eq('firm_id', firmId).single();
-    if (error || !data) throw new Error(`No Twenty workspace for firm ${firmId}`);
-    return { baseUrl: data.base_url, apiKey: decryptSecret(encryptionKey, data.api_key_encrypted) };
   };
 }

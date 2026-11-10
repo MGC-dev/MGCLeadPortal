@@ -5,10 +5,10 @@ import { decryptSecret, encryptSecret } from './secrets';
 describe('secrets', () => {
   const key = randomBytes(32).toString('base64');
   it('round-trips and never repeats ciphertext', () => {
-    const a = encryptSecret(key, 'twenty_api_key_123');
-    const b = encryptSecret(key, 'twenty_api_key_123');
+    const a = encryptSecret(key, 'twilio_subaccount_token_123');
+    const b = encryptSecret(key, 'twilio_subaccount_token_123');
     expect(a).not.toBe(b);
-    expect(decryptSecret(key, a)).toBe('twenty_api_key_123');
+    expect(decryptSecret(key, a)).toBe('twilio_subaccount_token_123');
   });
   it('rejects tampering and wrong keys', () => {
     const sealed = encryptSecret(key, 'secret');

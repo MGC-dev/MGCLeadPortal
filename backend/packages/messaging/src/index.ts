@@ -45,7 +45,7 @@ export function safeEqual(a: string | null | undefined, b: string | null | undef
   return diff === 0;
 }
 
-/** HMAC-SHA256 hex signature check, used for Twenty webhooks. */
+/** HMAC-SHA256 hex signature check, for signed webhooks from services that use a shared secret. */
 export async function verifyHmacSha256(secret: string, payload: string, signatureHex: string | null): Promise<boolean> {
   if (!signatureHex) return false;
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);

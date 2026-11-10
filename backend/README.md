@@ -1,8 +1,8 @@
 # MGC CRM backend
 
 The API and worker behind MGC CRM, following the architecture doc: a Next.js API, a Node.js worker on BullMQ,
-Twenty running unmodified behind them, and Supabase for firms, people, consent, messages and audit.
-Firm staff never reach Twenty or the vendors directly; only this backend does.
+and Supabase as the single source of truth for firms, contacts, leads and their stage history, tasks, notes,
+custom fields, consent, messages and audit. Firm staff never reach the vendors directly; only this backend does.
 
 ## Layout
 
@@ -16,11 +16,10 @@ backend/
 │  │              shared interfaces (ports) and in-memory fakes for tests
 │  ├─ flows/      Business flows used by the API and worker (intake, instant reply, send, STOP)
 │  ├─ db/         Supabase migrations, RLS tests, typed client, secret encryption
-│  ├─ twenty/     Typed Twenty REST client (people, opportunities, tasks)
 │  ├─ messaging/  Resend and Twilio adapters, webhook signature checks
 │  ├─ jobs/       Queue names, job payloads, BullMQ producer
 │  └─ config/     Shared TypeScript settings
-└─ infra/docker/  Local Redis and Twenty
+└─ infra/docker/  Local Redis
 ```
 
 ## Endpoints
@@ -31,13 +30,14 @@ backend/
 | POST | `/api/intake/:firmSlug` | Web form / Quick Intake. JSON or a plain HTML form post, CORS-enabled |
 | POST | `/api/webhooks/twilio` | Inbound texts (STOP, START, replies). Twilio-signed |
 | POST | `/api/webhooks/documenso` | Signing events. Shared-secret header |
-| POST | `/api/webhooks/twenty` | Record changes inside Twenty. HMAC-signed |
 
 Intake fields: `name` (required), `email` and/or `phone` (US), `matter`, `practiceArea`, `message`, `source`,
 `smsConsent` (the text opt-in checkbox), `consentText` (the wording shown), and a hidden `website` honeypot.
 
 ## Rules enforced in code
 
+- Lead stages follow the pipeline: Lost needs a reason, Delivered is final, a lost lead can only reopen as New;
+  every change is written to `lead_events` by a database trigger, so history can't be skipped.
 - One firm never sees another's data: Supabase row-level security on every table, tested in `packages/db/supabase/sql-tests`.
 - Texts only to people who opted in; STOP opts out at once; quiet hours 8 AM–9 PM in the contact's time zone.
 - Nothing is dropped while a firm's domain or number is unverified: messages are held and sent once verified.
@@ -46,8 +46,8 @@ Intake fields: `name` (required), `email` and/or `phone` (US), `matter`, `practi
 
 ## Supabase
 
-Project **MGC-02-LeadPortal** (`fzpzyftefquczmcydmzz`, us-east-1). Both migrations in
-`packages/db/supabase/migrations` are applied; Supabase's security and performance checks are clean
+Project **MGC-02-LeadPortal** (`fzpzyftefquczmcydmzz`, us-east-1). All four migrations in
+`packages/db/supabase/migrations` are applied (17 tables, row-level security on each); Supabase's security and performance checks are clean
 apart from expected notices (server-only tables have no client policies; new indexes are unused until data arrives).
 
 After any schema change: add a migration file, run `pnpm --filter @mgc/db test:sql`, apply it, then
@@ -60,7 +60,7 @@ Needs Node 22+, pnpm 10, Docker.
 ```bash
 cd backend
 pnpm install
-pnpm stack:up                         # Redis + Twenty on http://localhost:3000
+pnpm stack:up                         # Redis
 pnpm --filter @mgc/db db:start        # local Supabase; prints the URL and service key
 cp .env.example apps/web/.env.local   # fill in values
 cp .env.example apps/worker/.env
@@ -88,6 +88,6 @@ CI runs all four on every pull request that touches `backend/` (`.github/workflo
 
 ## Not built yet
 
-- Firm sign-up and invites, sending-setup flows (Resend domains, Twilio subaccounts and A2P), and Twenty workspace provisioning, including its custom stage values and fields
+- Firm sign-up and invites, sending-setup flows (Resend domains, Twilio subaccounts and A2P), and the product UI on top of leads, tasks, notes and custom fields
 - Campaign triggers and one-off sends, Documenso send and signed-PDF storage, email intake
 - Rate limiting on the public intake endpoint, AWS infrastructure as code

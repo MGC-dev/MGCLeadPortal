@@ -2,9 +2,9 @@
  * Lead intake: one flow for every channel (web form, inbound email, inbound text, Quick Intake).
  * The API route stays thin; this is where the rules live, so they are tested without HTTP or vendors.
  */
-import { IntakeSchema, normaliseIntake, type QueuePort, type Repos, type TwentyPort } from '@mgc/core';
+import { IntakeSchema, normaliseIntake, type QueuePort, type Repos } from '@mgc/core';
 
-export interface IntakeDeps { repos: Repos; twenty: TwentyPort; queue: QueuePort }
+export interface IntakeDeps { repos: Repos; queue: QueuePort }
 
 export type IntakeResult =
   | { ok: true; status: 201; leadId: string; contactId: string; duplicate: boolean }
@@ -29,27 +29,20 @@ export async function handleIntake(
   // Accept spam quietly so bots learn nothing, but create nothing.
   if (lead.isSpam) return { ok: true, status: 202, ignored: 'spam' };
 
-  // De-duplicate within the firm: same phone, then same email.
+  // De-duplicate within the firm: same phone, then same email. A returning person gets a new lead on the same contact.
   const existing = await deps.repos.contacts.find(firm.id, { phone: lead.phone, email: lead.email });
-  const person = await deps.twenty.upsertPerson(firm.id, { name: lead.name, email: lead.email ?? existing?.email ?? null, phone: lead.phone ?? existing?.phone ?? null, existingId: existing?.twentyPersonId });
-
-  const title = lead.matter ?? lead.practiceArea ?? 'New enquiry';
-  const twentyLead = await deps.twenty.createLead(firm.id, {
-    personId: person.id, title, stage: 'new', source: lead.source, practiceArea: lead.practiceArea, notes: lead.message,
-  });
-
   const contact = existing
     ? await deps.repos.contacts.update(existing.id, {
         name: lead.name,
         ...(lead.email && !existing.email && { email: lead.email }),
         ...(lead.phone && !existing.phone && { phone: lead.phone }),
-        twentyPersonId: person.id,
-        twentyOpportunityId: twentyLead.id,
       })
-    : await deps.repos.contacts.create({
-        firmId: firm.id, name: lead.name, email: lead.email, phone: lead.phone, timeZone: null,
-        twentyPersonId: person.id, twentyOpportunityId: twentyLead.id,
-      });
+    : await deps.repos.contacts.create({ firmId: firm.id, name: lead.name, email: lead.email, phone: lead.phone, timeZone: null });
+
+  const created = await deps.repos.leads.create({
+    firmId: firm.id, contactId: contact.id, title: lead.matter ?? lead.practiceArea ?? 'New enquiry',
+    source: lead.source, practiceArea: lead.practiceArea, intakeMessage: lead.message,
+  });
 
   if (lead.smsConsent && lead.phone) {
     await deps.repos.consents.record({
@@ -58,10 +51,10 @@ export async function handleIntake(
     });
   }
 
-  await deps.repos.audit({ firmId: firm.id, actor: null, action: 'lead.created', entity: 'lead', entityId: twentyLead.id, data: { source: lead.source, duplicate: Boolean(existing) } });
+  await deps.repos.audit({ firmId: firm.id, actor: null, action: 'lead.created', entity: 'lead', entityId: created.id, data: { source: lead.source, duplicate: Boolean(existing) } });
 
   // The worker sends the instant reply, books the first call and fires campaign triggers.
-  await deps.queue.enqueue('intake', 'lead.created', { firmId: firm.id, contactId: contact.id, leadId: twentyLead.id, isNewContact: !existing }, { jobId: `lead.created:${twentyLead.id}` });
+  await deps.queue.enqueue('intake', 'lead.created', { firmId: firm.id, contactId: contact.id, leadId: created.id, isNewContact: !existing }, { jobId: `lead.created:${created.id}` });
 
-  return { ok: true, status: 201, leadId: twentyLead.id, contactId: contact.id, duplicate: Boolean(existing) };
+  return { ok: true, status: 201, leadId: created.id, contactId: contact.id, duplicate: Boolean(existing) };
 }

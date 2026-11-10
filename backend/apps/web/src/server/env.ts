@@ -7,11 +7,9 @@ const EnvSchema = z.object({
   SUPABASE_URL: z.string().url(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(20),
   REDIS_URL: z.string().url(),
-  APP_ENCRYPTION_KEY: z.string().min(40),
   TWILIO_ACCOUNT_SID: z.string().startsWith('AC'),
   TWILIO_AUTH_TOKEN: z.string().min(16),
   DOCUMENSO_WEBHOOK_SECRET: z.string().min(16),
-  TWENTY_WEBHOOK_SECRET: z.string().min(16),
 });
 export type Env = z.infer<typeof EnvSchema>;
 

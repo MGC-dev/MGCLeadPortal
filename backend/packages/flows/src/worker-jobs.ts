@@ -3,10 +3,10 @@
  */
 import {
   DEFAULT_INSTANT_REPLY, decideSend, fillTemplate, isStartReply, isStopReply, messageKey,
-  type QueuePort, type Repos, type SmsSender, type TwentyPort,
+  type QueuePort, type Repos, type SmsSender,
 } from '@mgc/core';
 
-export interface WorkerDeps { repos: Repos; twenty: TwentyPort; sms: SmsSender; queue: QueuePort; now?: () => Date }
+export interface WorkerDeps { repos: Repos; sms: SmsSender; queue: QueuePort; now?: () => Date }
 
 const decisionLabel = (s: string) => (s === 'queued' ? 'send' : s === 'deferred' ? 'defer' : s === 'held' ? 'hold' : 'skip') as 'send' | 'defer' | 'hold' | 'skip';
 
@@ -21,7 +21,7 @@ export async function onLeadCreated(deps: WorkerDeps, job: { firmId: string; con
   if (!firm || !contact) throw new Error(`lead.created: missing firm or contact for ${job.leadId}`);
 
   // Speed to lead: the first call is due within the hour. Booked once, when this job first runs.
-  const bookCall = () => deps.twenty.createTask(firm.id, { leadId: job.leadId, title: `Call ${contact.name} within the hour`, dueAt: new Date(now.getTime() + 3600_000) });
+  const bookCall = () => deps.repos.tasks.create({ firmId: firm.id, leadId: job.leadId, title: `Call ${contact.name} within the hour`, dueAt: new Date(now.getTime() + 3600_000) });
 
   if (!contact.phone) {
     await bookCall();
