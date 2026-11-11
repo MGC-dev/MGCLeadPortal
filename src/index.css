@@ -89,3 +89,23 @@ body { @apply bg-slate-50 text-slate-800 antialiased; }
 @keyframes ai-wave { 0%, 60%, 100% { transform: translateY(0); opacity: 0.45; } 30% { transform: translateY(-4px); opacity: 1; } }
 /* The message box shows focus on its outer box; drop the portal-wide focus outline on the field inside it. */
 .portal .ai-surface [data-composer] textarea:focus, .portal .ai-surface [data-composer] textarea:focus-visible { outline: none; box-shadow: none; }
+
+/* Agents: Apple-style tokens. Contrast on white: label 16.8:1, secondary 5.1:1 (4.5:1 on grouped grey),
+   accent with white text 6.6:1, destructive 5.4:1. The accent is the portal's own blue, not system blue (4.0:1). */
+@theme {
+  --color-ios-label: #1d1d1f;
+  --color-ios-secondary: #6e6e73;
+  --color-ios-tertiary: #aeaeb2;
+  --color-ios-separator: rgba(60, 60, 67, 0.16);
+  --color-ios-fill: #e9e9eb;
+  --color-ios-field: rgba(118, 118, 128, 0.12);
+  --color-ios-grouped: #f2f2f7;
+  --color-ios-accent: #1f4fd8;
+  --color-ios-accent-soft: #dce6fb;
+  --color-ios-green: #34c759;
+  --color-ios-red: #d70015;
+}
+.apple-type { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif; letter-spacing: -0.01em; }
+.portal .ai-surface :is(h1, h3, label, small, b) { font: revert-layer; color: revert-layer; letter-spacing: revert-layer; }
+/* Agents draw their own focus rings (Tailwind ring classes); the portal-wide 3px outline would double them. */
+.portal .apple-type :focus-visible { outline: none; }

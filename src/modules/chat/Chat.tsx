@@ -6,6 +6,7 @@ import { BOT_TOOLS, type ChatMessage } from '../../api/types'
 import { InfoTip } from '../../shared/InfoTip'
 import { ago } from '../../shared/format'
 import { cn } from '@/lib/utils'
+import { inline } from './richText'
 import { Button } from '@/components/ui/button'
 import { Suggestion, SuggestionList, Suggestions } from '@/components/ui/suggestions'
 import { ThinkingPromptInput, type ThinkingStatus, type ThinkingStep, type ThinkingSubmitOptions } from '@/components/ui/thinking-prompt-input'
@@ -44,15 +45,6 @@ const doneSteps = (steps: string[] = []): ThinkingStep[] => [
   ...steps.map((s, i) => ({ id: `s${i}`, text: stepText(s), status: 'complete' as const })),
 ]
 const secondsBetween = (a: number, b: number) => Math.max(1, Math.round((b - a) / 1000))
-
-/** **bold** inside a line. Mid-stream, a bold run that has not closed yet is shown bold without its asterisks. */
-function inline(text: string): ReactNode {
-  return text.split(/(\*\*[^*]+\*\*)/).map((p, i) => {
-    if (p.startsWith('**') && p.endsWith('**') && p.length > 4) return <b key={i} className="font-semibold">{p.slice(2, -2)}</b>
-    const open = p.indexOf('**')
-    return open === -1 ? p : <span key={i}>{p.slice(0, open)}<b className="font-semibold">{p.slice(open + 2)}</b></span>
-  })
-}
 
 /** A change the assistant wants to make in the portal. Nothing happens until it is approved. */
 function ActionCard({ convId, m }: { convId: string; m: ChatMessage }) {
@@ -97,7 +89,6 @@ function PastTurn({ turn, convId }: { turn: Turn; convId: string }) {
             <>
               <button type="button" aria-expanded={open} onClick={() => setOpen(o => !o)}
                 className="flex max-w-full items-center gap-2 rounded-full border border-border bg-muted/60 px-3 py-1.5 text-[13px] text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
-                <IconSparkles className="size-3.5 shrink-0" aria-hidden="true" />
                 <span>Thought for {secondsBetween(user.at, reply.at)}s</span>
                 <IconChevronRight className={cn('size-3.5 transition-transform', open && 'rotate-90')} aria-hidden="true" />
               </button>

@@ -251,7 +251,7 @@ export function ThinkingPromptInput({
                     onClick={() => setExpanded(!expanded)}
                     className={`flex max-w-full items-center gap-2 rounded-full text-[13px] outline-none transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring ${status === "thinking" ? "h-7 w-full text-muted-foreground" : "border border-border bg-muted/60 px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"}`}
                   >
-                    {status === "thinking" ? <WavyDots /> : <IconSparkles className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />}
+                    {status === "thinking" && <WavyDots />}
                     {status === "thinking" ? (
                       <span ref={shimmer} data-shimmer className={reduced ? "text-muted-foreground" : "bg-[linear-gradient(90deg,var(--muted-foreground)_0%,var(--muted-foreground)_42%,var(--foreground)_50%,var(--muted-foreground)_58%,var(--muted-foreground)_100%)] bg-[length:250%_100%] bg-clip-text text-transparent"}>Thinking it through</span>
                     ) : <span>Thought for {seconds}s</span>}

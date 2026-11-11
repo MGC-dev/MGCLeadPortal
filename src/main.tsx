@@ -18,7 +18,6 @@ import Campaigns from './modules/campaigns/Campaigns'
 import CampaignDetail from './modules/campaigns/CampaignDetail'
 import Chat from './modules/chat/Chat'
 import Bots from './modules/bots/Bots'
-import BotDetail from './modules/bots/BotDetail'
 import Documents from './modules/documents/Documents'
 import DocumentDetail from './modules/documents/DocumentDetail'
 import Reports from './modules/reports/Reports'
@@ -50,7 +49,7 @@ createRoot(document.getElementById('root')!).render(
           {/* Bots were renamed Agents: old links still land in the right place. */}
           <Route path="bots/*" element={<Navigate to="/agents" replace />} />
           <Route path="agents/:id" element={<Bots />} />
-          <Route path="agents/:id/settings" element={<BotDetail />} />
+          <Route path="agents/:id/settings" element={<Bots />} />
           <Route path="services" element={<Services />} />
           <Route path="integrations" element={<Integrations />} />
           <Route path="settings" element={<Settings />} />
