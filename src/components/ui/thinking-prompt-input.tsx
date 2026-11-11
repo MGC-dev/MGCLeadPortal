@@ -234,7 +234,7 @@ export function ThinkingPromptInput({
   return (
     <div data-slot="thinking-prompt-input" data-state={status} className={cn("flex h-full min-h-0 w-full max-w-[480px] flex-col text-foreground", className)}>
       {status !== "idle" && (
-        <div ref={transcript} data-transcript role="region" aria-label="Conversation" tabIndex={0} className="mb-4 min-h-0 flex-1 overflow-y-auto rounded-lg outline-none [overflow-anchor:none] focus-visible:ring-2 focus-visible:ring-ring">
+        <div ref={transcript} data-transcript role="region" aria-label="Conversation" tabIndex={0} className="mb-4 min-h-0 flex-1 overflow-y-auto rounded-lg pt-3 outline-none [overflow-anchor:none] [mask-image:linear-gradient(to_bottom,transparent,black_28px)] focus-visible:ring-2 focus-visible:ring-ring">
           <div ref={transcriptBody} className="space-y-5 px-1 py-1">
             {history}
             <div ref={question} data-question className="ml-auto w-fit max-w-[80%] origin-top-left rounded-[18px] rounded-br-md bg-primary px-3.5 py-2 text-[15px] leading-5 text-primary-foreground">

@@ -219,8 +219,8 @@ export default function Chat() {
   const showList = phone ? list : !folded
 
   const history = (
-    <aside aria-label="Chat history" className={cn('flex min-h-0 flex-col border-r border-ios-separator bg-[#fbfbfd]',
-      phone && 'absolute inset-0 z-20 border-r-0 bg-white')}>
+    <aside aria-label="Chat history" className={cn('flex min-h-0 flex-col border-r border-ios-separator',
+      phone && 'absolute inset-0 z-20 border-r-0 bg-ios-page')}>
       <div className="flex shrink-0 items-center gap-2 px-3 pt-3 pb-2">
         <label className="flex h-9 min-w-0 flex-1 items-center gap-1.5 rounded-[10px] bg-ios-field px-2.5 text-[#8e8e93] focus-within:ring-2 focus-within:ring-ios-accent/40">
           <IconSearch className="size-4 shrink-0" stroke={2} aria-hidden="true" />
@@ -263,12 +263,12 @@ export default function Chat() {
   )
 
   return (
-    <div className={cn('ai-surface apple-type relative grid h-[calc(100vh-220px)] min-h-[520px] overflow-hidden rounded-2xl border border-ios-separator bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] max-md:h-[calc(100vh-260px)]',
+    <div className={cn('ai-surface apple-type relative grid h-[calc(100vh-220px)] min-h-[520px] max-md:h-[calc(100vh-260px)]',
       !phone && !folded ? 'grid-cols-[280px_minmax(0,1fr)]' : 'grid-cols-1')}>
       {showList && history}
 
-      <section aria-label="Conversation" className="flex min-h-0 min-w-0 flex-col bg-white">
-        <header className="grid h-[52px] shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-2 border-b border-ios-separator bg-white/85 px-2 backdrop-blur">
+      <section aria-label="Conversation" className="flex min-h-0 min-w-0 flex-col">
+        <header className="grid h-[52px] shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-2 px-2">
           <span>
             <button type="button" onClick={() => (phone ? setList(true) : fold())} aria-label={phone ? 'Show chats' : folded ? 'Show chats' : 'Hide chats'} title={folded ? 'Show chats' : 'Hide chats'} aria-pressed={phone ? undefined : !folded}
               className={cn('grid size-9 place-items-center rounded-lg text-ios-accent hover:bg-ios-accent/10', focusRing)}><IconLayoutSidebar className="size-[21px]" stroke={1.8} /></button>
@@ -297,7 +297,7 @@ export default function Chat() {
           {empty && (
             <Suggestions onSelect={value => send(value)} className="w-full max-w-[680px]">
               <SuggestionList className="max-w-[640px] self-center">
-                {SUGGESTIONS.map(s => <Suggestion key={s} variant="filled" className="h-9 bg-ios-grouped px-4 text-[14px] text-ios-label hover:bg-ios-fill">{s}</Suggestion>)}
+                {SUGGESTIONS.map(s => <Suggestion key={s} variant="filled" className="h-9 border border-ios-separator bg-white px-4 text-[14px] text-ios-label shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:bg-[#fafafc]">{s}</Suggestion>)}
               </SuggestionList>
             </Suggestions>
           )}

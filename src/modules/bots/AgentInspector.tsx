@@ -91,8 +91,8 @@ export function AgentInspector({ bot, isNew, onClose, onDeleted }: { bot: Bot; i
   const toolbarBtn = 'h-8 rounded-lg px-2.5 text-[15px] outline-none focus-visible:ring-2 focus-visible:ring-ios-accent/50 disabled:opacity-40'
 
   return (
-    <aside aria-label={`${bot.name} settings`} className="flex h-full min-h-0 flex-col bg-ios-grouped">
-      <header className="grid h-[52px] shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b border-ios-separator bg-ios-grouped/90 px-2 backdrop-blur">
+    <aside aria-label={`${bot.name} settings`} className="flex h-full min-h-0 flex-col">
+      <header className="grid h-[52px] shrink-0 grid-cols-[1fr_auto_1fr] items-center px-2">
         <span>{dirty && <button type="button" className={cn(toolbarBtn, 'text-ios-accent hover:bg-black/[0.04]')} onClick={() => { setDraft(saved); setError('') }}>Cancel</button>}</span>
         <h2 className="text-[15px] font-semibold text-ios-label">Agent settings</h2>
         <span className="flex justify-end">
@@ -102,7 +102,7 @@ export function AgentInspector({ bot, isNew, onClose, onDeleted }: { bot: Bot; i
         </span>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [mask-image:linear-gradient(to_bottom,transparent,black_24px)]">
         <div className="grid gap-6 px-4 pt-6 pb-10">
           <div className="grid justify-items-center gap-3 text-center">
             <BotAvatar bot={bot} size={72} muted={!draft.active} />

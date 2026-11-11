@@ -71,7 +71,7 @@ function Composer({ placeholder, disabled, busy, focusKey, onSend }: { placehold
   const ready = !!text.trim() && !busy && !disabled
   return (
     <form onSubmit={e => { e.preventDefault(); send() }}
-      className={cn('flex items-end gap-2 rounded-[20px] border border-[#d1d1d6] bg-white py-[3px] pr-[3px] pl-3.5 transition-colors focus-within:border-ios-accent/60 focus-within:ring-2 focus-within:ring-ios-accent/15', disabled && 'bg-ios-grouped')}>
+      className={cn('flex items-end gap-2 rounded-[20px] border border-[#d1d1d6] bg-white py-[3px] pr-[3px] pl-3.5 transition-colors focus-within:border-ios-accent/60 focus-within:ring-2 focus-within:ring-ios-accent/15', disabled && 'bg-white/60')}>
       <textarea ref={box} rows={1} value={text} disabled={disabled} aria-label="Message" placeholder={placeholder}
         onChange={e => setText(e.target.value)}
         onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send() } }}
@@ -156,11 +156,11 @@ export default function Bots() {
   const show = { list: !phone || !id, chat: !phone || (!!id && !settings), inspector: !!bot && settings }
 
   return (
-    <div className={cn('ai-surface apple-type relative grid h-[calc(100vh-220px)] min-h-[520px] overflow-hidden rounded-2xl border border-ios-separator bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] max-md:h-[calc(100vh-260px)]',
+    <div className={cn('ai-surface apple-type relative grid h-[calc(100vh-220px)] min-h-[520px] max-md:h-[calc(100vh-260px)]',
       phone ? 'grid-cols-1' : settings && bot ? 'grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_380px]' : 'grid-cols-[300px_minmax(0,1fr)]')}>
 
       {show.list && (
-        <aside aria-label="Agents" className="flex min-h-0 flex-col border-r border-ios-separator bg-[#fbfbfd] max-md:border-r-0">
+        <aside aria-label="Agents" className="flex min-h-0 flex-col border-r border-ios-separator max-md:border-r-0">
           <div className="flex shrink-0 items-center gap-2 px-3 pt-3 pb-2">
             <label className="flex h-9 min-w-0 flex-1 items-center gap-1.5 rounded-[10px] bg-ios-field px-2.5 text-[#8e8e93] focus-within:ring-2 focus-within:ring-ios-accent/40">
               <IconSearch className="size-4 shrink-0" stroke={2} aria-hidden="true" />
@@ -191,17 +191,17 @@ export default function Bots() {
       )}
 
       {show.chat && (
-        <section aria-label="Conversation" className="relative flex min-h-0 min-w-0 flex-col bg-white">
+        <section aria-label="Conversation" className="relative flex min-h-0 min-w-0 flex-col">
           {!bot ? (
             <div className="m-auto grid max-w-sm justify-items-center gap-3 p-6 text-center">
-              <span className="grid size-16 place-items-center rounded-full bg-ios-grouped text-ios-accent"><IconPlus className="size-7" stroke={2} /></span>
+              <span className="grid size-16 place-items-center rounded-full bg-white text-ios-accent shadow-[0_1px_2px_rgba(0,0,0,0.05)]"><IconPlus className="size-7" stroke={2} /></span>
               <h2 className="text-[22px] font-semibold tracking-[-0.02em] text-ios-label">Create an agent</h2>
               <p className="text-[15px] leading-[21px] text-ios-secondary">An agent has its own instructions and tools, inside the portal and outside it.</p>
               <button type="button" onClick={add} className={cn('mt-1 h-9 rounded-full bg-ios-accent px-4 text-[15px] font-semibold text-white', focusRing)}>New agent</button>
             </div>
           ) : (
             <>
-              <header className="grid h-[52px] shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b border-ios-separator bg-white/85 px-2 backdrop-blur">
+              <header className="grid h-[52px] shrink-0 grid-cols-[1fr_auto_1fr] items-center px-2">
                 <span>{phone && <button type="button" onClick={() => navigate('/agents')} className={cn('flex h-9 items-center rounded-lg pr-2 text-[15px] text-ios-accent', focusRing)}><IconChevronLeft className="size-6" stroke={2.2} aria-hidden="true" />Agents</button>}</span>
                 <span className="flex min-w-0 items-center gap-2">
                   <BotAvatar bot={bot} size={28} muted={!bot.active} />
@@ -218,7 +218,7 @@ export default function Bots() {
                 </span>
               </header>
 
-              <div ref={thread} onScroll={onScroll} role="log" aria-live="polite" className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-2 pb-3">
+              <div ref={thread} onScroll={onScroll} role="log" aria-live="polite" className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-4 pb-3 [mask-image:linear-gradient(to_bottom,transparent,black_28px)]">
                 {messages.length === 0 && !pending ? (
                   <div className="grid h-full content-center justify-items-center gap-2 text-center">
                     <BotAvatar bot={bot} size={72} muted={!bot.active} />
@@ -236,7 +236,7 @@ export default function Bots() {
                 {bot.active ? (
                   <Composer placeholder={`Message ${bot.name}`} disabled={!conv} busy={pending} focusKey={bot.id} onSend={send} />
                 ) : (
-                  <p className="flex flex-wrap items-center justify-center gap-x-1 rounded-[20px] bg-ios-grouped px-4 py-2.5 text-center text-[14px] text-ios-secondary">
+                  <p className="flex flex-wrap items-center justify-center gap-x-1 rounded-[20px] border border-ios-separator bg-white px-4 py-2.5 text-center text-[14px] text-ios-secondary">
                     {bot.name} is a draft.
                     <button type="button" onClick={() => navigate(`/agents/${bot.id}/settings`)} className={cn('rounded font-medium text-ios-accent hover:underline', focusRing)}>Make it available in Chat</button>
                   </p>
@@ -250,7 +250,7 @@ export default function Bots() {
 
       {show.inspector && bot && (
         <div className={cn('min-h-0 border-l border-ios-separator',
-          phone ? '' : 'absolute inset-y-0 right-0 z-10 w-[380px] shadow-[-12px_0_32px_rgba(0,0,0,0.12)] xl:static xl:w-auto xl:shadow-none')}>
+          phone ? '' : 'absolute inset-y-0 right-0 z-10 w-[380px] bg-ios-page shadow-[-12px_0_32px_rgba(0,0,0,0.10)] xl:static xl:w-auto xl:bg-transparent xl:shadow-none')}>
           <AgentInspector bot={bot} isNew={isNew} onClose={() => navigate(`/agents/${bot.id}`)} onDeleted={() => navigate('/agents')} />
         </div>
       )}

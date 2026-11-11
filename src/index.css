@@ -35,7 +35,7 @@
   --color-ring: var(--ring);
 }
 .ai-surface {
-  --background: #ffffff;
+  --background: #f3f6fb;
   --foreground: #1d1d1f;
   --card: #ffffff;
   --muted: #e9e9eb;
@@ -109,3 +109,8 @@ body { @apply bg-slate-50 text-slate-800 antialiased; }
 .portal .ai-surface :is(h1, h3, label, small, b) { font: revert-layer; color: revert-layer; letter-spacing: revert-layer; }
 /* Agents draw their own focus rings (Tailwind ring classes); the portal-wide 3px outline would double them. */
 .portal .apple-type :focus-visible { outline: none; }
+/* The assistant's orb: inner light drifts round, the orb floats a little. Off under reduced motion (motion-safe). */
+@keyframes ai-orb-spin { to { transform: rotate(360deg); } }
+@keyframes ai-orb-spin-back { to { transform: rotate(-360deg); } }
+@keyframes ai-orb-float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-3%) scale(1.03); } }
+@theme { --color-ios-page: #f3f6fb; }
