@@ -29,7 +29,6 @@ export default function Leads() {
   const cols = useMemo<Col<Lead>[]>(() => [
     { id: 'lead', label: 'Lead', locked: true, sort: l => l.name.toLowerCase(), render: l => (
       <span className="ltable__who">
-        <span className="ltable__avatar" aria-hidden="true">{initials(l.name)}</span>
         <span><b>{l.name}</b><small>{l.phone}</small></span>
       </span>) },
     { id: 'matter', label: 'Matter', defaultOn: true, sort: l => l.matter.toLowerCase(), render: l => <span className="ltable__matter"><b>{l.matter}</b><PracticeTag area={l.practice} /></span> },
@@ -72,7 +71,7 @@ export default function Leads() {
           <ul className="lcards only-phone">{rows.map(l => (
             <li key={l.id}>
               <button type="button" className="lcard" onClick={() => openProfile(l.id)}>
-                <span className="lcard__top"><span className="ltable__avatar" aria-hidden="true">{initials(l.name)}</span>
+                <span className="lcard__top">
                   <span className="lcard__who"><b>{l.name}</b><small>{l.matter}</small></span>{feeKnown(l) && <span className="lcard__fee num">{money(l.value)}</span>}</span>
                 <span className="lcard__meta"><StageTag lead={l} /><PracticeTag area={l.practice} /></span>
               </button>
