@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { IconArrowDown, IconArrowUp, IconCheck, IconChevronLeft, IconInfoCircle, IconInfoCircleFilled, IconPlus, IconSearch, IconX } from '@tabler/icons-react'
+import { IconArrowDown, IconArrowUp, IconCheck, IconChevronLeft, IconPlus, IconSettings, IconSearch, IconX } from '@tabler/icons-react'
 import { botsApi, chatApi, useQuery } from '../../api'
 import { BOT_MODELS, type Bot, type ChatConversation, type ChatMessage } from '../../api/types'
 import { usePhone } from '../../shared/useMedia'
@@ -212,8 +212,8 @@ export default function Bots() {
                 </span>
                 <span className="flex justify-end">
                   <button type="button" onClick={toggleSettings} aria-label="Agent settings" aria-pressed={settings} title="Agent settings"
-                    className={cn('grid size-9 place-items-center rounded-full text-ios-accent hover:bg-ios-accent/10', focusRing)}>
-                    {settings ? <IconInfoCircleFilled className="size-[22px]" /> : <IconInfoCircle className="size-[22px]" stroke={1.8} />}
+                    className={cn('grid size-9 place-items-center rounded-full text-ios-accent hover:bg-ios-accent/10', settings && 'bg-ios-accent/12', focusRing)}>
+                    <IconSettings className="size-[22px]" stroke={settings ? 2.2 : 1.8} />
                   </button>
                 </span>
               </header>
