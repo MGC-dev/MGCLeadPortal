@@ -1123,3 +1123,5 @@ body.portal-lock { overflow: hidden; }
 @media (max-width: 760px) { .portal .board-wrap { scroll-snap-type: x proximity; } }
 /* Practice areas: solid tags, colour set per area in PracticeTag. */
 .portal .chip--practice { color: #fff; font-weight: 600; border: 0; }
+/* Documents: solid icon tiles instead of the see-through tint (white on the portal blue, 6.6:1). */
+.portal .ltable__avatar--doc, .portal .docv__filetile { background: var(--tint); color: #fff; box-shadow: 0 1px 2px rgba(15, 35, 71, 0.18); }
