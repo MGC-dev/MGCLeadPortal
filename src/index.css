@@ -14,6 +14,45 @@
   --color-accent-ink: #3a1d00;
 }
 
+/* shadcn colour names (bg-muted, text-foreground, border-border…) for components in src/components/ui.
+   Their values are only set inside .ai-surface (Intelligence chat), so nothing else on the page changes. */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent-bg);
+  --color-accent-foreground: var(--accent-fg);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+.ai-surface {
+  --background: #ffffff;
+  --foreground: #0f1d3a;
+  --card: #ffffff;
+  --muted: #eff3f9;
+  --muted-foreground: #5d6a83;
+  --primary: #0f2347;
+  --primary-foreground: #ffffff;
+  --secondary: #eff3f9;
+  --secondary-foreground: #0f1d3a;
+  --accent-bg: #eff3f9;
+  --accent-fg: #0f1d3a;
+  --destructive: #c0261c;
+  --destructive-foreground: #ffffff;
+  --border: #e3e8f1;
+  --input: #d9e0ec;
+  --ring: rgba(31, 79, 216, 0.45);
+}
+
 /* Tokens the shadcn-style Sidebar (src/components/ui/sidebar.tsx) reads, scoped to the app's ink sidebar. */
 .app-sidebar {
   --background: var(--color-side);
@@ -43,3 +82,10 @@ body { @apply bg-slate-50 text-slate-800 antialiased; }
 .app-sidebar [data-slot="sidebar-item"][data-active="true"] { color: var(--color-side); font-weight: 600; }
 .app-sidebar [data-slot="sidebar-item"][data-active="true"] [data-slot="sidebar-item-icon"] { color: var(--color-brand-500); }
 .app-sidebar [data-slot="sidebar-item"][data-active="true"] > span:first-child { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); }
+
+/* The portal's own resets (font and colour on buttons, heading styles) sit outside Tailwind's layers, so they
+   would beat Tailwind classes. Inside the Intelligence chat, hand those properties back to the Tailwind classes. */
+.portal .ai-surface :is(button, input, select, textarea, h2, p) { font: revert-layer; color: revert-layer; letter-spacing: revert-layer; }
+@keyframes ai-wave { 0%, 60%, 100% { transform: translateY(0); opacity: 0.45; } 30% { transform: translateY(-4px); opacity: 1; } }
+/* The message box shows focus on its outer box; drop the portal-wide focus outline on the field inside it. */
+.portal .ai-surface [data-composer] textarea:focus, .portal .ai-surface [data-composer] textarea:focus-visible { outline: none; box-shadow: none; }
