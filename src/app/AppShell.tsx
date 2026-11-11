@@ -112,7 +112,6 @@ function Toolbar() {
   const { filter, setFilter, openModal } = useUi()
   const seg = {
     messages: <Seg value={filter.inbox} onChange={x => setFilter('inbox', x)} options={[['all', 'All'], ['text', 'Texts'], ['email', 'Emails']]} />,
-    calendar: <Seg value={filter.calmode} onChange={x => setFilter('calmode', x)} options={[['day', 'Day'], ['week', 'Week']]} />,
   }[id]
   return (
     <>

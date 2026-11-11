@@ -1136,3 +1136,103 @@ body.portal-lock { overflow: hidden; }
 .portal .gsearch__field:focus-within { box-shadow: var(--field-focus-halo), var(--shadow-hover); }
 .portal .field:focus-within { box-shadow: inset 2px 0 0 var(--field-focus-border); }
 .portal .sig input:focus-visible { outline: none; box-shadow: var(--field-focus-halo); border-color: var(--field-focus-border); }
+
+/* Tasks: same table, tiles and tags as Documents. */
+.portal .tasktabs { display: flex; }
+.portal .taskrow { gap: 12px; }
+.portal .taskrow .check, .portal .taskcard .check { flex-shrink: 0; }
+.portal .taskrow.is-done b, .portal .taskcard.is-done b { text-decoration: line-through; color: var(--label-2); }
+.portal .tasktile { color: #fff; box-shadow: 0 1px 2px rgba(15, 35, 71, 0.18); }
+.portal .taskdue { display: grid; gap: 1px; }
+.portal .taskdue b { font-weight: 600; color: var(--label); }
+.portal .taskdue b.is-late { color: var(--red); }
+.portal .taskdue small { color: var(--label-2); font-size: 12.5px; }
+.portal .tasknotes { display: block; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.portal .taskcard { cursor: pointer; }
+.portal .taskfoot { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; }
+.portal .taskfoot__spacer { flex: 1; }
+.portal .taskfoot__delete { color: var(--red); gap: 6px; }
+.portal .taskfoot__confirm { display: flex; align-items: center; gap: var(--s2); font-size: 14px; color: var(--label); }
+.portal .taskopenlead { margin-top: var(--s2); gap: 6px; color: var(--tint); }
+.portal .sheet-head__icon .tasktile { border-radius: 11px; }
+
+/* Calendar: fills the page; the day scrolls inside it. Events are a soft fill with a solid bar and text in their
+   colour (task type colours from Tasks, brass for firm events, red when overdue). */
+.portal .calx { display: flex; flex-direction: column; height: calc(100dvh - 163px - 10px); min-height: 460px; background: #fff; border: 1px solid var(--separator-soft); border-radius: var(--r-l); box-shadow: var(--shadow-card); overflow: hidden; }
+.portal .view:has(.calx) { padding-bottom: 10px; }
+.portal .calx__bar { display: flex; align-items: center; gap: var(--s3); flex-wrap: wrap; padding: 10px var(--s4); border-bottom: 1px solid var(--separator-soft); }
+.portal .calx__bar h2 { font-size: 18px; font-weight: 650; letter-spacing: -0.01em; color: var(--navy); margin-right: auto; }
+.portal .calx__nav { display: flex; gap: 2px; }
+.portal .calx__nav .iconbtn { width: 32px; height: 32px; }
+.portal .calx__legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--label-2); }
+.portal .calx__legend span { display: inline-flex; align-items: center; gap: 5px; }
+.portal .calx__legend i { width: 9px; height: 9px; border-radius: 3px; }
+
+.portal .calx__time { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.portal .calx__head { display: grid; grid-template-columns: 60px repeat(var(--days), minmax(0, 1fr)); border-bottom: 1px solid var(--separator-soft); }
+.portal .calx__day { display: grid; justify-items: center; gap: 2px; padding: 8px 0 10px; border: 0; border-left: 1px solid var(--separator-soft); background: transparent; cursor: pointer; }
+.portal .calx__day:disabled { cursor: default; }
+.portal .calx__day span { font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--label-2); }
+.portal .calx__day b { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; font-size: 19px; font-weight: 600; color: var(--label); }
+.portal .calx__day:not(:disabled):hover b { background: var(--fill-2); }
+.portal .calx__day.is-today span { color: var(--tint); }
+.portal .calx__day.is-today b { background: var(--tint); color: #fff; }
+.portal .calx__body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: grid; grid-template-columns: 60px minmax(0, 1fr); scrollbar-width: thin; }
+.portal .calx__gutter { position: relative; height: calc(var(--row) * 24); }
+.portal .calx__gutter span { position: absolute; right: 10px; transform: translateY(-50%); font-size: 11px; color: var(--label-2); white-space: nowrap; }
+.portal .calx__grid { display: grid; grid-template-columns: repeat(var(--days), minmax(0, 1fr)); height: calc(var(--row) * 24);
+  background-image: linear-gradient(var(--separator-soft) 1px, transparent 1px), linear-gradient(rgba(60, 60, 67, 0.05) 1px, transparent 1px);
+  background-size: 100% var(--row), 100% calc(var(--row) / 2); }
+.portal .calx__col { position: relative; border-left: 1px solid var(--separator-soft); cursor: copy; }
+.portal .calx__col.is-weekend { background: rgba(60, 60, 67, 0.025); }
+.portal .calx__col.is-today { background: rgba(31, 79, 216, 0.035); }
+.portal .calx__evt { position: absolute; display: grid; align-content: start; gap: 1px; padding: 4px 7px 4px 9px; overflow: hidden; text-align: left; cursor: pointer; z-index: 1;
+  border: 0; border-radius: 7px; background: color-mix(in srgb, var(--c) 13%, #fff); box-shadow: inset 3px 0 0 var(--c); color: color-mix(in srgb, var(--c) 82%, #000); }
+.portal .calx__evt:hover { background: color-mix(in srgb, var(--c) 20%, #fff); }
+.portal .calx__evt b { font-size: 12px; font-weight: 650; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.portal .calx__evt span { font-size: 11px; line-height: 1.3; opacity: 0.85; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.portal .calx__evt.is-short { grid-auto-flow: column; grid-template-columns: auto 1fr; align-items: center; gap: 6px; padding-block: 2px; }
+.portal .calx__evt.is-done b { text-decoration: line-through; }
+.portal .calx__evt.is-static { cursor: default; }
+.portal .calx__now { position: absolute; left: -1px; right: 0; height: 2px; background: var(--red); z-index: 2; pointer-events: none; }
+.portal .calx__now::before { content: ""; position: absolute; left: -5px; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--red); }
+
+.portal .calx__month { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.portal .calx__dow { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-bottom: 1px solid var(--separator-soft); }
+.portal .calx__dow span { padding: 8px 10px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--label-2); }
+.portal .calx__cells { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-template-rows: repeat(6, minmax(0, 1fr)); }
+.portal .calx__cell { display: flex; flex-direction: column; gap: 2px; min-height: 0; padding: 4px 6px 6px; border-left: 1px solid var(--separator-soft); border-top: 1px solid var(--separator-soft); overflow: hidden; }
+.portal .calx__cell:nth-child(7n + 1) { border-left: 0; }
+.portal .calx__cell:nth-child(-n + 7) { border-top: 0; }
+.portal .calx__cell.is-weekend { background: rgba(60, 60, 67, 0.025); }
+.portal .calx__cell.is-out .calx__date { color: var(--label-3); }
+.portal .calx__date { align-self: flex-end; display: grid; place-items: center; min-width: 26px; height: 26px; padding: 0 6px; border: 0; border-radius: 13px; background: transparent; font-size: 13px; font-weight: 600; color: var(--label); cursor: pointer; }
+.portal .calx__date:hover { background: var(--fill-2); }
+.portal .calx__cell.is-today .calx__date { background: var(--tint); color: #fff; }
+.portal .calx__chip { display: flex; align-items: center; gap: 5px; min-width: 0; padding: 2px 5px; border: 0; border-radius: 5px; background: transparent; font-size: 12px; color: var(--label); text-align: left; cursor: pointer; }
+.portal .calx__chip:hover { background: color-mix(in srgb, var(--c) 12%, #fff); }
+.portal .calx__chip i { flex-shrink: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--c); }
+.portal .calx__chip-time { flex-shrink: 0; color: var(--label-2); font-variant-numeric: tabular-nums; }
+.portal .calx__chip-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.portal .calx__chip.is-done .calx__chip-title { text-decoration: line-through; color: var(--label-2); }
+.portal .calx__more { align-self: flex-start; padding: 1px 5px; border: 0; background: transparent; font-size: 12px; font-weight: 600; color: var(--tint); cursor: pointer; }
+.portal .calx__more:hover { text-decoration: underline; }
+
+@media (max-width: 760px) {
+  .portal .calx { height: calc(100dvh - 135px - var(--tab-h) - 10px - env(safe-area-inset-bottom, 0px)); min-height: 380px; }
+  .portal .view:has(.calx) { padding-bottom: calc(var(--tab-h) + 10px + env(safe-area-inset-bottom, 0px)); }
+  .portal .calx__bar { padding: 8px var(--s3); gap: var(--s2); }
+  .portal .calx__bar h2 { font-size: 15px; order: 5; width: 100%; }
+  .portal .calx__legend { display: none; }
+  .portal .calx__head, .portal .calx__body { grid-template-columns: 48px repeat(var(--days), minmax(0, 1fr)); }
+  .portal .calx__body { grid-template-columns: 48px minmax(0, 1fr); }
+  .portal .calx__chip-time, .portal .calx__chip-title { display: none; }
+  .portal .calx__chip { display: inline-flex; padding: 1px; }
+  .portal .calx__cell { flex-direction: row; flex-wrap: wrap; align-content: flex-start; }
+  .portal .calx__date { flex-basis: 100%; }
+}
+.portal .calx__late { font-style: normal; font-weight: 700; color: var(--red); }
+.portal .calx__chip-time.is-late { color: var(--red); font-weight: 600; }
+.portal .tasktabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.portal .tasktabs::-webkit-scrollbar { display: none; }
+.portal .tasktabs .seg { flex-shrink: 0; }

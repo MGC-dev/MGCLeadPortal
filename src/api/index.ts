@@ -56,6 +56,12 @@ export const tasksApi = {
     if (a.done && l) { l.activities.push({ t: Date.now(), type: 'stage', cls: 'good', title: `Task done: ${a.title}`, text: `Ticked off by ${a.assignedTo}.` }); toast('Task done', `${a.title}, ${l.name}`) }
     return done()
   },
+  /** Edits a task's details (title, type, time, who, lead, notes). */
+  update(id: string, patch: Partial<Pick<Task, 'type' | 'title' | 'dueAt' | 'assignedTo' | 'leadId' | 'notes'>>) {
+    const a = store.get().tasks.find(x => x.id === id)
+    if (a) { Object.assign(a, patch); toast('Task saved', a.title) }
+    return done()
+  },
   reschedule(id: string, dueAt: number) { const a = store.get().tasks.find(x => x.id === id); if (a) a.dueAt = dueAt; return done() },
   remove(id: string) { const t = store.get(); t.tasks = t.tasks.filter(x => x.id !== id); return done() },
 }

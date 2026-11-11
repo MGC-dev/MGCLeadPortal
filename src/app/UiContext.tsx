@@ -7,7 +7,7 @@ export type Modal =
   | { type: 'newcamp'; kind: 'auto' | 'broadcast' | 'survey' }
   | { type: 'more' | 'help' | 'account' | 'team' }
 
-export interface Filters { inbox: string; calmode: 'day' | 'week' }
+export interface Filters { inbox: string; calmode: 'day' | 'week' | 'month' }
 
 interface Ui {
   /** Lead open in the side inspector. */

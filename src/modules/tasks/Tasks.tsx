@@ -1,15 +1,19 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { IconPlus } from '@tabler/icons-react'
 import { tasksApi, leadsApi, useQuery } from '../../api'
 import { config } from '../../api/mockData'
-import type { Task, TaskType, Lead } from '../../api/types'
-import { useUi } from '../../app/UiContext'
+import type { Task, Lead } from '../../api/types'
+import { type Col, DataTable, SortMenu, sortRows, useTableView } from '../../shared/DataTable'
+import { HeaderActions } from '../../shared/HeaderActions'
+import { ExpandingSearch, FilterMenu } from '../../shared/HeaderTools'
 import { Icon } from '../../shared/Icon'
-import { Select } from '../../shared/Select'
-import { Empty, Field, Seg, Sheet, SheetFoot, Tag } from '../../shared/ui'
-import { dayAt, endOfToday, timeOf } from '../../shared/format'
+import { Empty, Seg, Tag } from '../../shared/ui'
+import { dayAt, endOfToday, initials, timeOf } from '../../shared/format'
+import { TASK_TYPES, TaskSheet, TaskTile } from './TaskSheet'
 
-export const TASK_TYPES: Record<TaskType, string> = { task: 'Task', call: 'Call', meeting: 'Meeting', follow_up: 'Follow-up', deadline: 'Deadline' }
+export { TASK_TYPES }
 type Tab = 'today' | 'upcoming' | 'overdue' | 'completed' | 'all'
+const STORE = 'unir-tasks-columns-v1'
 
 const startToday = () => dayAt(0)
 const rules: Record<Tab, (a: Task) => boolean> = {
@@ -20,7 +24,8 @@ const rules: Record<Tab, (a: Task) => boolean> = {
   all: () => true,
 }
 
-function dayLabel(t: number) {
+/** "Today", "Tomorrow", "Yesterday", then "Mon, Nov 16". */
+export function dayLabel(t: number) {
   const d = new Date(t), today = new Date()
   const diff = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() - new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()) / 86_400_000)
   if (diff === 0) return 'Today'
@@ -29,51 +34,18 @@ function dayLabel(t: number) {
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 }
 
-function DueTag({ a }: { a: Task }) {
+function StatusTag({ a }: { a: Task }) {
   if (a.done) return <Tag tone="green" icon="check">Done</Tag>
   if (a.dueAt < Date.now()) return <Tag tone="red">Overdue</Tag>
-  return <Tag tone={a.dueAt <= endOfToday() ? 'accent' : undefined}>{timeOf(a.dueAt)}</Tag>
+  if (a.dueAt <= endOfToday()) return <Tag tone="accent">Due today</Tag>
+  return <Tag tone="tint">Upcoming</Tag>
 }
 
-function Row({ a, lead }: { a: Task; lead?: Lead }) {
-  const { openLead } = useUi()
+/** The round tick at the start of a row. Ticking it does not open the task. */
+function Check({ a }: { a: Task }) {
   return (
-    <li>
-      <div className={'row task' + (a.done ? ' is-done' : '')}>
-        <button className="check" type="button" role="checkbox" aria-checked={a.done} aria-label={`Done: ${a.title}`} onClick={() => tasksApi.toggle(a.id)}><Icon name="check" /></button>
-        <button className="task__open" type="button" onClick={() => lead && openLead(lead.id)} style={lead ? undefined : { cursor: 'default' }}>
-          <span className="row__main"><b>{a.title}</b><span>{lead ? `${lead.name} · ${lead.matter}` : 'Firm'} · {TASK_TYPES[a.type]}</span></span>
-          <span className="row__end"><DueTag a={a} /><span className="caption">{a.assignedTo}</span></span>
-        </button>
-        <button className="btn btn--plain btn--sm" type="button" aria-label={`Delete ${a.title}`} onClick={() => tasksApi.remove(a.id)}><Icon name="x" small /></button>
-      </div>
-    </li>
-  )
-}
-
-function ScheduleModal({ leads, onClose }: { leads: Lead[]; onClose: () => void }) {
-  const [ty, setTy] = useState('call')
-  const [asg, setAsg] = useState<string>(config.owners[0])
-  const [ld, setLd] = useState('')
-  const toInput = (t: number) => new Date(t - new Date(t).getTimezoneOffset() * 60_000).toISOString().slice(0, 16)
-  return (
-    <Sheet title="Schedule" info="Add a call, meeting, task or deadline to your tasks." onClose={onClose} foot={<SheetFoot onCancel={onClose} primary="Schedule" />}
-      onSubmit={async e => {
-        e.preventDefault()
-        const d = Object.fromEntries(new FormData(e.currentTarget)) as Record<string, string>
-        if (!d.title.trim()) return
-        await tasksApi.create({ type: d.type as TaskType, title: d.title.trim(), dueAt: +new Date(d.when), assignedTo: d.who, leadId: d.lead || undefined, notes: d.notes || undefined })
-        onClose()
-      }}>
-      <div className="formgroup">
-        <Field label="Title" id="ag-t"><input id="ag-t" name="title" required autoFocus autoComplete="off" placeholder="Call Rachel about her documents" /></Field>
-        <Field label="Type" id="ag-ty" stack><Select contain id="ag-ty" name="type" value={ty} onChange={setTy} options={Object.entries(TASK_TYPES).map(([k, v]) => ({ value: k, label: v }))} /></Field>
-        <Field label="When" id="ag-w"><input id="ag-w" name="when" type="datetime-local" required defaultValue={toInput(dayAt(1, 10))} /></Field>
-        <Field label="Assigned To" id="ag-a" stack><Select contain id="ag-a" name="who" value={asg} onChange={setAsg} options={config.owners.map(o => ({ value: o, label: o }))} /></Field>
-        <Field label="Lead" id="ag-l" stack><Select contain id="ag-l" name="lead" value={ld} onChange={setLd} options={[{ value: '', label: 'None' }, ...leads.map(l => ({ value: l.id, label: l.name }))]} /></Field>
-      </div>
-      <div className="formgroup"><Field label="Notes" id="ag-n" stack><textarea id="ag-n" name="notes" /></Field></div>
-    </Sheet>
+    <button className="check" type="button" role="checkbox" aria-checked={a.done} aria-label={`Done: ${a.title}`}
+      onClick={e => { e.stopPropagation(); void tasksApi.toggle(a.id) }} onKeyDown={e => e.stopPropagation()}><Icon name="check" /></button>
   )
 }
 
@@ -82,36 +54,78 @@ export default function Tasks() {
   const items = useQuery(() => tasksApi.list())
   const leads = useQuery(() => leadsApi.list()) ?? []
   const [tab, setTab] = useState<Tab>('today')
-  const [who, setWho] = useState('')
-  const [type, setType] = useState('')
-  const [adding, setAdding] = useState(false)
-  if (!items) return null
+  const [who, setWho] = useState('all')
+  const [type, setType] = useState('all')
+  const [q, setQ] = useState('')
+  const [open, setOpen] = useState<Task | 'new' | null>(null)
+  const leadOf = (a: Task): Lead | undefined => leads.find(l => l.id === a.leadId)
 
-  const base = items.filter(a => (!who || a.assignedTo === who) && (!type || a.type === type))
+  const cols = useMemo<Col<Task>[]>(() => [
+    { id: 'task', label: 'Task', locked: true, sort: a => a.title.toLowerCase(), render: a => {
+      const l = leadOf(a)
+      return (
+        <span className={'ltable__who taskrow' + (a.done ? ' is-done' : '')}>
+          <Check a={a} />
+          <TaskTile type={a.type} />
+          <span><b>{a.title}</b><small>{l ? `${l.name} · ${l.matter}` : 'Firm task'}</small></span>
+        </span>
+      )
+    } },
+    { id: 'due', label: 'Due', defaultOn: true, sort: a => a.dueAt, render: a => (
+      <span className="ltable__text taskdue"><b className={!a.done && a.dueAt < Date.now() ? 'is-late' : ''}>{dayLabel(a.dueAt)}</b><small>{timeOf(a.dueAt)}</small></span>) },
+    { id: 'status', label: 'Status', defaultOn: true, sort: a => (a.done ? 3 : a.dueAt < Date.now() ? 0 : a.dueAt <= endOfToday() ? 1 : 2), render: a => <StatusTag a={a} /> },
+    { id: 'type', label: 'Type', defaultOn: true, sort: a => TASK_TYPES[a.type], render: a => <span className="ltable__text">{TASK_TYPES[a.type]}</span> },
+    { id: 'owner', label: 'Assigned To', defaultOn: true, sort: a => a.assignedTo.toLowerCase(), render: a => <span className="ltable__owner"><i aria-hidden="true">{initials(a.assignedTo)}</i>{a.assignedTo.split(' ')[0]}</span> },
+    { id: 'notes', label: 'Notes', sort: a => a.notes ?? '', render: a => <span className="ltable__text tasknotes">{a.notes || '—'}</span> },
+  ], [leads]) // eslint-disable-line react-hooks/exhaustive-deps
+  const view = useTableView<Task>(STORE, cols, { key: 'due', dir: 'asc' })
+
+  if (!items) return null
+  const term = q.trim().toLowerCase()
+  const base = items.filter(a => (who === 'all' || a.assignedTo === who) && (type === 'all' || a.type === type) &&
+    (!term || `${a.title} ${leadOf(a)?.name ?? ''} ${leadOf(a)?.matter ?? ''} ${a.notes ?? ''}`.toLowerCase().includes(term)))
   const count = (t: Tab) => base.filter(rules[t]).length
-  let rows = base.filter(rules[tab])
-  if (tab === 'completed') rows = [...rows].sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0))
-  const groups = new Map<string, Task[]>()
-  rows.forEach(a => { const k = tab === 'completed' ? 'Completed' : dayLabel(a.dueAt); groups.set(k, [...(groups.get(k) ?? []), a]) })
-  const label = (t: Tab, n: string) => `${n}${count(t) ? ` (${count(t)})` : ''}`
+  const tie = tab === 'completed' ? (a: Task, b: Task) => (b.completedAt ?? 0) - (a.completedAt ?? 0) : (a: Task, b: Task) => a.dueAt - b.dueAt
+  const rows = sortRows(base.filter(rules[tab]), view, tie)
+  const label = (t: Tab, n: string) => `${n}${count(t) ? ` ${count(t)}` : ''}`
 
   return (
     <>
-      <div className="boardbar">
-        <Seg<Tab> value={tab} onChange={setTab} options={[['today', label('today', 'Today')], ['upcoming', label('upcoming', 'Upcoming')], ['overdue', label('overdue', 'Overdue')], ['completed', 'Completed'], ['all', 'All']]} label="Tasks view" />
-        <div className="boardbar__select"><Select aria-label="Assigned to" value={who} onChange={setWho} options={[{ value: '', label: 'Everyone' }, ...config.owners.map(o => ({ value: o, label: o }))]} /></div>
-        <div className="boardbar__select"><Select aria-label="Type" value={type} onChange={setType} options={[{ value: '', label: 'All types' }, ...Object.entries(TASK_TYPES).map(([k, v]) => ({ value: k, label: v }))]} /></div>
-        <button className="btn btn--prominent" type="button" onClick={() => setAdding(true)} style={{ marginLeft: 'auto' }}><Icon name="plus" small />Schedule</button>
+      <HeaderActions>
+        <button type="button" className="iconbtn iconbtn--primary" aria-label="Schedule a task" title="Schedule a task" onClick={() => setOpen('new')}><IconPlus size={19} stroke={2.2} /></button>
+        <ExpandingSearch value={q} onChange={setQ} />
+        <span className="only-phone-inline"><SortMenu view={view} label="Sort tasks" /></span>
+        <FilterMenu label="Filter tasks" activeLabel="Filters applied" sections={[
+          { title: 'Assigned to', value: who, onChange: setWho, options: [{ value: 'all', label: 'Everyone', badge: null }, ...config.owners.map(o => ({ value: o, label: o, badge: null }))] },
+          { title: 'Type', value: type, onChange: setType, options: [{ value: 'all', label: 'All types', badge: null }, ...Object.entries(TASK_TYPES).map(([k, v]) => ({ value: k, label: v, badge: null }))] },
+        ]} />
+      </HeaderActions>
+
+      <div className="tasktabs">
+        <Seg<Tab> value={tab} onChange={setTab} label="Show tasks"
+          options={[['today', label('today', 'Today')], ['upcoming', label('upcoming', 'Upcoming')], ['overdue', label('overdue', 'Overdue')], ['completed', 'Completed'], ['all', 'All']]} />
       </div>
+
       {rows.length === 0
-        ? <Empty icon="tasks">{tab === 'overdue' ? 'Nothing overdue. Nice work.' : tab === 'today' ? 'Nothing scheduled for today.' : 'Nothing here.'}</Empty>
-        : [...groups].map(([day, list]) => (
-          <div key={day}>
-            <p className="section-title">{day} ({list.length})</p>
-            <ul className="group rows">{list.map(a => <Row key={a.id} a={a} lead={leads.find(l => l.id === a.leadId)} />)}</ul>
-          </div>
-        ))}
-      {adding && <ScheduleModal leads={leads} onClose={() => setAdding(false)} />}
+        ? <Empty icon="tasks">{term ? 'No tasks match your search.' : tab === 'overdue' ? 'Nothing overdue. Nice work.' : tab === 'today' ? 'Nothing scheduled for today.' : 'Nothing here.'}</Empty>
+        : (
+          <>
+            <DataTable rows={rows} view={view} rowKey={a => a.id} onOpen={a => setOpen(a)} sortLabel="Sort tasks" />
+            <ul className="lcards only-phone">{rows.map(a => {
+              const l = leadOf(a)
+              return (
+                <li key={a.id}>
+                  <div className={'lcard taskcard' + (a.done ? ' is-done' : '')} role="button" tabIndex={0} onClick={() => setOpen(a)} onKeyDown={e => { if (e.key === 'Enter') setOpen(a) }}>
+                    <span className="lcard__top"><Check a={a} /><TaskTile type={a.type} size={34} />
+                      <span className="lcard__who"><b>{a.title}</b><small>{l ? l.name : 'Firm task'} · {dayLabel(a.dueAt)} {timeOf(a.dueAt)}</small></span></span>
+                    <span className="lcard__meta"><StatusTag a={a} /><span className="caption">{a.assignedTo}</span></span>
+                  </div>
+                </li>
+              )
+            })}</ul>
+          </>
+        )}
+      {open && <TaskSheet task={open === 'new' ? undefined : items.find(x => x.id === open.id)} leads={leads} onClose={() => setOpen(null)} />}
     </>
   )
 }
