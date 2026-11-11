@@ -1,481 +1,177 @@
-import { db, delay, uid } from './db'
-import type { Activity, AgendaItem, AgendaType, Campaign, CampaignStep, Client, Invoice, Lead, LeadStatus, LegalDocument, Matter, Message, Service } from '../types'
-import { ENGAGEMENT_KINDS, LEAD_STAGES } from '../types'
+// Endpoint layer used by the UI. Every function is async and returns plain data, like a real HTTP client would.
+// Today they call the in-memory mock backend (mockServer.ts, seeded from mockData.ts). When the real backend
+// is ready, replace each body with a fetch() call; the signatures and the types in ./types.ts stay the same.
+import { useEffect, useState, useSyncExternalStore } from 'react'
+import { config as seedConfig, enquiryPool, team as seedTeam } from './mockData'
+import * as srv from './mockServer'
+import { store } from './mockServer'
+import { toast } from '../shared/toast' // mock-only: a real backend would not toast, the UI would
+import type {
+  Task, AudienceKey, Campaign, PortalConfig, Firm, FirmEvent, Integration, Lead, NewCampaignInput, NewLeadInput,
+  DocFile, DocField, PortalDocument, SearchHit, Service, SendProgress, SentItem, SourceId, StageId, TeamMember,
+} from './types'
 
-const now = () => new Date().toISOString()
 const clone = <T,>(v: T): T => structuredClone(v)
-const byNewest = <T extends { createdAt?: string; at?: string }>(a: T, b: T) =>
-  (b.createdAt ?? b.at ?? '').localeCompare(a.createdAt ?? a.at ?? '')
+const reply = <T,>(v: T): Promise<T> => Promise.resolve(clone(v))
+const done = () => { store.commit(); return Promise.resolve() }
 
-function log(entityType: Activity['entityType'], entityId: string, text: string) {
-  db.table('activities').unshift({ id: uid('a'), entityType, entityId, text, at: now() })
+export const configApi = {
+  get: (): Promise<PortalConfig> => reply(seedConfig),
 }
 
-function addMessage(m: Omit<Message, 'id' | 'at'> & { at?: string }) {
-  db.table('messages').unshift({ ...m, id: uid('ms'), at: m.at ?? now() })
+export const leadsApi = {
+  list: (): Promise<Lead[]> => reply(store.get().leads),
+  get: (id: string): Promise<Lead | undefined> => reply(store.get().leads.find(l => l.id === id)),
+  /** Simulates an enquiry arriving by a channel, or staff logging one with Quick Intake. */
+  create(channel: SourceId, data?: NewLeadInput): Promise<Lead> { const l = srv.createLead(channel, data); store.commit(); return reply(l) },
+  setStage(id: string, stage: StageId) { srv.setStage(srv.findLead(id), stage); return done() },
+  logCall(id: string) { srv.logCall(srv.findLead(id)); return done() },
+  sendContract(id: string) { srv.sendContract(srv.findLead(id)); return done() },
+  /** Sends a packet of library documents (with their inputs filled from the ticket) and moves the lead to Contract Sent. */
+  sendDocuments(id: string, items: SentItem[]) { srv.sendContract(srv.findLead(id), false, items); return done() },
+  /** The services the client is taking (from the catalog); sets the ticket's estimated fee. */
+  setServices(id: string, ids: string[]) { srv.setServices(srv.findLead(id), ids); return done() },
+  /** Sends the already-approved documents for signature. No modal; the stage changes when the e-signature API reports back. */
+  sendForSignature(id: string) { srv.requestSignature(srv.findLead(id)); return done() },
+  sign(id: string, by: string) { srv.signContract(srv.findLead(id), by); return done() },
+  markLost(id: string, reason: string) { srv.markLost(srv.findLead(id), reason); return done() },
+  sendText(id: string, body: string) { srv.sendText(srv.findLead(id), body); return done() },
+  addReminder(id: string, title: string, inHours: number) { return tasksApi.create({ type: 'follow_up', title, dueAt: Date.now() + inHours * 3_600_000, assignedTo: srv.findLead(id).owner, leadId: id }) },
 }
 
-const merge = (t: string, lead: Lead) =>
-  t.replace(/{{first_name}}/g, lead.name.split(' ')[0]).replace(/{{practice_area}}/g, lead.practiceArea)
-    .replace(/{{attorney}}/g, lead.assignedTo).replace(/{{booking_link}}/g, '[booking link]').replace(/{{payment_link}}/g, '[payment link]')
-
-/** Enrolls the lead in matching active campaigns; an immediate first email/SMS step is logged in Communication. */
-function enrollCampaigns(trigger: Campaign['trigger'], lead: Lead) {
-  db.table('campaigns')
-    .filter(c => c.status === 'active' && c.trigger === trigger)
-    .forEach(c => {
-      c.stats.enrolled++
-      const first = c.steps[0]
-      if (first && (first.type === 'email' || first.type === 'sms') && first.delayDays === 0) {
-        c.stats.sent++
-        addMessage({ channel: first.type, direction: 'out', leadId: lead.id, subject: first.type === 'email' ? merge(first.subject, lead) : undefined, body: merge(first.body, lead), source: c.name })
-      }
-    })
-}
-
-// ---- Agenda automation: each pipeline stage creates its next step; moving on closes the previous auto step.
-function at(daysAhead: number, hour: number) {
-  const d = new Date(); d.setDate(d.getDate() + daysAhead); d.setHours(hour, 0, 0, 0); return d.toISOString()
-}
-function schedule(lead: Lead, type: AgendaType, title: string, dueAt: string) {
-  db.table('agenda').unshift({ id: uid('g'), type, title, dueAt, done: false, assignedTo: lead.assignedTo, leadId: lead.id, auto: true })
-}
-function closeAutoItems(leadId: string) {
-  db.table('agenda').filter(a => a.leadId === leadId && a.auto && !a.done).forEach(a => { a.done = true; a.completedAt = now() })
-}
-function stageAgenda(lead: Lead, status: LeadStatus) {
-  const n = lead.name
-  const plan: Partial<Record<LeadStatus, [AgendaType, string, number, number]>> = {
-    contacted: ['call', `Second contact attempt – ${n}`, 1, 10],
-    follow_up: ['follow_up', `Follow up with ${n}`, 3, 10],
-    consultation: ['meeting', `Discovery call – ${n}`, 1, 10],
-    attorney_review: ['task', `Attorney review – ${n}`, 1, 9],
-    strategy: ['meeting', `Strategy session – ${n}`, 3, 11],
-    pending: ['task', `Prepare engagement & payment – ${n}`, 1, 9],
-    engagement_sent: ['follow_up', `Follow up on engagement letter – ${n}`, 2, 10],
-    payment_link_sent: ['follow_up', `Confirm retainer payment – ${n}`, 2, 10],
-    payment_plan: ['task', `Finalize payment plan – ${n}`, 2, 10],
-  }
-  const p = plan[status]
-  if (p) schedule(lead, p[0], p[1], at(p[2], p[3]))
-}
-
-const STAGE_ORDER = LEAD_STAGES.map(s => s.key)
-
-function setStage(lead: Lead, status: LeadStatus) {
-  lead.status = status
-  lead.lastContactAt = now()
-  log('lead', lead.id, `${lead.name} moved to ${LEAD_STAGES.find(s => s.key === status)!.label}`)
-  closeAutoItems(lead.id)
-  stageAgenda(lead, status)
-  if (status === 'consultation') enrollCampaigns('consultation_booked', lead)
-  if (status === 'engagement_sent') enrollCampaigns('proposal_sent', lead)
-}
-
-/** Automatic stage change driven by Documents/Payments. Only ever moves a lead forward. */
-function advanceLead(id: string | undefined, to: LeadStatus) {
-  const lead = db.table('leads').find(l => l.id === id)
-  if (!lead || lead.status === 'retained' || lead.status === 'lost') return
-  if (STAGE_ORDER.indexOf(lead.status) >= STAGE_ORDER.indexOf(to)) return
-  setStage(lead, to)
-}
-
-const nextInvoiceNumber = () => `INV-${1000 + db.table('invoices').length + 1}`
-
-// ---------- Leads ----------
-export const leads = {
-  list: () => delay(clone(db.table('leads')).sort(byNewest)),
-  get: (id: string) => delay(clone(db.table('leads').find(l => l.id === id)!)),
-  create(data: Pick<Lead, 'name' | 'email' | 'phone' | 'source' | 'practiceArea' | 'serviceId' | 'value' | 'assignedTo' | 'notes'>) {
-    const lead: Lead = { ...data, id: uid('l'), status: 'new', createdAt: now() }
-    db.table('leads').unshift(lead)
-    log('lead', lead.id, `New lead from ${lead.source}`)
-    schedule(lead, 'call', `Call ${lead.name} – new inquiry`, new Date(Date.now() + 2 * 3_600_000).toISOString())
-    enrollCampaigns('lead_created', lead)
-    db.commit()
-    return delay(lead)
-  },
-  update(id: string, patch: Partial<Lead>) {
-    Object.assign(db.table('leads').find(l => l.id === id)!, patch)
-    db.commit()
-    return delay(true)
-  },
-  moveTo(id: string, status: LeadStatus) {
-    const lead = db.table('leads').find(l => l.id === id)!
-    if (lead.status === status) return delay(true)
-    if (status === 'retained' || lead.status === 'retained') throw new Error('Use convert() to retain a lead')
-    setStage(lead, status)
-    db.commit()
-    return delay(true)
-  },
-  remove(id: string) {
-    const t = db.table('leads')
-    t.splice(t.findIndex(l => l.id === id), 1)
-    db.commit()
-    return delay(true)
-  },
-  /** Lead -> Client: creates client + matter + draft retainer agreement + draft retainer invoice. */
-  convert(id: string, opts: { matterTitle: string; retainerAmount: number }) {
-    const lead = db.table('leads').find(l => l.id === id)!
-    const client: Client = {
-      id: uid('c'), name: lead.name, email: lead.email, phone: lead.phone,
-      practiceArea: lead.practiceArea, status: 'active', leadId: lead.id, since: now(),
-    }
-    const matter: Matter = {
-      id: uid('m'), clientId: client.id, title: opts.matterTitle, practiceArea: lead.practiceArea,
-      status: 'open', attorney: lead.assignedTo, openedAt: now(),
-    }
-    // Carry over anything already sent to the lead during intake (engagement letter, retainer invoice)
-    const leadDocs = db.table('documents').filter(d => d.leadId === lead.id)
-    const leadInvs = db.table('invoices').filter(i => i.leadId === lead.id)
-    leadDocs.forEach(d => { d.clientId = client.id })
-    leadInvs.forEach(i => { i.clientId = client.id; i.matterId = matter.id })
-    db.table('clients').unshift(client)
-    db.table('matters').unshift(matter)
-    if (!leadDocs.some(d => ENGAGEMENT_KINDS.includes(d.kind))) {
-      db.table('documents').unshift({
-        id: uid('d'), name: `Retainer Agreement – ${lead.name}`, kind: 'Retainer Agreement',
-        recipientName: lead.name, recipientEmail: lead.email, clientId: client.id, status: 'draft', createdAt: now(),
-      })
-    }
-    if (!leadInvs.some(i => i.type === 'retainer')) {
-      db.table('invoices').unshift({
-        id: uid('i'), number: nextInvoiceNumber(), clientId: client.id, matterId: matter.id, type: 'retainer',
-        description: `Initial retainer – ${opts.matterTitle}`, amount: opts.retainerAmount, status: 'draft',
-        dueDate: new Date(Date.now() + 7 * 86_400_000).toISOString(),
-      })
-    }
-    lead.status = 'retained'
-    lead.clientId = client.id
-    lead.lastContactAt = now()
-    log('client', client.id, `${lead.name} converted from lead to client`)
-    closeAutoItems(lead.id)
-    db.table('agenda').filter(a => a.leadId === lead.id).forEach(a => { a.clientId = client.id })
-    db.table('messages').filter(m => m.leadId === lead.id).forEach(m => { m.clientId = client.id })
-    db.table('agenda').unshift({ id: uid('g'), type: 'meeting', title: `Case kickoff – ${client.name}`, dueAt: at(2, 10), done: false, assignedTo: lead.assignedTo, clientId: client.id, leadId: lead.id })
-    enrollCampaigns('client_retained', lead)
-    db.commit()
-    return delay(client)
-  },
-}
-
-// ---------- Clients & matters ----------
-export const services = {
-  list: () => delay(clone(db.table('services')).sort((a, b) => a.practiceArea.localeCompare(b.practiceArea) || a.name.localeCompare(b.name))),
-  create(data: Omit<Service, 'id'>) {
-    db.table('services').push({ ...data, id: uid('sv') })
-    db.commit()
-    return delay(true)
-  },
-  update(id: string, patch: Partial<Service>) {
-    Object.assign(db.table('services').find(s => s.id === id)!, patch)
-    db.commit()
-    return delay(true)
-  },
-  /** Services already used by a lead can only be deactivated, not deleted. */
-  remove(id: string) {
-    if (db.table('leads').some(l => l.serviceId === id)) throw new Error('Service is in use. Deactivate it instead.')
-    const t = db.table('services')
-    t.splice(t.findIndex(s => s.id === id), 1)
-    db.commit()
-    return delay(true)
-  },
-}
-
-export const clients = {
-  list: () => delay(clone(db.table('clients')).sort((a, b) => b.since.localeCompare(a.since))),
-  get: (id: string) => delay(clone(db.table('clients').find(c => c.id === id)!)),
-  matters: (clientId?: string) =>
-    delay(clone(db.table('matters')).filter(m => !clientId || m.clientId === clientId)),
-  addMatter(data: Omit<Matter, 'id' | 'openedAt'>) {
-    db.table('matters').unshift({ ...data, id: uid('m'), openedAt: now() })
-    db.commit()
-    return delay(true)
-  },
-  updateMatter(id: string, patch: Partial<Matter>) {
-    Object.assign(db.table('matters').find(m => m.id === id)!, patch)
-    db.commit()
-    return delay(true)
-  },
-}
-
-// ---------- Documents / e-signature ----------
-export const documents = {
-  list: () => delay(clone(db.table('documents')).sort(byNewest)),
-  create(data: Pick<LegalDocument, 'name' | 'kind' | 'recipientName' | 'recipientEmail' | 'clientId' | 'leadId'>) {
-    const doc: LegalDocument = { ...data, id: uid('d'), status: 'draft', createdAt: now() }
-    db.table('documents').unshift(doc)
-    db.commit()
-    return delay(doc)
-  },
-  /** Mock of "send via e-sign provider" (DocuSign/Dropbox Sign etc. would plug in here). */
-  send(id: string) {
-    const d = db.table('documents').find(x => x.id === id)!
-    d.status = 'sent'; d.sentAt = now()
-    log('document', id, `${d.name} sent to ${d.recipientEmail} for signature`)
-    addMessage({ channel: 'email', direction: 'out', leadId: d.leadId, clientId: d.clientId, subject: `Please sign: ${d.name}`, body: `Hi ${d.recipientName.split(' ')[0]}, your ${d.kind.toLowerCase()} is ready for signature.`, source: 'Documents' })
-    if (ENGAGEMENT_KINDS.includes(d.kind)) advanceLead(d.leadId, 'engagement_sent')
-    db.commit()
-    return delay(true)
-  },
-  /** Mock provider webhook events. */
-  simulate(id: string, status: 'viewed' | 'signed' | 'declined') {
-    const d = db.table('documents').find(x => x.id === id)!
-    d.status = status
-    if (status === 'signed') d.signedAt = now()
-    log('document', id, `${d.recipientName} ${status} ${d.name}`)
-    if (d.leadId && status === 'signed' && ENGAGEMENT_KINDS.includes(d.kind)) log('lead', d.leadId, 'Engagement signed. Send the retainer payment link next.')
-    db.commit()
-    return delay(true)
-  },
-  remove(id: string) {
-    const t = db.table('documents')
-    t.splice(t.findIndex(d => d.id === id), 1)
-    db.commit()
-    return delay(true)
-  },
-}
-
-// ---------- Invoices / payments ----------
-export const invoices = {
-  list: () => {
-    const t = db.table('invoices')
-    // derive overdue status
-    t.forEach(i => { if (i.status === 'sent' && new Date(i.dueDate) < new Date()) i.status = 'overdue' })
-    return delay(clone(t).sort((a, b) => b.number.localeCompare(a.number)))
-  },
-  create(data: Pick<Invoice, 'clientId' | 'leadId' | 'matterId' | 'type' | 'description' | 'amount' | 'dueDate'>) {
-    const inv: Invoice = { ...data, id: uid('i'), number: nextInvoiceNumber(), status: 'draft' }
-    db.table('invoices').unshift(inv)
-    db.commit()
-    return delay(inv)
-  },
-  /** Mock of generating + emailing a payment link (Stripe/LawPay would plug in here). */
-  send(id: string) {
-    const i = db.table('invoices').find(x => x.id === id)!
-    i.status = 'sent'
-    log('invoice', id, `${i.number} sent with payment link`)
-    const payer = i.clientId ? db.table('clients').find(c => c.id === i.clientId) : db.table('leads').find(l => l.id === i.leadId)
-    addMessage({ channel: 'email', direction: 'out', leadId: i.leadId, clientId: i.clientId, subject: `Payment link: ${i.number} – $${i.amount.toLocaleString()}`, body: `Hi ${(payer?.name ?? '').split(' ')[0]}, you can pay ${i.number} securely online.`, source: 'Payments' })
-    if (i.type === 'retainer') advanceLead(i.leadId, 'payment_link_sent')
-    db.commit()
-    return delay(true)
-  },
-  markPaid(id: string, method = 'Card') {
-    const i = db.table('invoices').find(x => x.id === id)!
-    i.status = 'paid'; i.paidAt = now(); i.method = method
-    log('invoice', id, `${i.number} paid – $${i.amount.toLocaleString()}`)
-    if (i.leadId && i.type === 'retainer') log('lead', i.leadId, 'Retainer paid. Ready to retain as a client.')
-    db.commit()
-    return delay(true)
-  },
-  remove(id: string) {
-    const t = db.table('invoices')
-    t.splice(t.findIndex(d => d.id === id), 1)
-    db.commit()
-    return delay(true)
-  },
-}
-
-// ---------- Campaigns ----------
-export const campaigns = {
-  list: () => delay(clone(db.table('campaigns')).sort(byNewest)),
-  get: (id: string) => delay(clone(db.table('campaigns').find(c => c.id === id)!)),
-  create(name: string, trigger: Campaign['trigger']) {
-    const c: Campaign = {
-      id: uid('cp'), name, trigger, status: 'draft', createdAt: now(),
-      steps: [{ id: uid('s'), type: 'email', delayDays: 0, subject: 'Subject', body: 'Write your message…' }],
-      stats: { enrolled: 0, sent: 0, opened: 0, replied: 0, converted: 0 },
-    }
-    db.table('campaigns').unshift(c)
-    db.commit()
-    return delay(c)
-  },
-  update(id: string, patch: Partial<Pick<Campaign, 'name' | 'trigger' | 'status' | 'steps'>>) {
-    Object.assign(db.table('campaigns').find(c => c.id === id)!, patch)
-    db.commit()
-    return delay(true)
-  },
-  newStep: (): CampaignStep => ({ id: uid('s'), type: 'email', delayDays: 1, subject: '', body: '' }),
-  remove(id: string) {
-    const t = db.table('campaigns')
-    t.splice(t.findIndex(d => d.id === id), 1)
-    db.commit()
-    return delay(true)
-  },
-}
-
-// ---------- Activity & dashboard ----------
-export const activity = {
-  recent: (limit = 8) => delay(clone(db.table('activities')).sort(byNewest).slice(0, limit)),
-  forEntity: (type: Activity['entityType'], id: string) =>
-    delay(clone(db.table('activities')).filter(a => a.entityType === type && a.entityId === id).sort(byNewest)),
-}
-
-export const dashboard = {
-  async stats() {
-    const L = db.table('leads'), I = db.table('invoices'), D = db.table('documents'), C = db.table('clients')
-    const open = L.filter(l => l.status !== 'retained' && l.status !== 'lost')
-    const retained = L.filter(l => l.status === 'retained').length
-    const closed = L.filter(l => l.status === 'retained' || l.status === 'lost').length
-    return delay({
-      openLeads: open.length,
-      pipelineValue: open.reduce((s, l) => s + l.value, 0),
-      conversionRate: closed ? Math.round((retained / closed) * 100) : 0,
-      activeClients: C.filter(c => c.status === 'active').length,
-      collected: I.filter(i => i.status === 'paid').reduce((s, i) => s + i.amount, 0),
-      outstanding: I.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + i.amount, 0),
-      awaitingSignature: D.filter(d => d.status === 'sent' || d.status === 'viewed').length,
-      overdueCount: I.filter(i => i.status === 'overdue').length,
-      funnel: LEAD_STAGES.filter(s => s.key !== 'lost').map(s => ({ label: s.label, count: L.filter(l => l.status === s.key).length })),
-    })
-  },
-}
-
-// ---------- Agenda ----------
-export const agenda = {
-  list: () => delay(clone(db.table('agenda')).sort((a, b) => a.dueAt.localeCompare(b.dueAt))),
-  create(data: Pick<AgendaItem, 'type' | 'title' | 'dueAt' | 'assignedTo' | 'leadId' | 'clientId' | 'notes'>) {
-    const item: AgendaItem = { ...data, id: uid('g'), done: false }
-    db.table('agenda').unshift(item)
-    const who = data.leadId ? db.table('leads').find(l => l.id === data.leadId) : undefined
-    if (who) log('lead', who.id, `${item.title} scheduled`)
-    db.commit()
-    return delay(item)
+export const tasksApi = {
+  list: (): Promise<Task[]> => reply([...store.get().tasks].sort((a, b) => a.dueAt - b.dueAt)),
+  create(data: Pick<Task, 'type' | 'title' | 'dueAt' | 'assignedTo' | 'leadId' | 'notes'>) {
+    const item: Task = { ...data, id: srv.uid('g'), done: false }
+    store.get().tasks.unshift(item)
+    const l = data.leadId ? store.get().leads.find(x => x.id === data.leadId) : undefined
+    if (l) l.activities.push({ t: Date.now(), type: 'reminder', cls: '', title: `Scheduled: ${item.title}`, text: `Due ${new Date(item.dueAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}, on ${item.assignedTo}’s task list.` })
+    return done()
   },
   toggle(id: string) {
-    const a = db.table('agenda').find(x => x.id === id)!
+    const a = store.get().tasks.find(x => x.id === id)
+    if (!a) return Promise.resolve()
     a.done = !a.done
-    a.completedAt = a.done ? now() : undefined
-    if (a.done && a.leadId) {
-      const lead = db.table('leads').find(l => l.id === a.leadId)
-      if (lead) lead.lastContactAt = now()
-    }
-    db.commit()
-    return delay(true)
+    a.completedAt = a.done ? Date.now() : undefined
+    const l = a.leadId ? store.get().leads.find(x => x.id === a.leadId) : undefined
+    if (a.done && l) { l.activities.push({ t: Date.now(), type: 'stage', cls: 'good', title: `Task done: ${a.title}`, text: `Ticked off by ${a.assignedTo}.` }); toast('Task done', `${a.title}, ${l.name}`) }
+    return done()
   },
-  reschedule(id: string, dueAt: string) {
-    db.table('agenda').find(x => x.id === id)!.dueAt = dueAt
-    db.commit()
-    return delay(true)
+  reschedule(id: string, dueAt: number) { const a = store.get().tasks.find(x => x.id === id); if (a) a.dueAt = dueAt; return done() },
+  remove(id: string) { const t = store.get(); t.tasks = t.tasks.filter(x => x.id !== id); return done() },
+}
+
+export interface DocumentInput { name: string; category: PortalDocument['category']; description: string; file: DocFile | null; fields: DocField[]; active: boolean }
+export const documentsApi = {
+  list: (): Promise<PortalDocument[]> => reply([...store.get().documents].sort((a, b) => b.updatedAt - a.updatedAt)),
+  get: (id: string): Promise<PortalDocument | undefined> => reply(store.get().documents.find(d => d.id === id)),
+  /** Creates an empty draft; it becomes available when sending once it has a file and is switched on. */
+  create(): Promise<PortalDocument> {
+    const now = Date.now()
+    const d: PortalDocument = { id: srv.uid('d'), name: 'Untitled document', category: 'Other', description: '', file: null, fields: [], active: false, createdAt: now, updatedAt: now, updatedBy: 'Sarah Mitchell' }
+    store.get().documents.unshift(d); store.commit()
+    return reply(d)
   },
-  remove(id: string) {
-    const t = db.table('agenda')
-    t.splice(t.findIndex(x => x.id === id), 1)
-    db.commit()
-    return delay(true)
+  update(id: string, input: DocumentInput) {
+    const d = store.get().documents.find(x => x.id === id)
+    if (d) { Object.assign(d, input, { updatedAt: Date.now(), updatedBy: 'Sarah Mitchell', active: input.active && !!input.file }); toast('Document saved', d.name) }
+    return done()
+  },
+  remove(id: string) { const t = store.get(); const d = t.documents.find(x => x.id === id); t.documents = t.documents.filter(x => x.id !== id); if (d) toast('Document deleted', d.name); return done() },
+}
+
+export interface ServiceInput { name: string; practice: string; description: string; pricingModel: Service['pricingModel']; price: number; retainer: number; active: boolean }
+/** The services catalog: everything the firm provides, with default pricing. */
+export const servicesApi = {
+  list: (): Promise<Service[]> => reply([...store.get().services].sort((a, b) => a.practice.localeCompare(b.practice) || a.name.localeCompare(b.name))),
+  get: (id: string): Promise<Service | undefined> => reply(store.get().services.find(s => s.id === id)),
+  /** Creates a blank service (switched off until it is set up). */
+  create(): Promise<Service> {
+    const now = Date.now()
+    const s: Service = { id: srv.uid('sv'), name: 'New service', practice: seedConfig.practiceAreas[0], description: '', pricingModel: 'flat', price: 0, retainer: 0, active: false, createdAt: now, updatedAt: now }
+    store.get().services.unshift(s); store.commit()
+    return reply(s)
+  },
+  update(id: string, input: ServiceInput) {
+    const s = store.get().services.find(x => x.id === id)
+    if (s) { Object.assign(s, input, { updatedAt: Date.now() }); toast('Service saved', s.name) }
+    return done()
+  },
+  remove(id: string) { const t = store.get(); const s = t.services.find(x => x.id === id); t.services = t.services.filter(x => x.id !== id); if (s) toast('Service deleted', s.name); return done() },
+}
+
+export const eventsApi = { list: (): Promise<FirmEvent[]> => reply(store.get().events) }
+
+export const campaignsApi = {
+  list: (): Promise<Campaign[]> => reply(store.get().campaigns),
+  create(d: NewCampaignInput) { const c = srv.createCampaign(d); store.commit(); return reply(c) },
+  toggle(id: string) {
+    const c = store.get().campaigns.find(x => x.id === id)
+    if (c) { c.active = !c.active; toast(`${c.name} ${c.active ? 'turned on' : 'turned off'}`) }
+    return done()
+  },
+  /** How many leads a one-off send to this audience would reach (opted-out contacts are skipped). */
+  audience: (key: AudienceKey): Promise<{ total: number; optedOut: number; sample?: Lead }> => {
+    const people = srv.audience(key)
+    return reply({ total: people.length, optedOut: people.filter(l => l.optedOut).length, sample: people.find(l => !l.optedOut) ?? store.get().leads[0] })
+  },
+  progress: (): Promise<SendProgress | null> => reply(store.get().sending),
+}
+
+export const firmApi = {
+  get: (): Promise<Firm> => reply(store.get().firm),
+  verifyDomain() { srv.verifyDomain(); return Promise.resolve() },
+  submitTexting() { store.get().firm.textStatus = 'review'; toast('Registration submitted', 'Carriers usually take days to weeks'); return done() },
+  approveTexting() { srv.approveTexting(); return done() },
+  team: (): Promise<TeamMember[]> => reply(seedTeam),
+}
+
+export const integrationsApi = {
+  list: (): Promise<Integration[]> => reply(store.get().integrations),
+  toggle(id: string) {
+    const x = store.get().integrations.find(i => i.id === id)
+    if (x) { x.on = !x.on; toast(`${x.name} ${x.on ? 'connected' : 'disconnected'}`, x.on ? 'Sample mode, no account is linked' : undefined) }
+    return done()
   },
 }
 
-// ---------- Communication (mock send; plug email/SMS providers in here) ----------
-export const communications = {
-  list: () => delay(clone(db.table('messages')).sort((a, b) => b.at.localeCompare(a.at))),
-  send(data: Pick<Message, 'channel' | 'leadId' | 'clientId' | 'subject' | 'body'>) {
-    addMessage({ ...data, direction: 'out' })
-    const lead = data.leadId ? db.table('leads').find(l => l.id === data.leadId) : undefined
-    if (lead) { lead.lastContactAt = now(); log('lead', lead.id, `${data.channel === 'sms' ? 'Text' : 'Email'} sent to ${lead.name}`) }
-    db.commit()
-    return delay(true)
-  },
-}
-
-// ---------- Reports ----------
-export const reports = {
-  summary(days: number) {
-    const cutoff = days ? Date.now() - days * 86_400_000 : 0
-    const inRange = (iso?: string) => !!iso && new Date(iso).getTime() >= cutoff
-    const L = db.table('leads').filter(l => inRange(l.createdAt))
-    const clients = db.table('clients'), invoices = db.table('invoices'), services = db.table('services')
-
-    const group = (key: (l: Lead) => string) => {
-      const m = new Map<string, { name: string; leads: number; retained: number; lost: number; pipeline: number }>()
-      L.forEach(l => {
-        const name = key(l) || '—'
-        const g = m.get(name) ?? { name, leads: 0, retained: 0, lost: 0, pipeline: 0 }
-        g.leads++
-        if (l.status === 'retained') g.retained++
-        else if (l.status === 'lost') g.lost++
-        else g.pipeline += l.value
-        m.set(name, g)
-      })
-      return [...m.values()].sort((a, b) => b.leads - a.leads)
-    }
-
-    const daysToRetain = L.filter(l => l.status === 'retained' && l.clientId).map(l => {
-      const c = clients.find(x => x.id === l.clientId)!
-      return Math.max(0, Math.round((new Date(c.since).getTime() - new Date(l.createdAt).getTime()) / 86_400_000))
-    })
-
-    const months = Array.from({ length: 6 }, (_, i) => {
-      const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - (5 - i))
-      return { key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleString('en-US', { month: 'short' }), amount: 0 }
-    })
-    invoices.filter(i => i.status === 'paid' && i.paidAt).forEach(i => {
-      const d = new Date(i.paidAt!)
-      const m = months.find(x => x.key === `${d.getFullYear()}-${d.getMonth()}`)
-      if (m) m.amount += i.amount
-    })
-
-    const areaOfInvoice = (i: typeof invoices[number]) =>
-      clients.find(c => c.id === i.clientId)?.practiceArea ?? db.table('leads').find(l => l.id === i.leadId)?.practiceArea ?? '—'
-    const revenueByArea = new Map<string, number>()
-    invoices.filter(i => i.status === 'paid').forEach(i => revenueByArea.set(areaOfInvoice(i), (revenueByArea.get(areaOfInvoice(i)) ?? 0) + i.amount))
-
-    const retained = L.filter(l => l.status === 'retained').length
-    const closed = L.filter(l => l.status === 'retained' || l.status === 'lost').length
-    return delay({
-      totals: {
-        leads: L.length, retained, lost: L.filter(l => l.status === 'lost').length,
-        conversion: closed ? Math.round((retained / closed) * 100) : 0,
-        avgDaysToRetain: daysToRetain.length ? Math.round(daysToRetain.reduce((a, b) => a + b, 0) / daysToRetain.length) : 0,
-        pipeline: L.filter(l => l.status !== 'retained' && l.status !== 'lost').reduce((s, l) => s + l.value, 0),
-      },
-      stages: LEAD_STAGES.map(s => ({ label: s.label, count: L.filter(l => l.status === s.key).length })),
-      bySource: group(l => l.source),
-      byArea: group(l => l.practiceArea),
-      byService: group(l => services.find(s => s.id === l.serviceId)?.name ?? ''),
-      byAttorney: group(l => l.assignedTo),
-      revenueByMonth: months,
-      revenueByArea: [...revenueByArea].map(([name, amount]) => ({ name, amount })).sort((a, b) => b.amount - a.amount),
-      money: {
-        collected: invoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.amount, 0),
-        outstanding: invoices.filter(i => i.status === 'sent' && new Date(i.dueDate) >= new Date()).reduce((s, i) => s + i.amount, 0),
-        overdue: invoices.filter(i => i.status === 'overdue' || (i.status === 'sent' && new Date(i.dueDate) < new Date())).reduce((s, i) => s + i.amount, 0),
-      },
-      campaigns: db.table('campaigns').filter(c => c.stats.enrolled > 0).map(c => ({ name: c.name, ...c.stats })),
-    })
-  },
-}
-
-// ---------- Global search ----------
-export interface SearchHit { group: string; title: string; subtitle: string; to: string }
-
-export const search = {
-  query(q: string) {
+/** Searches everything the portal holds. A real backend should do this server-side. */
+export const searchApi = {
+  query(q: string): Promise<SearchHit[]> {
     const term = q.trim().toLowerCase()
-    if (!term) return delay([] as SearchHit[], 0)
+    if (!term) return Promise.resolve([])
     const has = (...f: (string | undefined)[]) => f.some(x => x?.toLowerCase().includes(term))
-    const leadName = (id?: string) => db.table('leads').find(l => l.id === id)?.name ?? ''
-    const clientName = (id?: string) => db.table('clients').find(c => c.id === id)?.name ?? ''
+    const t = store.get()
     const hits: SearchHit[] = []
-    db.table('leads').filter(l => has(l.name, l.email, l.phone, l.practiceArea, l.source, l.notes))
-      .forEach(l => hits.push({ group: 'Leads', title: l.name, subtitle: `${l.practiceArea} · ${LEAD_STAGES.find(s => s.key === l.status)!.label}`, to: l.clientId ? `/clients/${l.clientId}` : `/pipeline?lead=${l.id}` }))
-    db.table('clients').filter(c => has(c.name, c.email, c.phone, c.company))
-      .forEach(c => hits.push({ group: 'Clients', title: c.name, subtitle: `${c.practiceArea} · ${c.email}`, to: `/clients/${c.id}` }))
-    db.table('matters').filter(m => has(m.title, m.attorney))
-      .forEach(m => hits.push({ group: 'Matters', title: m.title, subtitle: `${clientName(m.clientId)} · ${m.attorney}`, to: `/clients/${m.clientId}` }))
-    db.table('agenda').filter(a => has(a.title, a.notes))
-      .forEach(a => hits.push({ group: 'Agenda', title: a.title, subtitle: `${new Date(a.dueAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · ${a.assignedTo}${a.done ? ' · done' : ''}`, to: '/agenda' }))
-    db.table('messages').filter(m => has(m.subject, m.body))
-      .forEach(m => hits.push({ group: 'Communication', title: m.subject ?? m.body.slice(0, 60), subtitle: `${m.channel === 'email' ? 'Email' : 'Text'} · ${clientName(m.clientId) || leadName(m.leadId)}`, to: '/communication' }))
-    db.table('documents').filter(d => has(d.name, d.recipientName, d.recipientEmail, d.kind))
-      .forEach(d => hits.push({ group: 'Documents', title: d.name, subtitle: `${d.status} · ${d.recipientName}`, to: '/documents' }))
-    db.table('invoices').filter(i => has(i.number, i.description))
-      .forEach(i => hits.push({ group: 'Payments', title: `${i.number} · ${i.description}`, subtitle: `$${i.amount.toLocaleString()} · ${i.status}`, to: '/payments' }))
-    db.table('campaigns').filter(c => has(c.name))
-      .forEach(c => hits.push({ group: 'Marketing', title: c.name, subtitle: `${c.status} · ${c.steps.length} steps`, to: `/marketing/${c.id}` }))
-    db.table('services').filter(s => has(s.name, s.practiceArea, s.description))
-      .forEach(s => hits.push({ group: 'Services', title: s.name, subtitle: s.practiceArea, to: '/services' }))
-    return delay(hits)
+    t.leads.filter(l => has(l.name, l.email, l.phone, l.matter, l.practice, l.owner))
+      .forEach(l => hits.push({ group: 'Leads', title: l.name, subtitle: `${l.matter} · ${l.practice}`, target: { type: 'lead', id: l.id } }))
+    t.tasks.filter(a => has(a.title, a.notes, a.assignedTo))
+      .forEach(a => hits.push({ group: 'Tasks', title: a.title, subtitle: `${new Date(a.dueAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · ${a.assignedTo}${a.done ? ' · done' : ''}`, target: { type: 'tasks', id: a.id } }))
+    t.leads.forEach(l => l.activities.filter(a => (a.type === 'text' || a.type === 'email') && has(a.title, a.quote, a.text))
+      .slice(-2).forEach(a => hits.push({ group: 'Messages', title: a.title, subtitle: `${l.name}${a.quote ? ' · ' + a.quote.slice(0, 60) : ''}`, target: { type: 'lead', id: l.id } })))
+    t.documents.filter(d => has(d.name, d.description, d.category, d.file?.name))
+      .forEach(d => hits.push({ group: 'Documents', title: d.name, subtitle: `${d.category} · ${d.file?.name ?? 'No file yet'}`, target: { type: 'document', id: d.id } }))
+    t.services.filter(s => has(s.name, s.description, s.practice))
+      .forEach(s => hits.push({ group: 'Services', title: s.name, subtitle: `${s.practice} · ${s.active ? 'Active' : 'Inactive'}`, target: { type: 'service', id: s.id } }))
+    t.campaigns.filter(c => has(c.name, c.body, c.subject))
+      .forEach(c => hits.push({ group: 'Campaigns', title: c.name, subtitle: `${c.kind === 'auto' ? 'Automatic' : 'One-off'} · ${c.channel}`, target: { type: 'campaign', id: c.id } }))
+    return reply(hits.slice(0, 40))
   },
+}
+
+export const systemApi = { reset() { store.reset(); toast('Sample data reset'); return Promise.resolve() } }
+
+export { enquiryPool }
+
+/** Re-runs an endpoint whenever any data changes. Keeps the previous result while reloading. */
+export function useQuery<T>(fn: () => Promise<T>, deps: unknown[] = []): T | undefined {
+  const version = useSyncExternalStore(store.subscribe, store.version)
+  const [data, setData] = useState<T>()
+  useEffect(() => {
+    let live = true
+    fn().then(d => { if (live) setData(d) })
+    return () => { live = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [version, ...deps])
+  return data
 }
