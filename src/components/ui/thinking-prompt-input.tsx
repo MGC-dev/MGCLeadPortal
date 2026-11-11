@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { IconArrowUp, IconCheck, IconChevronRight, IconPlayerStopFilled, IconSparkles } from "@tabler/icons-react";
+import { IconArrowUp, IconCheck, IconChevronRight, IconPlayerStopFilled } from "@tabler/icons-react";
 
 import { cn } from "@/lib/utils";
+import { AiOrb } from "@/shared/AiOrb";
 
 export type ThinkingStatus = "idle" | "thinking" | "answering" | "done";
 export type ThinkingStep = { id: string; text: string; status?: "active" | "complete" };
@@ -155,7 +156,7 @@ export function ThinkingPromptInput({
       if (disposed) return;
       const before = input.getBoundingClientRect().height;
       input.style.height = "auto";
-      const height = Math.max(64, Math.min(input.scrollHeight, 120));
+      const height = Math.max(44, Math.min(input.scrollHeight, 132));
       input.style.height = `${height}px`;
       if (!reduced && Math.abs(before - height) > 1 && typeof input.animate === "function") {
         animation = input.animate([{ height: `${before}px` }, { height: `${height}px` }], { duration: 200, easing: EASE });
@@ -236,7 +237,7 @@ export function ThinkingPromptInput({
         <div ref={transcript} data-transcript role="region" aria-label="Conversation" tabIndex={0} className="mb-4 min-h-0 flex-1 overflow-y-auto rounded-lg outline-none [overflow-anchor:none] focus-visible:ring-2 focus-visible:ring-ring">
           <div ref={transcriptBody} className="space-y-5 px-1 py-1">
             {history}
-            <div ref={question} data-question className="ml-auto w-fit max-w-[94%] origin-top-left rounded-2xl rounded-br-sm bg-muted px-4 py-2.5 text-[15px] leading-6 text-foreground">
+            <div ref={question} data-question className="ml-auto w-fit max-w-[80%] origin-top-left rounded-[18px] rounded-br-md bg-primary px-3.5 py-2 text-[15px] leading-5 text-primary-foreground">
               <p className="break-words">{prompt}</p>
             </div>
             <div data-assistant className="min-w-0">
@@ -285,7 +286,7 @@ export function ThinkingPromptInput({
           </div>
         </div>
       )}
-      <form data-composer className="relative mt-auto shrink-0 rounded-3xl border border-border bg-card p-4 shadow-xl shadow-primary/5 transition-[border-color,box-shadow] focus-within:border-input focus-within:shadow-primary/10" onSubmit={(event) => { event.preventDefault(); submit(); }}>
+      <form data-composer className="relative mt-auto shrink-0 rounded-[22px] border border-input bg-card p-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.05)] transition-[border-color,box-shadow] focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/15" onSubmit={(event) => { event.preventDefault(); submit(); }}>
         <textarea
           ref={textarea}
           aria-label={inputPlaceholder}
@@ -300,9 +301,9 @@ export function ThinkingPromptInput({
               submit();
             }
           }}
-          className="block h-16 min-h-16 w-full resize-none rounded-lg bg-transparent p-1 text-[17px] leading-7 tracking-tight text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-50"
+          className="block h-11 min-h-11 w-full resize-none rounded-lg bg-transparent px-1.5 py-1 text-[16px] leading-[22px] text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-50"
         />
-        <div className="mt-3 flex items-center justify-between">
+        <div className="mt-1.5 flex items-center justify-between">
           <button
             type="button"
             aria-pressed={thinkingEnabled}
@@ -313,7 +314,7 @@ export function ThinkingPromptInput({
             }}
             className={`inline-flex h-8 items-center gap-2 rounded-full border px-3 text-xs font-medium outline-none transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 ${thinkingEnabled ? "border-primary/15 bg-primary/5 text-foreground" : "border-border bg-card text-muted-foreground"}`}
           >
-            <IconSparkles className="size-3.5" aria-hidden="true" />
+            <AiOrb tone="mono" size={15} />
             Think
             {thinkingEnabled && <IconCheck className="size-3" stroke={2.5} aria-hidden="true" />}
           </button>
@@ -323,9 +324,9 @@ export function ThinkingPromptInput({
             aria-label={busy ? "Stop" : "Send prompt"}
             onClick={busy ? (event) => { event.preventDefault(); onStop?.(); } : undefined}
             disabled={disabled || (busy ? !onStop : !inputValue.trim() || !onSubmit)}
-            className="relative inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card disabled:opacity-30"
+            className="relative inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card disabled:opacity-30"
           >
-            <span data-action-icon="send" aria-hidden="true" className={`absolute inset-0 flex items-center justify-center transition-[opacity,scale] duration-200 motion-reduce:transition-none ${busy ? "scale-75 opacity-0" : "scale-100 opacity-100"}`}><IconArrowUp className="size-4" stroke={2} /></span>
+            <span data-action-icon="send" aria-hidden="true" className={`absolute inset-0 flex items-center justify-center transition-[opacity,scale] duration-200 motion-reduce:transition-none ${busy ? "scale-75 opacity-0" : "scale-100 opacity-100"}`}><IconArrowUp className="size-[18px]" stroke={2.6} /></span>
             <span data-action-icon="stop" aria-hidden="true" className={`absolute inset-0 flex items-center justify-center transition-[opacity,scale] duration-200 motion-reduce:transition-none ${busy ? "scale-100 opacity-100" : "scale-75 opacity-0"}`}><IconPlayerStopFilled className="size-3" /></span>
           </button>
         </div>

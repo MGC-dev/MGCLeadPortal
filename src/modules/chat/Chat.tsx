@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { IconBolt, IconCheck, IconChevronRight, IconHistory, IconPlus, IconSparkles, IconTrash } from '@tabler/icons-react'
+import { IconCheck, IconChevronRight, IconEdit, IconLayoutSidebar, IconSearch, IconTrash, IconX } from '@tabler/icons-react'
 import { chatApi, useQuery } from '../../api'
-import { BOT_TOOLS, type ChatMessage } from '../../api/types'
-import { InfoTip } from '../../shared/InfoTip'
-import { ago } from '../../shared/format'
+import { BOT_TOOLS, type ChatConversation, type ChatMessage } from '../../api/types'
+import { timeOf } from '../../shared/format'
+import { usePhone } from '../../shared/useMedia'
+import { AiOrb } from '../../shared/AiOrb'
 import { cn } from '@/lib/utils'
 import { inline } from './richText'
-import { Button } from '@/components/ui/button'
+import { ActionCard } from './ActionCard'
 import { Suggestion, SuggestionList, Suggestions } from '@/components/ui/suggestions'
 import { ThinkingPromptInput, type ThinkingStatus, type ThinkingStep, type ThinkingSubmitOptions } from '@/components/ui/thinking-prompt-input'
 
@@ -46,32 +47,16 @@ const doneSteps = (steps: string[] = []): ThinkingStep[] => [
 ]
 const secondsBetween = (a: number, b: number) => Math.max(1, Math.round((b - a) / 1000))
 
-/** A change the assistant wants to make in the portal. Nothing happens until it is approved. */
-function ActionCard({ convId, m }: { convId: string; m: ChatMessage }) {
-  const a = m.action!
-  const [busy, setBusy] = useState(false)
-  const act = async (fn: () => Promise<void>) => { setBusy(true); await fn(); setBusy(false) }
-  return (
-    <div className={cn('grid gap-3 rounded-2xl border p-3.5 text-sm',
-      a.status === 'done' ? 'border-emerald-200 bg-emerald-50/60' : 'border-border bg-card shadow-sm',
-      (a.status === 'cancelled' || a.status === 'failed') && 'opacity-80')}>
-      <span className="flex items-start gap-2.5 font-semibold leading-5">
-        <span className="mt-px flex size-5 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground"><IconBolt className="size-3" stroke={2.4} aria-hidden="true" /></span>
-        {a.summary}
-      </span>
-      {a.status === 'proposed' ? (
-        <span className="flex justify-end gap-2">
-          <Button type="button" variant="outline" size="sm" className="h-8 rounded-full px-3.5" disabled={busy} onClick={() => act(() => chatApi.decline(convId, m.id))}>Cancel</Button>
-          <Button type="button" size="sm" className="h-8 rounded-full px-3.5" disabled={busy} onClick={() => act(() => chatApi.approve(convId, m.id))}>Approve</Button>
-        </span>
-      ) : (
-        <span className={cn('flex items-center gap-1.5 text-[13px]', a.status === 'done' ? 'font-medium text-emerald-700' : 'text-muted-foreground')}>
-          {a.status === 'done' && <IconCheck className="size-3.5" stroke={2.5} aria-hidden="true" />}{a.result}
-        </span>
-      )}
-    </div>
-  )
+const sameDay = (a: number, b: number) => new Date(a).toDateString() === new Date(b).toDateString()
+/** Chats grouped the way Messages and Notes do it: Today, Yesterday, This week, then older. */
+function byDay(list: ChatConversation[]) {
+  const now = Date.now(), groups: { label: string; items: ChatConversation[] }[] = []
+  const label = (t: number) => sameDay(t, now) ? 'Today' : sameDay(t, now - 864e5) ? 'Yesterday' : now - t < 7 * 864e5 ? 'Previous 7 days' : 'Earlier'
+  for (const c of list) { const l = label(c.updatedAt); const g = groups.find(x => x.label === l); if (g) g.items.push(c); else groups.push({ label: l, items: [c] }) }
+  return groups
 }
+const rowTime = (t: number) => sameDay(t, Date.now()) ? timeOf(t) : new Date(t).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+const focusRing = 'outline-none focus-visible:ring-2 focus-visible:ring-ios-accent/50'
 
 /** An earlier turn, drawn like the live one: the question, a folded "Thought for" line, then the answer. */
 function PastTurn({ turn, convId }: { turn: Turn; convId: string }) {
@@ -80,7 +65,7 @@ function PastTurn({ turn, convId }: { turn: Turn; convId: string }) {
   const steps = reply?.steps?.length ? doneSteps(reply.steps) : []
   return (
     <>
-      <div className="ml-auto w-fit max-w-[94%] rounded-2xl rounded-br-sm bg-muted px-4 py-2.5 text-[15px] leading-6 text-foreground">
+      <div className="ml-auto w-fit max-w-[80%] rounded-[18px] rounded-br-md bg-primary px-3.5 py-2 text-[15px] leading-5 text-primary-foreground">
         <p className="break-words">{user.text}</p>
       </div>
       {reply && (
@@ -139,6 +124,8 @@ export default function Chat() {
   const [folded, setFolded] = useState(() => { try { return localStorage.getItem('unir-chat-history') === 'closed' } catch { return false } })
   const fold = () => setFolded(f => { try { localStorage.setItem('unir-chat-history', f ? 'open' : 'closed') } catch { /* private window */ } return !f })
   const [think, setThink] = useState(true)
+  const [query, setQuery] = useState('')
+  const phone = usePhone()
   const [live, setLive] = useState<Live | null>(null)
   const liveRef = useRef(live)
   liveRef.current = live
@@ -228,53 +215,94 @@ export default function Chat() {
     elapsed = reply ? secondsBetween(last.user.at, reply.at) : 0
   }
 
-  return (
-    <div className={'chat chat--claude' + (folded ? ' is-folded' : '')}>
-      <aside className={'chat__side' + (list ? ' is-open' : '')} aria-label="Chat history">
-        <button type="button" className="btn btn--prominent chat__new" onClick={newChat}><IconPlus size={17} stroke={2.4} />New chat</button>
-        {convs.length === 0 ? <p className="chat__none">Your chats will show up here.</p> : (
-          <ul>
-            {convs.map(c => (
-              <li key={c.id} className={c.id === id ? 'is-current' : ''}>
-                <button type="button" className="chat__item" onClick={() => open(c.id)} aria-current={c.id === id ? 'true' : undefined}>
-                  <b>{c.title}</b><small>{ago(c.updatedAt)}</small>
-                </button>
-                <button type="button" className="chat__del" aria-label={`Delete ${c.title}`} title="Delete chat" onClick={() => remove(c.id)}><IconTrash size={16} stroke={1.9} /></button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </aside>
+  const filtered = convs.filter(c => !query.trim() || c.title.toLowerCase().includes(query.trim().toLowerCase()))
+  const showList = phone ? list : !folded
 
-      <section className="chat__main" aria-label="Conversation">
-        <header className="chat__head">
-          <button type="button" className={'iconbtn chat__collapse' + (folded ? '' : ' is-on')} aria-label={folded ? 'Show chat history' : 'Hide chat history'} title={folded ? 'Show chat history' : 'Hide chat history'} aria-pressed={!folded} onClick={fold}><IconHistory size={17} stroke={1.9} /></button>
-          <button type="button" className="iconbtn chat__history" aria-label="Chat history" aria-expanded={list} onClick={() => setList(o => !o)}><IconHistory size={17} stroke={1.9} /></button>
-          <div className="chat__title">
-            <b>{conv?.title ?? 'New chat'}</b>
-            <span className="titlerow"><small>UNIR Assistant</small>
-              <InfoTip label="About this chat" text="Ask about your leads, tasks, documents and campaigns, or tell it to create a lead, move a ticket, book a task or send a text. Changes wait for your approval. For anything outside the portal, use an agent." /></span>
-          </div>
-          {!empty && <Button type="button" variant="ghost" size="sm" className="ai-surface h-8 gap-1.5 rounded-full px-3 text-[13px] text-muted-foreground hover:text-foreground" onClick={newChat}><IconPlus className="size-4" stroke={2} aria-hidden="true" />New chat</Button>}
+  const history = (
+    <aside aria-label="Chat history" className={cn('flex min-h-0 flex-col border-r border-ios-separator bg-[#fbfbfd]',
+      phone && 'absolute inset-0 z-20 border-r-0 bg-white')}>
+      <div className="flex shrink-0 items-center gap-2 px-3 pt-3 pb-2">
+        <label className="flex h-9 min-w-0 flex-1 items-center gap-1.5 rounded-[10px] bg-ios-field px-2.5 text-[#8e8e93] focus-within:ring-2 focus-within:ring-ios-accent/40">
+          <IconSearch className="size-4 shrink-0" stroke={2} aria-hidden="true" />
+          <span className="sr-only">Search chats</span>
+          <input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search"
+            className="min-w-0 flex-1 bg-transparent text-[15px] text-ios-label outline-none placeholder:text-[#8e8e93] [&::-webkit-search-cancel-button]:hidden" />
+          {query && <button type="button" aria-label="Clear search" onClick={() => setQuery('')} className={cn('grid size-5 place-items-center rounded-full bg-[#aeaeb2] text-white', focusRing)}><IconX className="size-3" stroke={3} /></button>}
+        </label>
+        {phone && <button type="button" onClick={() => setList(false)} className={cn('h-9 rounded-lg px-2 text-[15px] font-semibold text-ios-accent', focusRing)}>Done</button>}
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 pb-3">
+        {filtered.length === 0 ? (
+          <p className="px-4 py-8 text-center text-[14px] text-ios-secondary">{query ? `No chats match “${query.trim()}”.` : 'Your chats will show up here.'}</p>
+        ) : byDay(filtered).map(g => (
+          <section key={g.label}>
+            <h3 className="px-4 pt-3 pb-1.5 text-[12px] font-semibold uppercase tracking-[0.04em] text-ios-secondary">{g.label}</h3>
+            <ul className="grid gap-px">
+              {g.items.map(c => {
+                const sel = c.id === id
+                return (
+                  <li key={c.id} className="group relative">
+                    <button type="button" onClick={() => open(c.id)} aria-current={sel ? 'true' : undefined}
+                      className={cn('flex w-full items-baseline gap-2 rounded-[10px] py-2.5 pr-9 pl-4 text-left', focusRing, sel ? 'bg-ios-accent' : 'hover:bg-black/[0.04]')}>
+                      <b className={cn('min-w-0 flex-1 truncate text-[15px] font-medium leading-5', sel ? 'text-white' : 'text-ios-label')}>{c.title}</b>
+                      <span className={cn('shrink-0 text-[12px]', sel ? 'text-ios-accent-soft' : 'text-ios-secondary')}>{rowTime(c.updatedAt)}</span>
+                    </button>
+                    <button type="button" aria-label={`Delete ${c.title}`} title="Delete chat" onClick={() => remove(c.id)}
+                      className={cn('absolute top-1/2 right-1.5 grid size-7 -translate-y-1/2 place-items-center rounded-md opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100', focusRing,
+                        sel ? 'text-white/85 hover:bg-white/15' : 'text-ios-secondary hover:bg-black/[0.06] hover:text-ios-red')}>
+                      <IconTrash className="size-4" stroke={1.9} />
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </aside>
+  )
+
+  return (
+    <div className={cn('ai-surface apple-type relative grid h-[calc(100vh-220px)] min-h-[520px] overflow-hidden rounded-2xl border border-ios-separator bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] max-md:h-[calc(100vh-260px)]',
+      !phone && !folded ? 'grid-cols-[280px_minmax(0,1fr)]' : 'grid-cols-1')}>
+      {showList && history}
+
+      <section aria-label="Conversation" className="flex min-h-0 min-w-0 flex-col bg-white">
+        <header className="grid h-[52px] shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-2 border-b border-ios-separator bg-white/85 px-2 backdrop-blur">
+          <span>
+            <button type="button" onClick={() => (phone ? setList(true) : fold())} aria-label={phone ? 'Show chats' : folded ? 'Show chats' : 'Hide chats'} title={folded ? 'Show chats' : 'Hide chats'} aria-pressed={phone ? undefined : !folded}
+              className={cn('grid size-9 place-items-center rounded-lg text-ios-accent hover:bg-ios-accent/10', focusRing)}><IconLayoutSidebar className="size-[21px]" stroke={1.8} /></button>
+          </span>
+          <span className="flex min-w-0 items-center gap-2">
+            <AiOrb size={26} />
+            <span className="grid min-w-0 leading-tight">
+              <b className="truncate text-[15px] font-semibold text-ios-label">{conv?.title ?? 'New chat'}</b>
+              <small className="truncate text-[12px] text-ios-secondary">UNIR Assistant · works inside the portal</small>
+            </span>
+          </span>
+          <span className="flex justify-end">
+            <button type="button" onClick={newChat} aria-label="New chat" title="New chat" disabled={empty}
+              className={cn('grid size-9 place-items-center rounded-lg text-ios-accent hover:bg-ios-accent/10 disabled:text-ios-tertiary disabled:hover:bg-transparent', focusRing)}><IconEdit className="size-[21px]" stroke={1.8} /></button>
+          </span>
         </header>
 
-        <div className={cn('ai-surface flex min-h-0 flex-1 flex-col items-center px-4 pb-2', empty ? 'justify-center gap-6' : 'pt-2')}>
+        <div className={cn('flex min-h-0 flex-1 flex-col items-center px-4 pb-3', empty ? 'justify-center gap-6' : 'pt-3')}>
           {empty && (
-            <div className="grid justify-items-center gap-3 text-center">
-              <span className="flex size-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20" aria-hidden="true"><IconSparkles className="size-[22px]" stroke={1.8} /></span>
-              <h2 className="text-[30px] font-semibold leading-tight tracking-[-0.03em] text-foreground">How can I help you today?</h2>
-              <p className="text-[15px] text-muted-foreground">Ask about your portal, or tell me to do something in it.</p>
+            <div className="grid justify-items-center gap-2.5 text-center">
+              <span className="rounded-full shadow-[0_10px_28px_rgba(31,79,216,0.32)]"><AiOrb size={60} className="block" /></span>
+              <h2 className="mt-1 text-[28px] font-semibold leading-tight tracking-[-0.025em] text-ios-label">How can I help you today?</h2>
+              <p className="text-[15px] text-ios-secondary">Ask about your portal, or tell me to do something in it. Changes wait for your approval.</p>
             </div>
           )}
           {empty && (
-            <Suggestions onSelect={value => send(value)} className="w-full max-w-[720px]">
+            <Suggestions onSelect={value => send(value)} className="w-full max-w-[680px]">
               <SuggestionList className="max-w-[640px] self-center">
-                {SUGGESTIONS.map(s => <Suggestion key={s} variant="outline">{s}</Suggestion>)}
+                {SUGGESTIONS.map(s => <Suggestion key={s} variant="filled" className="h-9 bg-ios-grouped px-4 text-[14px] text-ios-label hover:bg-ios-fill">{s}</Suggestion>)}
               </SuggestionList>
             </Suggestions>
           )}
           <ThinkingPromptInput
-            className={cn('max-w-[720px]', empty ? 'h-auto flex-none' : 'flex-1')}
+            className={cn('max-w-[680px]', empty ? 'h-auto flex-none' : 'flex-1')}
             status={status}
             prompt={last?.user.text}
             steps={think || !isLive ? steps : []}
@@ -291,7 +319,7 @@ export default function Chat() {
             history={conv && turns.slice(0, -1).map(t => <PastTurn key={t.user.id} turn={t} convId={conv.id} />)}
             answerFooter={conv && reply?.action ? <ActionCard convId={conv.id} m={reply} /> : undefined}
           />
-          <p className="mt-2 text-center text-xs text-muted-foreground/80">Answers come from this portal’s sample data. Enter sends, Shift and Enter adds a line.</p>
+          <p className="mt-1.5 text-center text-[11.5px] text-ios-secondary">Answers come from this portal’s sample data. For anything online, use an agent.</p>
         </div>
       </section>
     </div>

@@ -36,7 +36,7 @@ function ActionCard({ convId, m }: { convId: string; m: ChatMessage }) {
 export function Bubble({ m, convId, avatar }: { m: ChatMessage; convId: string; avatar?: boolean }) {
   return (
     <div className={'chat__msg chat__msg--' + m.role}>
-      {m.role === 'assistant' && avatar && <span className="chat__avatar" aria-hidden="true"><Icon name="sparkle" /></span>}
+      {m.role === 'assistant' && avatar && <span className="chat__avatar" aria-hidden="true"><Icon name="orb" /></span>}
       <div className="chat__bubble">
         {m.steps?.length ? <span className="chat__steps">{m.steps.map(s => <span key={s}><Icon name="check" small />{s}</span>)}</span> : null}
         <Rich text={m.text} />
@@ -50,7 +50,7 @@ export function Bubble({ m, convId, avatar }: { m: ChatMessage; convId: string; 
 export function Typing({ avatar }: { avatar?: boolean }) {
   return (
     <div className="chat__msg chat__msg--assistant" aria-label="Thinking">
-      {avatar && <span className="chat__avatar" aria-hidden="true"><Icon name="sparkle" /></span>}
+      {avatar && <span className="chat__avatar" aria-hidden="true"><Icon name="orb" /></span>}
       <div className="chat__bubble chat__typing"><i /><i /><i /></div>
     </div>
   )

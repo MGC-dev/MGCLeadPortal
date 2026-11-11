@@ -36,21 +36,21 @@
 }
 .ai-surface {
   --background: #ffffff;
-  --foreground: #0f1d3a;
+  --foreground: #1d1d1f;
   --card: #ffffff;
-  --muted: #eff3f9;
-  --muted-foreground: #5d6a83;
-  --primary: #0f2347;
+  --muted: #e9e9eb;
+  --muted-foreground: #6e6e73;
+  --primary: #1f4fd8;
   --primary-foreground: #ffffff;
-  --secondary: #eff3f9;
-  --secondary-foreground: #0f1d3a;
-  --accent-bg: #eff3f9;
-  --accent-fg: #0f1d3a;
-  --destructive: #c0261c;
+  --secondary: #f2f2f7;
+  --secondary-foreground: #1d1d1f;
+  --accent-bg: #f2f2f7;
+  --accent-fg: #1d1d1f;
+  --destructive: #d70015;
   --destructive-foreground: #ffffff;
-  --border: #e3e8f1;
-  --input: #d9e0ec;
-  --ring: rgba(31, 79, 216, 0.45);
+  --border: #e5e5ea;
+  --input: #d1d1d6;
+  --ring: rgba(31, 79, 216, 0.4);
 }
 
 /* Tokens the shadcn-style Sidebar (src/components/ui/sidebar.tsx) reads, scoped to the app's ink sidebar. */
