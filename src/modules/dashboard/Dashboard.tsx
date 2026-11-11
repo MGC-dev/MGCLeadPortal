@@ -9,6 +9,7 @@ import { ago, dayAt, endOfToday, money, timeOf, when } from '../../shared/format
 import { calEvents } from '../calendar/calendarEvents'
 import { campStats } from '../campaigns/campaignUtils'
 import { ACT_ICON, SOURCES, STAGE, STAGES, isOpen, isWon, feeKnown } from '../lead/selectors'
+import { InfoTip } from '../../shared/InfoTip'
 
 // Sample history for the overview chart (the sample firm has only a handful of real leads).
 const ENQ_HISTORY = [3, 4, 2, 5, 3, 1, 1, 4, 6, 3, 5, 4, 2]
@@ -97,7 +98,7 @@ export default function Dashboard() {
 
       <div className="dash dash--a">
         <section className="group panel panel--chart">
-          <div className="panel__head"><div><h2>Enquiries</h2><p className="footnote">Last 14 days, all sources</p></div><button className="btn btn--plain btn--sm" type="button" onClick={() => go('/reports')}>Reports</button></div>
+          <div className="panel__head"><div className="titlerow"><h2>Enquiries</h2><InfoTip text="New enquiries over the last 14 days, from all sources." label="About Enquiries" /></div><button className="btn btn--plain btn--sm" type="button" onClick={() => go('/reports')}>Reports</button></div>
           <div className="chart">
             <div className="chart__y">{ticks.map((t, i) => <span key={i}>{t}</span>)}</div>
             <div className="chart__plot">
@@ -137,21 +138,21 @@ export default function Dashboard() {
             : <div className="empty"><Icon name="check" /><p>You are all caught up.</p></div>}
         </section>
         <section className="group panel">
-          <div className="panel__head"><div><h2>Pipeline</h2><p className="footnote">Leads that reached each stage</p></div><button className="btn btn--plain btn--sm" type="button" onClick={() => go('/pipeline')}>Board</button></div>
+          <div className="panel__head"><div className="titlerow"><h2>Pipeline</h2><InfoTip text="How many leads have reached each stage." label="About Pipeline" /></div><button className="btn btn--plain btn--sm" type="button" onClick={() => go('/pipeline')}>Board</button></div>
           <ol className="funnel">
             {funnelStages.map((s, i) => <li key={s.id}><span className="funnel__label">{s.label}</span><span className="funnel__track"><span style={{ width: counts[i] / fmax * 100 + '%' }} /></span><b>{counts[i]}</b></li>)}
             <li className="is-lost"><span className="funnel__label">Lost</span><span className="funnel__track"><span style={{ width: lost / fmax * 100 + '%' }} /></span><b>{lost}</b></li>
           </ol>
         </section>
         <section className="group panel">
-          <div className="panel__head"><div><h2>Lead Sources</h2><p className="footnote">Leads and how many signed</p></div></div>
+          <div className="panel__head"><div className="titlerow"><h2>Lead Sources</h2><InfoTip text="Where leads come from, and how many of them signed." label="About Lead Sources" /></div></div>
           <ul className="hbars">{src.map(x => <li key={x.k}><span className="hbars__label">{SOURCES[x.k]}</span><span className="hbars__track"><span style={{ width: x.n / smax * 100 + '%' }} /></span><b>{x.n}</b><span className="hbars__sub">{x.w ? `${x.w} signed` : '–'}</span></li>)}</ul>
         </section>
       </div>
 
       <div className="dash dash--c">
         <section className="group panel">
-          <div className="panel__head"><div><h2>Recent Activity</h2><p className="footnote">Across every lead</p></div></div>
+          <div className="panel__head"><div className="titlerow"><h2>Recent Activity</h2><InfoTip text="The latest activity across every lead." label="About Recent Activity" /></div></div>
           <ul className="timeline">{feed.map((a, i) => (
             <li key={i} className={a.cls}><span className="dot"><Icon name={ACT_ICON[a.type] || 'arrow'} /></span>
               <div><b>{a.title}</b><p className="footnote"><button type="button" className="linkbtn" onClick={() => openLead(a.l.id)}>{a.l.name}</button> · {ago(a.t)}</p></div></li>

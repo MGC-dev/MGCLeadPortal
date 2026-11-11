@@ -4,8 +4,7 @@ export type Modal =
   | { type: 'intake' }
   | { type: 'compose' | 'reminder' | 'lost' | 'client' | 'send-docs' | 'request-payment'; id: string }
   | { type: 'pick-services'; id: string; next?: 'send-docs' | 'request-payment' }
-  | { type: 'newcamp'; kind: 'auto' | 'broadcast' }
-  | { type: 'camp'; id: string }
+  | { type: 'newcamp'; kind: 'auto' | 'broadcast' | 'survey' }
   | { type: 'more' | 'help' | 'account' | 'team' }
 
 export interface Filters { inbox: string; calmode: 'day' | 'week' }

@@ -9,7 +9,6 @@ import { PickServicesModal } from '../modules/lead/PickServicesModal'
 import { RequestPaymentModal } from '../modules/lead/RequestPaymentModal'
 import { ClientSignModal, ComposeModal, IntakeModal, LostModal, ReminderModal } from '../modules/lead/LeadModals'
 import { CampaignBuilder } from '../modules/campaigns/CampaignBuilder'
-import { CampaignResults } from '../modules/campaigns/CampaignResults'
 import { AccountSheet } from './AccountSheets'
 
 /** Everything that floats above the page: the lead inspector and the dialogs. */
@@ -51,7 +50,6 @@ export function Layers() {
       case 'request-payment': sheet = l && <RequestPaymentModal lead={l} />; break
       case 'pick-services': sheet = l && <PickServicesModal lead={l} next={modal.next} />; break
       case 'newcamp': sheet = <CampaignBuilder kind={modal.kind} />; break
-      case 'camp': sheet = <CampaignResults id={modal.id} />; break
       default: sheet = <AccountSheet kind={modal.type} />
     }
   }

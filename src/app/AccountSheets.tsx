@@ -35,7 +35,7 @@ export function AccountSheet({ kind }: { kind: Kind }) {
     </Sheet>
   )
   if (kind === 'help') return (
-    <Sheet title="Help and Resources" sub="Sample data only. Nothing is sent." onClose={close}>
+    <Sheet title="Help and Resources" sub="Sample data only. Nothing is sent." info="Each firm runs its own workspace: its own team, data, domain and number." onClose={close}>
       <ul className="group rows">
         <RowBtn icon="arrow" title="Take the Guided Tour" sub="Seven steps, from firm onboarding to reports" onClick={() => { closeAll(); tourStore.restart() }} />
         <RowBtn icon="gear" title="Firm Setup Guide" sub="Verify your email domain and register texting" onClick={() => go('/settings')} />
@@ -51,7 +51,6 @@ export function AccountSheet({ kind }: { kind: Kind }) {
         <RowBtn icon="gear" title="Firm Settings" sub="Your sending domain, texting number and workspace" onClick={() => go('/settings')} />
         <RowBtn icon="arrow" title="Sign Out" onClick={() => { close(); toast('Signed out', 'Sign-out is not connected yet, you stay signed in') }} />
       </ul>
-      <p className="hint">Each firm runs its own workspace: its own team, data, domain and number.</p>
     </Sheet>
   )
   return (

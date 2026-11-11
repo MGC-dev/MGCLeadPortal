@@ -57,7 +57,7 @@ function ScheduleModal({ leads, onClose }: { leads: Lead[]; onClose: () => void 
   const [ld, setLd] = useState('')
   const toInput = (t: number) => new Date(t - new Date(t).getTimezoneOffset() * 60_000).toISOString().slice(0, 16)
   return (
-    <Sheet title="Schedule" sub="Add a call, meeting, task or deadline to your tasks." onClose={onClose} foot={<SheetFoot onCancel={onClose} primary="Schedule" />}
+    <Sheet title="Schedule" info="Add a call, meeting, task or deadline to your tasks." onClose={onClose} foot={<SheetFoot onCancel={onClose} primary="Schedule" />}
       onSubmit={async e => {
         e.preventDefault()
         const d = Object.fromEntries(new FormData(e.currentTarget)) as Record<string, string>
@@ -67,10 +67,10 @@ function ScheduleModal({ leads, onClose }: { leads: Lead[]; onClose: () => void 
       }}>
       <div className="formgroup">
         <Field label="Title" id="ag-t"><input id="ag-t" name="title" required autoFocus autoComplete="off" placeholder="Call Rachel about her documents" /></Field>
-        <Field label="Type" id="ag-ty"><Select id="ag-ty" name="type" value={ty} onChange={setTy} options={Object.entries(TASK_TYPES).map(([k, v]) => ({ value: k, label: v }))} /></Field>
+        <Field label="Type" id="ag-ty" stack><Select contain id="ag-ty" name="type" value={ty} onChange={setTy} options={Object.entries(TASK_TYPES).map(([k, v]) => ({ value: k, label: v }))} /></Field>
         <Field label="When" id="ag-w"><input id="ag-w" name="when" type="datetime-local" required defaultValue={toInput(dayAt(1, 10))} /></Field>
-        <Field label="Assigned To" id="ag-a"><Select id="ag-a" name="who" value={asg} onChange={setAsg} options={config.owners.map(o => ({ value: o, label: o }))} /></Field>
-        <Field label="Lead" id="ag-l"><Select id="ag-l" name="lead" value={ld} onChange={setLd} options={[{ value: '', label: 'None' }, ...leads.map(l => ({ value: l.id, label: l.name }))]} /></Field>
+        <Field label="Assigned To" id="ag-a" stack><Select contain id="ag-a" name="who" value={asg} onChange={setAsg} options={config.owners.map(o => ({ value: o, label: o }))} /></Field>
+        <Field label="Lead" id="ag-l" stack><Select contain id="ag-l" name="lead" value={ld} onChange={setLd} options={[{ value: '', label: 'None' }, ...leads.map(l => ({ value: l.id, label: l.name }))]} /></Field>
       </div>
       <div className="formgroup"><Field label="Notes" id="ag-n" stack><textarea id="ag-n" name="notes" /></Field></div>
     </Sheet>

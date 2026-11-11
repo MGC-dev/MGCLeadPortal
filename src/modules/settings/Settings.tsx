@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { firmApi, useQuery } from '../../api'
 import { Tag } from '../../shared/ui'
+import { InfoTip } from '../../shared/InfoTip'
 
 export default function Settings() {
   const f = useQuery(() => firmApi.get())
@@ -29,7 +30,7 @@ export default function Settings() {
         </article>
       </div>
       <div className="group callout">
-        <div style={{ display: 'grid', gap: 2 }}><h2>{live ? 'Campaigns Are Live' : 'Campaigns Unlock When Both Are Done'}</h2><p className="footnote">Each firm has its own domain, number and sender reputation. The firm is the legal sender.</p></div>
+        <div className="titlerow"><h2>{live ? 'Campaigns Are Live' : 'Campaigns Unlock When Both Are Done'}</h2><InfoTip text="Each firm has its own domain, number and sender reputation. The firm is the legal sender." label="About campaign setup" /></div>
         {live ? <button className="btn" type="button" onClick={() => navigate('/campaigns')}>Open Campaigns</button> : <span className="tag">{(emailOk ? 1 : 0) + (textOk ? 1 : 0)} of 2 Done</span>}
       </div>
     </>

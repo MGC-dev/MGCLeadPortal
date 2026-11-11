@@ -6,6 +6,7 @@ import { Icon } from '../../shared/Icon'
 import { Sheet } from '../../shared/ui'
 import { first, money } from '../../shared/format'
 import { feeOf, paymentDue, priceLabel, retainerLabel, retainerOf } from '../services/pricing'
+import { InfoTip } from '../../shared/InfoTip'
 
 /**
  * Shown before the ticket moves to Payment Pending: confirm the services the client took and the total,
@@ -38,7 +39,7 @@ export function RequestPaymentModal({ lead: l }: { lead: Lead }) {
       }>
       <div className="reqpay__body">
         <div className="reqpay__headline">
-          <h3>Confirm the services {first(l.name)} is taking</h3>
+          <div className="titlerow"><h3>Confirm the services {first(l.name)} is taking</h3>{mine.length > 0 && <InfoTip label="About the amount" text={retainerOf(mine) > 0 ? 'The retainer is requested before work starts.' : feeOf(mine) > 0 ? 'These services have no retainer, so the full estimated fee is requested.' : 'These services are paid on contingency, so nothing is requested upfront.'} />}</div>
           <button type="button" className="btn btn--sm" onClick={() => openModal({ type: 'pick-services', id: l.id, next: 'request-payment' })}>
             {mine.length ? 'Edit services' : 'Add services'}
           </button>
@@ -61,7 +62,6 @@ export function RequestPaymentModal({ lead: l }: { lead: Lead }) {
               <div><span>Retainer</span><b>{retainerOf(mine) > 0 ? money(retainerOf(mine)) : 'None'}</b></div>
               <div className="is-due"><span>Request now</span><b>{money(due)}</b></div>
             </div>
-            <p className="caption reqpay__note">{retainerOf(mine) > 0 ? 'The retainer is requested before work starts.' : feeOf(mine) > 0 ? 'These services have no retainer, so the full estimated fee is requested.' : 'These services are paid on contingency, so nothing is requested upfront.'}</p>
           </>
         )}
       </div>

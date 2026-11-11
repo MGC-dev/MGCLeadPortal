@@ -15,10 +15,12 @@ interface Props {
   'aria-label'?: string
   /** Shown when nothing is selected. */
   placeholder?: string
+  /** Keeps the open list inside the surrounding dialog (it scrolls) instead of floating past its edge. For small dialogs. */
+  contain?: boolean
 }
 
 /** A styled dropdown (listbox) that matches the portal: icons, tick on the selected row, full keyboard support. */
-export function Select({ value, onChange, options, name, id, 'aria-label': ariaLabel, placeholder = 'Select…' }: Props) {
+export function Select({ value, onChange, options, name, id, 'aria-label': ariaLabel, placeholder = 'Select…', contain = false }: Props) {
   const auto = useId()
   const listId = `${auto}-list`
   const trigger = useRef<HTMLButtonElement>(null)
@@ -31,10 +33,11 @@ export function Select({ value, onChange, options, name, id, 'aria-label': ariaL
   const place = useCallback(() => {
     const r = trigger.current?.getBoundingClientRect()
     if (!r) return
-    const below = innerHeight - r.bottom - 12, above = r.top - 12
-    const flip = below < 200 && above > below
+    const box = contain ? trigger.current?.closest('.sheet')?.getBoundingClientRect() : undefined
+    const below = (box ? box.bottom : innerHeight) - r.bottom - 12, above = r.top - (box ? box.top : 0) - 12
+    const flip = !box && below < 200 && above > below
     const room = flip ? above : below
-    setPos({ left: r.left, width: r.width, maxH: Math.min(room, 320), ...(flip ? { bottom: innerHeight - r.top + 6 } : { top: r.bottom + 6 }) })
+    setPos({ left: r.left, width: r.width, maxH: Math.max(96, Math.min(room, 320)), ...(flip ? { bottom: innerHeight - r.top + 6 } : { top: r.bottom + 6 }) })
   }, [])
 
   useLayoutEffect(() => { if (open) place() }, [open, place])

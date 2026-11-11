@@ -9,6 +9,7 @@ import { Select } from '../../shared/Select'
 import { Tag, usePhone } from '../../shared/ui'
 import { when } from '../../shared/format'
 import { parseAmount, priceLabel, priceUnit, retainerLabel } from './pricing'
+import { InfoTip } from '../../shared/InfoTip'
 
 const toInput = (s: Service): ServiceInput => ({ name: s.name, practice: s.practice, description: s.description, pricingModel: s.pricingModel, price: s.price, retainer: s.retainer, active: s.active })
 
@@ -82,13 +83,12 @@ export function ServicePanel({ service: svc, startEditing }: { service: Service;
                       <input id="sv-price" className="docv__input" inputMode="decimal" aria-label="Default price" value={view.price ? String(view.price) : ''} placeholder="0" onChange={e => set({ price: parseAmount(e.target.value) })} />
                       {pct && <i className="is-suffix" aria-hidden="true">%</i>}
                     </span></div>
-                  <div className="svcp__field"><label htmlFor="sv-retainer">Retainer</label>
+                  <div className="svcp__field"><div className="titlerow"><label htmlFor="sv-retainer">Retainer</label><InfoTip text="The retainer is requested at the Payment Pending stage, before work starts." label="About the retainer" /></div>
                     <span className="svcv__amount">
                       <i aria-hidden="true">$</i>
                       <input id="sv-retainer" className="docv__input" inputMode="decimal" aria-label="Retainer" value={view.retainer ? String(view.retainer) : ''} placeholder="None" onChange={e => set({ retainer: parseAmount(e.target.value) })} />
                     </span></div>
                 </div>
-                <p className="caption">The retainer is requested at the Payment Pending stage, before work starts.</p>
               </div>
             ) : (
               <div className="svcv__summary">

@@ -854,3 +854,242 @@ body.portal-lock { overflow: hidden; }
 
 .portal .boardbar__select { width: 170px; flex-shrink: 0; }
 @media (max-width: 760px) { .portal .boardbar__select { flex: 1 1 140px; width: auto; } }
+
+/* A dropdown inside a stacked form field is the full bordered control, like the Add Enquiry form */
+.portal .formgroup .field--stack .select { min-height: 44px; padding: 8px 12px 8px 14px; border: 1.5px solid var(--separator); border-radius: 12px; background: #fff; }
+.portal .formgroup .field--stack .select:hover { border-color: #b9c6e2; background: #fff; }
+.portal .formgroup .field--stack .select[aria-expanded="true"] { border-color: var(--tint); box-shadow: 0 0 0 4px rgba(31, 79, 216, 0.14); }
+
+.portal .ph { padding: 1px 7px; border-radius: 6px; background: var(--tint-soft); color: var(--tint); font-weight: 700; font-size: 0.92em; }
+.portal .docv__frow--3 { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1.6fr); }
+.portal .docv__fhead:has(+ .docv__frow--3) { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1.6fr); }
+@media (max-width: 760px) { .portal .docv__frow--3, .portal .docv__fhead:has(+ .docv__frow--3) { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- survey results ---------- */
+.portal .survey { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 18px; align-items: center; padding: 16px; margin-bottom: 12px; border: 1px solid var(--separator-soft); border-radius: 14px; background: linear-gradient(180deg, #f3f6fd 0%, #fff 100%); }
+.portal .survey__score { display: grid; gap: 2px; text-align: center; }
+.portal .survey__score span { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--label-3); }
+.portal .survey__score b { font-size: 46px; line-height: 1.05; font-weight: 800; letter-spacing: -0.04em; color: var(--navy); font-variant-numeric: tabular-nums; }
+.portal .survey__score small { font-size: 12.5px; color: var(--label-2); }
+.portal .survey__split { display: grid; gap: 8px; }
+.portal .survey__row { display: grid; grid-template-columns: 150px minmax(0, 1fr) 28px; align-items: center; gap: 12px; font-size: 13.5px; color: var(--label-2); }
+.portal .survey__row b { text-align: right; color: var(--navy); }
+.portal .survey__bar { display: block; height: 8px; border-radius: 99px; background: var(--fill-2); overflow: hidden; }
+.portal .survey__bar em { display: block; height: 100%; border-radius: 99px; transition: width 400ms var(--ease); }
+.portal .survey__bar--good em { background: var(--green); }
+.portal .survey__bar--mid em { background: var(--orange); }
+.portal .survey__bar--bad em { background: var(--red); }
+@media (max-width: 760px) { .portal .survey { grid-template-columns: minmax(0, 1fr); } .portal .survey__row { grid-template-columns: 120px minmax(0, 1fr) 24px; } }
+
+/* New campaign dialog: the same form standard as Add Enquiry, with the preview beside it */
+.portal .sheet.enq.enq--camp { width: min(980px, calc(100% - 32px)); }
+.portal .enq__split { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 26px; align-items: start; }
+.portal .enq__col { display: grid; gap: 22px; min-width: 0; }
+.portal .enq__preview { position: sticky; top: 0; align-content: start; padding: 16px; border-radius: 16px; background: var(--fill-2); }
+.portal .enq__preview legend { padding: 0 0 4px; }
+.portal .enq__hint { font-size: 12.5px; color: var(--label-2); }
+.portal .enq .merge { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+@media (max-width: 760px) { .portal .enq__split { grid-template-columns: minmax(0, 1fr); } .portal .enq__preview { position: static; } .portal .sheet.enq.enq--camp { width: 100%; } }
+.portal .enq__legend { margin: 0 0 2px; font-size: 11.5px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent-text); }
+
+.portal .inputs { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.portal .inputs li { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 12px; border: 1.5px solid var(--separator-soft); border-radius: 12px; background: #fff; }
+.portal .inputs__name { display: flex; align-items: center; gap: 10px; min-width: 0; flex-wrap: wrap; }
+.portal .inputs__name b { font-size: 14px; font-weight: 700; color: var(--navy); }
+@media (max-width: 760px) { .portal .inputs li { grid-template-columns: minmax(0, 1fr) auto; } .portal .inputs__from { display: none; } }
+
+.portal .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.portal .chip--add { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 14px 0 10px; border: 1.5px solid var(--separator); border-radius: 999px; background: #fff; color: var(--navy); font-size: 13.5px; font-weight: 600; cursor: pointer; transition: border-color 150ms, background-color 150ms, color 150ms; }
+.portal .chip--add:hover { border-color: var(--tint); background: var(--tint-soft); color: var(--tint); }
+.portal .chip--add .icon { width: 15px; height: 15px; color: var(--tint); }
+
+.portal .inputsbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.portal .inputsbar__title { font-size: 11.5px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent-text); }
+.portal .inputsbar__menu { position: fixed; z-index: 95; width: 290px; overflow-y: auto; padding: 6px; background: #fff; border: 1px solid var(--separator-soft); border-radius: 14px; box-shadow: var(--shadow-float); animation: pop 140ms var(--ease); }
+.portal .inputsbar__menu ul { margin: 0; padding: 0; list-style: none; }
+.portal .inputsbar__menu li button { display: grid; width: 100%; padding: 8px 12px; border: 0; border-radius: 9px; background: transparent; text-align: left; cursor: pointer; }
+.portal .inputsbar__menu li button:hover, .portal .inputsbar__menu li button:focus-visible { background: var(--tint-soft); outline: none; }
+.portal .inputsbar__menu b { font-size: 14px; font-weight: 700; color: var(--navy); }
+.portal .inputsbar__menu li span { font-size: 12.5px; color: var(--label-2); }
+.portal .inputsbar__new { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 4px; padding: 10px 12px; border: 0; border-top: 1px solid var(--separator-soft); border-radius: 0 0 9px 9px; background: transparent; color: var(--tint); font-size: 14px; font-weight: 700; cursor: pointer; }
+.portal .inputsbar__new:hover { background: var(--tint-soft); }
+.portal .inputsbar__form { display: grid; gap: 12px; padding: 8px; }
+.portal .inputsbar__form label, .portal .inputsbar__field { display: grid; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--label-2); }
+.portal .inputsbar__form input { width: 100%; min-height: 42px; padding: 8px 12px; border: 1.5px solid var(--separator); border-radius: 12px; font-size: 15px; font-weight: 500; color: var(--label); background: #fff; }
+.portal .inputsbar__form input:focus { outline: none; border-color: var(--tint); box-shadow: 0 0 0 4px rgba(31, 79, 216, 0.14); }
+.portal .inputsbar__actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* a heading with an info tooltip beside it */
+.portal .titlerow { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.portal .titlerow > h1, .portal .titlerow > h2, .portal .titlerow > h3 { margin: 0; }
+.portal .titlerow .infotip__bubble { text-transform: none; letter-spacing: 0; font-weight: 500; }
+
+/* ---------- Intelligence: Chat ---------- */
+.portal .view:has(.chat) { padding-bottom: var(--s6); }
+.portal .chat { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 16px; height: calc(100vh - 220px); min-height: 520px; }
+.portal .chat__side, .portal .chat__main { min-height: 0; background: #fff; border: 1px solid var(--separator-soft); border-radius: 16px; box-shadow: var(--shadow-card); }
+.portal .chat__side { display: flex; flex-direction: column; gap: 12px; padding: 12px; overflow: hidden; }
+.portal .chat__new { width: 100%; justify-content: center; gap: 6px; min-height: 42px; }
+.portal .chat__side ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.portal .chat__side li { position: relative; }
+.portal .chat__item { display: grid; width: 100%; gap: 1px; padding: 9px 36px 9px 12px; border: 0; border-radius: 10px; background: transparent; text-align: left; cursor: pointer; }
+.portal .chat__item b { font-size: 14px; font-weight: 600; color: var(--navy); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.portal .chat__item small { font-size: 12px; color: var(--label-2); }
+.portal .chat__item:hover, .portal .chat__side li.is-current .chat__item { background: var(--tint-soft); }
+.portal .chat__del { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 26px; height: 26px; border: 0; border-radius: 8px; background: transparent; color: var(--label-3); cursor: pointer; opacity: 0; transition: opacity 120ms, color 120ms; }
+.portal .chat__side li:hover .chat__del, .portal .chat__del:focus-visible { opacity: 1; }
+.portal .chat__del:hover { color: var(--red); background: var(--fill-2); }
+.portal .chat__none { margin: 8px; font-size: 13px; color: var(--label-2); }
+.portal .chat__main { display: flex; flex-direction: column; overflow: hidden; }
+.portal .chat__head { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--separator-soft); background: linear-gradient(180deg, #f3f6fd 0%, #fff 100%); }
+.portal .chat__history { display: none; }
+.portal .chat__title { display: grid; min-width: 0; margin-right: auto; }
+.portal .chat__title b { font-size: 16px; font-weight: 800; letter-spacing: -0.02em; color: var(--navy); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.portal .chat__title small { font-size: 12.5px; color: var(--label-2); }
+.portal .chat__bot { width: 240px; flex-shrink: 0; }
+.portal .chat__thread { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 14px; padding: 20px; scrollbar-width: thin; }
+.portal .chat__msg { display: flex; gap: 10px; max-width: 78%; }
+.portal .chat__msg--user { align-self: flex-end; }
+.portal .chat__avatar { flex-shrink: 0; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: var(--navy); color: #fff; }
+.portal .chat__avatar .icon { width: 18px; height: 18px; }
+.portal .chat__bubble { display: grid; gap: 4px; padding: 11px 15px; border-radius: 16px; background: var(--fill-2); color: var(--label); font-size: 15px; line-height: 1.5; min-width: 0; overflow-wrap: anywhere; }
+.portal .chat__msg--user .chat__bubble { background: var(--tint); color: #fff; border-bottom-right-radius: 5px; }
+.portal .chat__msg--assistant .chat__bubble { border-top-left-radius: 5px; }
+.portal .chat__line { display: block; min-height: 0; }
+.portal .chat__time { font-size: 11px; opacity: 0.6; }
+.portal .chat__typing { display: flex; gap: 5px; align-items: center; min-height: 40px; }
+.portal .chat__typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--label-3); animation: chatdot 1s infinite ease-in-out; }
+.portal .chat__typing i:nth-child(2) { animation-delay: 0.15s; }
+.portal .chat__typing i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes chatdot { 0%, 80%, 100% { transform: translateY(0); opacity: 0.4; } 40% { transform: translateY(-4px); opacity: 1; } }
+.portal .chat__empty { margin: auto; display: grid; justify-items: center; gap: 8px; max-width: 520px; text-align: center; }
+.portal .chat__hero { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 18px; background: var(--navy); color: #fff; box-shadow: var(--shadow-float); }
+.portal .chat__hero .icon { width: 28px; height: 28px; }
+.portal .chat__empty h2 { font-size: 24px; font-weight: 800; letter-spacing: -0.035em; color: var(--navy); }
+.portal .chat__empty p { color: var(--label-2); font-size: 15px; }
+.portal .chat__suggest { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; }
+.portal .chat__composer { display: flex; align-items: flex-end; gap: 10px; margin: 0 16px; padding: 8px 8px 8px 16px; border: 1.5px solid var(--separator); border-radius: 18px; background: #fff; transition: border-color 150ms, box-shadow 150ms; }
+.portal .chat__composer:focus-within { border-color: var(--tint); box-shadow: 0 0 0 4px rgba(31, 79, 216, 0.14); }
+.portal .chat__composer textarea { flex: 1; min-width: 0; max-height: 160px; padding: 8px 0; border: 0; outline: none; resize: none; background: transparent; font: inherit; font-size: 15px; line-height: 1.45; color: var(--label); }
+.portal .chat__send { flex-shrink: 0; display: grid; place-items: center; width: 38px; height: 38px; border: 0; border-radius: 12px; background: var(--tint); color: #fff; cursor: pointer; transition: opacity 150ms, transform 150ms; }
+.portal .chat__send:disabled { opacity: 0.35; cursor: default; }
+.portal .chat__send:not(:disabled):hover { transform: translateY(-1px); }
+.portal .chat__note { margin: 8px 16px 12px; font-size: 12px; color: var(--label-3); text-align: center; }
+@media (max-width: 900px) {
+  .portal .chat { grid-template-columns: minmax(0, 1fr); height: calc(100vh - 260px); position: relative; }
+  .portal .chat__side { display: none; position: absolute; z-index: 30; inset: 0 0 auto 0; max-height: 60%; box-shadow: var(--shadow-float); }
+  .portal .chat__side.is-open { display: flex; }
+  .portal .chat__history { display: grid; }
+  .portal .chat__bot { width: 150px; }
+  .portal .chat__msg { max-width: 92%; }
+}
+
+/* ---------- Intelligence: Bots ---------- */
+.portal .bottools { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.portal .bottools__row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border: 1.5px solid var(--separator-soft); border-radius: 12px; background: #fff; text-align: left; cursor: pointer; transition: border-color 150ms, background-color 150ms; }
+.portal .bottools__row:disabled { cursor: default; }
+.portal .bottools__row:not(:disabled):hover { border-color: #b9c6e2; }
+.portal .bottools__row.is-on { border-color: var(--tint); background: var(--tint-soft); }
+.portal .bottools__row.is-on .pick__check { background: var(--tint); border-color: var(--tint); }
+.portal .bottools__text { display: grid; min-width: 0; }
+.portal .bottools__text b { font-size: 14px; font-weight: 700; color: var(--navy); }
+.portal .bottools__text small { font-size: 12.5px; color: var(--label-2); }
+.portal .bot__instr { min-height: 180px; }
+.portal .bot__instr-read { white-space: pre-wrap; line-height: 1.55; color: var(--label); }
+
+/* ---------- Bots messenger ---------- */
+.portal .view:has(.bm) { padding-bottom: var(--s6); }
+.portal .bm { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 16px; height: calc(100vh - 220px); min-height: 520px; }
+.portal .bm__list, .portal .bm__main { min-height: 0; background: #fff; border: 1px solid var(--separator-soft); border-radius: 16px; box-shadow: var(--shadow-card); overflow: hidden; }
+.portal .bm__list { display: flex; flex-direction: column; }
+.portal .bm__tools { display: flex; align-items: center; gap: 8px; padding: 12px; }
+.portal .bm__heading { margin-right: auto; padding-left: 6px; font-size: 18px; font-weight: 800; letter-spacing: -0.03em; color: var(--navy); }
+.portal .bm__search { flex: 1; display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; border: 1.5px solid var(--separator); border-radius: 12px; color: var(--label-2); }
+.portal .bm__search:focus-within { border-color: var(--tint); box-shadow: 0 0 0 4px rgba(31, 79, 216, 0.14); }
+.portal .bm__search input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-size: 15px; color: var(--label); }
+.portal .bm__list ul { margin: 0; padding: 0 8px 8px; list-style: none; display: grid; gap: 2px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.portal .bm__item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px; border: 0; border-radius: 14px; background: transparent; text-align: left; cursor: pointer; transition: background-color 120ms; }
+.portal .bm__item:hover { background: var(--fill-2); }
+.portal .bm__item.is-current { background: var(--tint-soft); }
+.portal .bm__text { display: grid; min-width: 0; flex: 1; }
+.portal .bm__text b { font-size: 15px; font-weight: 700; color: var(--navy); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.portal .bm__text small { font-size: 13px; color: var(--label-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.portal .bm__dot { flex-shrink: 0; width: 10px; height: 10px; border-radius: 50%; background: var(--tint); }
+.portal .botav { flex-shrink: 0; display: block; }
+.portal .bm__main { position: relative; display: flex; flex-direction: column; }
+.portal .bm__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; }
+.portal .bm__back { display: none; }
+.portal .bm__pill { display: inline-flex; align-items: center; gap: 10px; margin: 0 auto; padding: 5px 16px 5px 6px; border-radius: 999px; background: #fff; box-shadow: 0 2px 14px rgba(16, 24, 40, 0.12); font-size: 15px; font-weight: 700; color: var(--navy); }
+.portal .bm__settings { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 16px; border: 0; border-radius: 999px; background: #fff; box-shadow: 0 2px 14px rgba(16, 24, 40, 0.12); font-size: 14.5px; font-weight: 600; color: var(--navy); cursor: pointer; }
+.portal .bm__settings:hover { background: var(--fill-2); }
+.portal .bm__thread .chat__bubble { border-radius: 22px; padding: 14px 18px; }
+.portal .bm__thread .chat__msg { max-width: 82%; }
+.portal .bm__down { position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%); display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 2px 14px rgba(16, 24, 40, 0.18); color: var(--navy); cursor: pointer; }
+.portal .bm__hero { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 18px; background: var(--tint-soft); color: var(--tint); }
+.portal .docv__avatar { display: grid; place-items: center; flex-shrink: 0; }
+@media (max-width: 900px) {
+  .portal .bm { grid-template-columns: minmax(0, 1fr); height: calc(100vh - 260px); }
+  .portal .bm .bm__main { display: none; }
+  .portal .bm.has-thread .bm__list { display: none; }
+  .portal .bm.has-thread .bm__main { display: flex; }
+  .portal .bm__back { display: grid; }
+  .portal .bm__pill { margin: 0 auto 0 0; }
+}
+
+/* approvals and the tools an answer used */
+.portal .chat__steps { display: flex; flex-wrap: wrap; gap: 6px; }
+.portal .chat__steps span { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 999px; background: rgba(31, 79, 216, 0.1); color: var(--tint); font-size: 11.5px; font-weight: 700; }
+.portal .chat__action { display: grid; gap: 10px; margin-top: 6px; padding: 12px 14px; border: 1.5px solid #d6e0f5; border-radius: 14px; background: #fff; }
+.portal .chat__action-title { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--navy); font-size: 14.5px; }
+.portal .chat__action-btns { display: flex; justify-content: flex-end; gap: 8px; }
+.portal .chat__action-result { display: flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--label-2); }
+.portal .chat__action--done { border-color: #bfe6cf; background: #f1faf5; }
+.portal .chat__action--done .chat__action-result { color: #1a7a45; font-weight: 600; }
+.portal .chat__action--cancelled, .portal .chat__action--failed { opacity: 0.8; }
+
+/* ---------- Chat, in the spirit of Claude: one calm centred column, plain answers, a roomy message box ---------- */
+.portal .chat--claude .chat__main { border: 0; box-shadow: none; background: transparent; }
+.portal .chat--claude .chat__head { border-bottom: 0; background: transparent; padding-inline: 8px; }
+.portal .chat--claude .chat__thread { gap: 26px; padding: 8px 8px 24px; }
+.portal .chat--claude .chat__thread > * { width: 100%; max-width: 760px; margin-inline: auto; }
+.portal .chat--claude .chat__msg { max-width: 760px; }
+.portal .chat--claude .chat__msg--assistant .chat__bubble { background: transparent; padding: 0; border-radius: 0; font-size: 16.5px; line-height: 1.7; color: var(--label); }
+.portal .chat--claude .chat__msg--user { justify-content: flex-end; }
+.portal .chat--claude .chat__msg--user .chat__bubble { max-width: 85%; background: var(--fill-2); color: var(--label); border-radius: 20px; padding: 11px 18px; }
+.portal .chat--claude .chat__time { display: none; }
+.portal .chat--claude .chat__line + .chat__line { margin-top: 2px; }
+.portal .chat--claude .chat__typing { min-height: 28px; padding: 0; background: transparent; }
+.portal .chat--claude .chat__empty { max-width: 640px; gap: 10px; }
+.portal .chat--claude .chat__empty h2 { font-size: 34px; letter-spacing: -0.04em; font-weight: 700; }
+.portal .chat--claude .chat__hero { width: 44px; height: 44px; border-radius: 14px; box-shadow: none; }
+.portal .chat--claude .chat__hero .icon { width: 24px; height: 24px; }
+.portal .chat--claude .chat__composer { width: calc(100% - 16px); max-width: 760px; margin: 0 auto; padding: 12px 12px 12px 22px; border-radius: 26px; border-color: var(--separator); box-shadow: 0 4px 24px rgba(16, 24, 40, 0.08); align-items: flex-end; }
+.portal .chat--claude .chat__composer textarea { font-size: 16.5px; min-height: 28px; }
+.portal .chat--claude .chat__send { width: 40px; height: 40px; border-radius: 14px; background: var(--navy); }
+.portal .chat--claude .chat__note { max-width: 760px; margin: 8px auto 14px; }
+.portal .chat--claude .chat__side { border: 0; box-shadow: none; background: transparent; }
+.portal .chat--claude .chat__new { background: #fff; color: var(--navy); border: 1.5px solid var(--separator); box-shadow: none; }
+.portal .chat--claude .chat__bubble { gap: 0; }
+.portal .chat--claude .chat__msg--assistant .chat__bubble { line-height: 1.6; }
+.portal .chat--claude .chat__line + .chat__line { margin-top: 0; }
+.portal .chat--claude .chat__steps { margin-bottom: 8px; }
+.portal .chat--claude .chat__msg--user .chat__bubble { background: #e9eef8; }
+
+/* Chat uses the whole page: no page title, no padding, edge to edge below the search bar */
+.portal-main:has(.chat--claude) > .toolbar { display: none; }
+.portal .view:has(.chat--claude) { padding: 0; gap: 0; }
+.portal .chat--claude { height: calc(100dvh - 70px); min-height: 0; gap: 0; grid-template-columns: 280px minmax(0, 1fr); border-top: 1px solid var(--separator-soft); }
+.portal .chat--claude .chat__side { border-right: 1px solid var(--separator-soft); border-radius: 0; padding: 14px; background: #f8fafd; }
+.portal .chat--claude .chat__head { padding: 14px 20px; }
+.portal .chat--claude .chat__thread { padding: 8px 24px 24px; }
+@media (max-width: 900px) { .portal .chat--claude { grid-template-columns: minmax(0, 1fr); height: calc(100dvh - 70px - var(--tab-h, 64px)); } }
+
+/* the history can be folded away on a wide screen */
+.portal .chat--claude { transition: grid-template-columns 220ms var(--ease); }
+.portal .chat--claude.is-folded { grid-template-columns: 0 minmax(0, 1fr); }
+.portal .chat--claude.is-folded .chat__side { visibility: hidden; padding: 0; border-right: 0; overflow: hidden; }
+.portal .chat__collapse { flex-shrink: 0; }
+@media (max-width: 900px) { .portal .chat__collapse { display: none; } .portal .chat--claude.is-folded { grid-template-columns: minmax(0, 1fr); } }
+.portal .chat__collapse, .portal .chat__history { gap: 6px; }
+.portal .chat__collapse.is-on { background: var(--tint-soft); border-color: var(--tint); color: var(--tint); }
+@media (max-width: 900px) { .portal .chat__history { display: inline-flex; } }

@@ -11,6 +11,8 @@ export const VIEWS: View[] = [
   { id: 'campaigns', path: '/campaigns', label: 'Campaigns', icon: 'campaigns', sub: 'One-off and automatic emails and texts, from your firm’s own domain and number.' },
   { id: 'documents', path: '/documents', label: 'Documents', icon: 'folder', sub: 'Engagement letters, their signing status, and the templates they come from.' },
   { id: 'reports', path: '/reports', label: 'Reports', icon: 'reports', sub: 'Where leads come from, what converts, and why leads are lost.' },
+  { id: 'chat', path: '/chat', label: 'Chat', icon: 'sparkle', sub: 'Ask questions about your leads, tasks, documents and campaigns, or chat with one of your bots.' },
+  { id: 'bots', path: '/bots', label: 'Bots', icon: 'bot', sub: 'AI bots that work for your firm. Each has its own instructions and only sees the tools you switch on.' },
   { id: 'services', path: '/services', label: 'Services', icon: 'services', sub: 'Everything the firm provides, with its default pricing. Pick a service when adding an enquiry to start from its price.' },
   { id: 'integrations', path: '/integrations', label: 'Integrations', icon: 'plug', sub: 'Connect your lead sources and calendars.' },
   { id: 'settings', path: '/settings', label: 'Settings', icon: 'gear', sub: 'Send from your own domain and number, with a separate reputation for every firm.' },
@@ -21,6 +23,7 @@ export const NAV: { label: string; ids: string[] }[] = [
   { label: 'Workspace', ids: ['dashboard', 'pipeline', 'leads', 'contacts', 'calendar', 'tasks'] },
   { label: 'Outreach', ids: ['messages', 'campaigns'] },
   { label: 'Records', ids: ['documents', 'reports'] },
+  { label: 'Intelligence', ids: ['chat', 'bots'] },
   { label: 'Firm', ids: ['services', 'integrations', 'settings'] },
 ]
 /** Phone tab bar. */

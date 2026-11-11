@@ -15,6 +15,10 @@ import Calendar from './modules/calendar/Calendar'
 import Tasks from './modules/tasks/Tasks'
 import Messages from './modules/messages/Messages'
 import Campaigns from './modules/campaigns/Campaigns'
+import CampaignDetail from './modules/campaigns/CampaignDetail'
+import Chat from './modules/chat/Chat'
+import Bots from './modules/bots/Bots'
+import BotDetail from './modules/bots/BotDetail'
 import Documents from './modules/documents/Documents'
 import DocumentDetail from './modules/documents/DocumentDetail'
 import Reports from './modules/reports/Reports'
@@ -36,9 +40,15 @@ createRoot(document.getElementById('root')!).render(
           <Route path="agenda" element={<Navigate to="/tasks" replace />} />
           <Route path="messages" element={<Messages />} />
           <Route path="campaigns" element={<Campaigns />} />
+          <Route path="campaigns/:id" element={<CampaignDetail />} />
           <Route path="documents" element={<Documents />} />
           <Route path="documents/:id" element={<DocumentDetail />} />
           <Route path="reports" element={<Reports />} />
+          <Route path="chat" element={<Chat />} />
+          <Route path="chat/:id" element={<Chat />} />
+          <Route path="bots" element={<Bots />} />
+          <Route path="bots/:id" element={<Bots />} />
+          <Route path="bots/:id/settings" element={<BotDetail />} />
           <Route path="services" element={<Services />} />
           <Route path="integrations" element={<Integrations />} />
           <Route path="settings" element={<Settings />} />

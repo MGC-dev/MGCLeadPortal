@@ -1,6 +1,6 @@
 // Mock data for the UNIR portal. The mock endpoints in ./index.ts read from this file until the real backend is ready.
 // Everything is generated relative to "now" so the sample firm always looks current.
-import type { Activity, Campaign, DocField, Firm, FirmEvent, Integration, Lead, PortalConfig, PortalDocument, SentItem, Service, SourceId, StageId, Task, TeamMember } from './types'
+import type { Activity, Bot, Campaign, ChatConversation, DocField, Firm, FirmEvent, Integration, Lead, PortalConfig, PortalDocument, SentItem, Service, SourceId, StageId, Task, TeamMember } from './types'
 
 export const HOUR = 3_600_000
 export const DAY = 24 * HOUR
@@ -20,7 +20,8 @@ export const config: PortalConfig = {
   owners: ['Sarah Mitchell', 'David Cohen', 'Priya Nair', 'James Okafor'],
   lostReasons: ['Went with another firm', 'Could not afford the fee', 'Outside our practice areas', 'No response after follow-up', 'Conflict of interest'],
   practiceAreas: ['Family law', 'Personal injury', 'Immigration', 'Estate planning', 'Employment', 'Criminal defense', 'Business law', 'Real estate'],
-  triggers: ['A new enquiry arrives', 'A consultation is booked', 'A contract is unsigned after 2 days', 'A lead is marked as lost', 'A client is signed'],
+  // An automatic campaign runs when a ticket reaches one of the pipeline stages
+  triggers: ['New Enquiry', 'Contacted', 'Consultation', 'Contract Sent', 'Signed', 'Payment Pending', 'Services Provided', 'Lost'].map(s => `A ticket moves to ${s}`),
   audiences: {
     open: { label: 'Open leads', hint: 'Everyone still in the pipeline' },
     consult: { label: 'Booked or due a consultation', hint: 'Contacted and Consultation stages' },
@@ -210,20 +211,72 @@ export function tasks(): Task[] {
   ]
 }
 
+/** The question a survey asks, with the scale it expects back. */
+export const surveyBody = (metric: 'nps' | 'csat') => metric === 'nps'
+  ? 'Hi {first}, thank you for choosing {firm}. On a scale of 0 to 10, how likely are you to recommend us to a friend or colleague? Reply with a number.'
+  : 'Hi {first}, how satisfied were you with the help you got from {firm}? Reply with a number from 1 (very unhappy) to 5 (very happy).'
+
 export function campaigns(leadList: Lead[]): Campaign[] {
   const past = leadList.filter(l => l.stage === 'signed' || l.stage === 'payment' || l.stage === 'delivered')
   const auto = (c: Omit<Campaign, 'kind' | 'recipients' | 'sent'>): Campaign => ({ ...c, kind: 'auto', recipients: [], sent: 0 })
+  const survey = (id: string, name: string, metric: 'nps' | 'csat', scores: number[], ago: number): Campaign => ({
+    id, kind: 'survey', metric, name, active: metric === 'nps', audience: 'clients', channel: 'Text and Email', steps: 1, sent: past.length, sentAt: Date.now() - ago * DAY,
+    subject: metric === 'nps' ? 'How likely are you to recommend us, {first}?' : 'How did we do, {first}?',
+    body: surveyBody(metric),
+    recipients: past.map((l, i) => ({ id: l.id, name: l.name, channel: 'Email' as const, status: 'delivered' as const, opened: true, replied: i < scores.length, score: scores[i] })),
+  })
   return [
-    auto({ id: 'c1', name: 'Instant Reply', trigger: 'A new enquiry arrives', channel: 'Text', steps: 1, active: true, body: 'Hi {first}, thanks for contacting Example Family Law. An attorney will call you today. Reply STOP to opt out.' }),
-    auto({ id: 'c2', name: 'New Enquiry Welcome', trigger: 'A new enquiry arrives', channel: 'Email', steps: 3, active: true, body: 'Hi {first},\n\nThank you for reaching out about your {matter}. Here is what happens next, and what to bring to your consultation.' }),
-    auto({ id: 'c3', name: 'Consultation Reminder', trigger: 'A consultation is booked', channel: 'Text and Email', steps: 2, active: true, body: 'Hi {first}, a reminder of your consultation tomorrow. Reply C to confirm.' }),
-    auto({ id: 'c4', name: 'Signature Follow-Up', trigger: 'A contract is unsigned after 2 days', channel: 'Text', steps: 2, active: true, body: 'Hi {first}, your engagement letter is ready to sign: sign.example.com/abc' }),
-    auto({ id: 'c5', name: 'Monthly Newsletter', trigger: 'The first Monday of the month', channel: 'Email', steps: 1, active: false, body: 'News and updates from Example Family Law.' }),
+    auto({ id: 'c1', name: 'Instant Reply', trigger: 'A ticket moves to New Enquiry', channel: 'Text', steps: 1, active: true, body: 'Hi {first}, thanks for contacting Example Family Law. An attorney will call you today. Reply STOP to opt out.' }),
+    auto({ id: 'c2', name: 'New Enquiry Welcome', trigger: 'A ticket moves to New Enquiry', channel: 'Email', steps: 3, active: true, body: 'Hi {first},\n\nThank you for reaching out about your {matter}. Here is what happens next, and what to bring to your consultation.' }),
+    auto({ id: 'c3', name: 'Consultation Reminder', trigger: 'A ticket moves to Consultation', channel: 'Text and Email', steps: 2, active: true, body: 'Hi {first}, a reminder of your consultation tomorrow. Reply C to confirm.' }),
+    auto({ id: 'c4', name: 'Signature Follow-Up', trigger: 'A ticket moves to Contract Sent', channel: 'Text', steps: 2, active: true, body: 'Hi {first}, your engagement letter is ready to sign: sign.example.com/abc' }),
+    auto({ id: 'c5', name: 'Monthly Newsletter', trigger: 'A ticket moves to Services Provided', channel: 'Email', steps: 1, active: false, body: 'News and updates from Example Family Law.' }),
     {
-      id: 'c6', kind: 'broadcast', name: 'Year-End Estate Planning Check-In', audience: 'clients', channel: 'Email', steps: 1, sent: past.length, sentAt: Date.now() - 12 * DAY,
+      id: 'c6', kind: 'broadcast', active: true, name: 'Year-End Estate Planning Check-In', audience: 'clients', channel: 'Email', steps: 1, sent: past.length, sentAt: Date.now() - 12 * DAY,
       subject: 'Is your estate plan up to date, {first}?',
       body: 'Hi {first},\n\nThe end of the year is a good time to review your will and beneficiaries. Reply to this email and we will set up a short call.',
       recipients: past.map((l, i) => ({ id: l.id, name: l.name, channel: 'Email' as const, status: 'delivered' as const, opened: true, replied: i === 0 })),
     },
+    survey('c7', 'Client NPS Survey', 'nps', [10, 7], 30),
+    survey('c8', 'Client Satisfaction (CSAT)', 'csat', [5, 4], 18),
   ]
+}
+
+/* ---------- intelligence ---------- */
+export const bots = (): Bot[] => {
+  const now = Date.now()
+  const a = (id: string, name: string, description: string, instructions: string, model: Bot['model'], tools: Bot['tools'], actions: Bot['actions'], external: Bot['external'], active: boolean, runs: number, ago: number): Bot =>
+    ({ id, name, description, instructions, model, tools, actions, external, active, runs, createdAt: now - (ago + 20) * DAY, updatedAt: now - ago * DAY, updatedBy: 'Sarah Mitchell' })
+  return [
+    a('a1', 'Intake Assistant', 'Qualifies new enquiries, drafts the first reply and books the call.',
+      'You help the intake team. For every new enquiry, check the practice area and matter, draft a warm first reply in the firm’s voice, and suggest the next step. Never give legal advice. Keep replies under 80 words.',
+      'balanced', ['leads', 'tasks', 'messages'], ['create_lead', 'book_task', 'send_text'], [], true, 128, 3),
+    a('a2', 'Follow-up Writer', 'Drafts follow-up texts and emails for leads that have gone quiet.',
+      'Write short, friendly follow-ups for leads with no activity in the last 3 days. Mention the matter, offer a time to talk, and always include an easy way to opt out.',
+      'fast', ['leads', 'messages', 'campaigns'], ['send_text'], [], true, 64, 9),
+    a('a3', 'Document Drafter', 'Prepares engagement letters and fills their inputs from the ticket.',
+      'Prepare the engagement letter for a ticket: choose the right documents for the services taken, fill every input from the ticket, and flag anything missing before it is sent for signature.',
+      'advanced', ['leads', 'documents', 'services'], ['set_services'], ['pages'], true, 37, 14),
+    a('a4', 'Research Assistant', 'Looks things up outside the portal, like legal updates and court information.',
+      'Answer research questions using the web. Always name where the information came from, say how recent it is, and never present anything as legal advice.',
+      'advanced', ['services'], [], ['web', 'pages', 'api'], true, 21, 5),
+    a('a5', 'Daily Briefing', 'Summarises what needs attention each morning.',
+      'Every morning, list overdue tasks, contracts waiting for a signature and leads with no next step, in order of urgency.',
+      'balanced', ['leads', 'tasks', 'campaigns'], ['book_task'], [], false, 0, 1),
+  ]
+}
+
+/** One standing thread per bot, started by the bot, like a messenger. */
+export const conversations = (list: Bot[]): ChatConversation[] => {
+  const now = Date.now()
+  const hello: Record<string, [string, number, boolean]> = {
+    a1: ['Good morning. Tell me about a new enquiry and I will check it, draft a first reply and book the call. Try: create a lead for Priya Shah.', 20 * 60_000, true],
+    a2: ['Some leads go quiet after the first call. Ask me to text one of them and I will word it for you. Try: text Rachel Greene saying …', 3 * 3_600_000, true],
+    a3: ['Tell me which ticket to prepare the engagement letter for and I will set its services first.', 26 * 3_600_000, false],
+    a4: ['I work outside the portal. Ask me to look something up, like a recent change in filing rules.', 2 * DAY, false],
+  }
+  return list.filter(b => hello[b.id]).map(b => {
+    const [text, ago, unread] = hello[b.id]
+    return { id: 'thread-' + b.id, title: b.name, botId: b.id, createdAt: now - ago, updatedAt: now - ago, unread, messages: [{ id: 'm-' + b.id, role: 'assistant' as const, text, at: now - ago }] }
+  })
 }

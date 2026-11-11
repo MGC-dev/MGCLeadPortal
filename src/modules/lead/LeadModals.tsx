@@ -18,7 +18,7 @@ export function IntakeModal() {
   const [practice, setPractice] = useState<string>(config.practiceAreas[0])
   const close = () => openModal(null)
   return (
-    <Sheet className="enq" wide title="New enquiry" sub="Log who got in touch and where it came from." onClose={close}
+    <Sheet className="enq" wide title="New enquiry" info="Log who got in touch and where it came from." onClose={close}
       icon={<Icon name="plus" />}
       foot={
         <div className="enq__foot">
@@ -84,8 +84,8 @@ export function ReminderModal({ lead: l }: { lead: Lead }) {
       onSubmit={async e => { e.preventDefault(); const d = data(e); await leadsApi.addReminder(l.id, d.title, +d.when); openModal(null) }}>
       <div className="formgroup">
         <Field label="Reminder" id="rm-t"><input id="rm-t" name="title" autoFocus defaultValue={`Follow up with ${first(l.name)}`} /></Field>
-        <Field label="When" id="rm-w">
-          <Select id="rm-w" name="when" value={when} onChange={setWhen} options={[{ value: '3', label: 'In 3 hours' }, { value: '24', label: 'Tomorrow' }, { value: '72', label: 'In 3 days' }]} />
+        <Field label="When" id="rm-w" stack>
+          <Select contain id="rm-w" name="when" value={when} onChange={setWhen} options={[{ value: '3', label: 'In 3 hours' }, { value: '24', label: 'Tomorrow' }, { value: '72', label: 'In 3 days' }]} />
         </Field>
       </div>
     </Sheet>
@@ -97,12 +97,11 @@ export function LostModal({ lead: l }: { lead: Lead }) {
   const [reason, setReason] = useState<string>(config.lostReasons[0])
   const close = () => openModal(null)
   return (
-    <Sheet title={`Mark ${first(l.name)} as Lost`} sub="The reason is kept, so reports can show why leads are lost." onClose={close} foot={<SheetFoot onCancel={close} primary="Mark as Lost" danger />}
+    <Sheet title={`Mark ${first(l.name)} as Lost`} info="The reason is kept, so reports can show why leads are lost. You can reopen the lead later." onClose={close} foot={<SheetFoot onCancel={close} primary="Mark as Lost" danger />}
       onSubmit={async e => { e.preventDefault(); await leadsApi.markLost(l.id, data(e).reason); openModal(null) }}>
       <div className="formgroup">
-        <Field label="Reason" id="lr"><Select id="lr" name="reason" value={reason} onChange={setReason} options={config.lostReasons.map(r => ({ value: r, label: r }))} /></Field>
+        <Field label="Reason" id="lr" stack><Select contain id="lr" name="reason" value={reason} onChange={setReason} options={config.lostReasons.map(r => ({ value: r, label: r }))} /></Field>
       </div>
-      <p className="hint">You can reopen the lead later.</p>
     </Sheet>
   )
 }
@@ -114,7 +113,7 @@ export function ClientSignModal({ lead: l }: { lead: Lead }) {
   const close = () => openModal(null)
   const signed = l.doc?.status === 'signed'
   return (
-    <Sheet title={`What ${first(l.name)} Sees`} sub="A text with a link, then the letter to sign on any device." wide onClose={close}
+    <Sheet title={`What ${first(l.name)} Sees`} info="A text with a link, then the letter to sign on any device." wide onClose={close}
       onSubmit={async e => { e.preventDefault(); const sig = (data(e).sig || '').trim(); if (!sig) return; await leadsApi.sign(l.id, sig) }}
       foot={
         <div className="sheet__foot">

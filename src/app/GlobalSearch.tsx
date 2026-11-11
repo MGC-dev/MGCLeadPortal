@@ -48,7 +48,7 @@ export function GlobalSearch() {
         else if (h.target.type === 'tasks') navigate('/tasks')
         else if (h.target.type === 'document') navigate(`/documents/${h.target.id}`)
         else if (h.target.type === 'service') { navigate('/services'); setTimeout(() => openService(h.target.id), 120) } // after the route change, which closes open panels
-        else { navigate('/campaigns'); setTimeout(() => openModal({ type: 'camp', id: h.target.id }), 120) } // after the route change, which closes open dialogs
+        else navigate(`/campaigns/${h.target.id}`)
       },
     }))
     return [...pages, ...found]

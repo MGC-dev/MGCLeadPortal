@@ -8,8 +8,7 @@ import { store } from './mockServer'
 import { toast } from '../shared/toast' // mock-only: a real backend would not toast, the UI would
 import type {
   Task, AudienceKey, Campaign, PortalConfig, Firm, FirmEvent, Integration, Lead, NewCampaignInput, NewLeadInput,
-  DocFile, DocField, PortalDocument, SearchHit, Service, SendProgress, SentItem, SourceId, StageId, TeamMember,
-} from './types'
+  DocFile, DocField, PortalDocument, SearchHit, Service, SendProgress, SentItem, SourceId, StageId, TeamMember, CampaignTag, CampaignChannel, SurveyMetric, Bot, BotAction, BotModel, BotTool, ChatConversation, ExternalTool } from './types'
 
 const clone = <T,>(v: T): T => structuredClone(v)
 const reply = <T,>(v: T): Promise<T> => Promise.resolve(clone(v))
@@ -102,14 +101,27 @@ export const servicesApi = {
 
 export const eventsApi = { list: (): Promise<FirmEvent[]> => reply(store.get().events) }
 
+export interface CampaignInput {
+  name: string; subject: string; body: string; tags?: CampaignTag[]
+  channel: CampaignChannel; audience?: AudienceKey; trigger?: string; metric?: SurveyMetric
+}
 export const campaignsApi = {
   list: (): Promise<Campaign[]> => reply(store.get().campaigns),
   create(d: NewCampaignInput) { const c = srv.createCampaign(d); store.commit(); return reply(c) },
   toggle(id: string) {
     const c = store.get().campaigns.find(x => x.id === id)
-    if (c) { c.active = !c.active; toast(`${c.name} ${c.active ? 'turned on' : 'turned off'}`) }
+    if (!c) return done()
+    if (c.draft) { srv.launchCampaign(c); return done() }
+    c.active = !c.active; toast(`${c.name} ${c.active ? 'turned on' : 'turned off'}`)
     return done()
   },
+  /** Edits the name and message of a campaign. */
+  update(id: string, input: CampaignInput) {
+    const c = store.get().campaigns.find(x => x.id === id)
+    if (c) { c.name = input.name; c.body = input.body; c.tags = input.tags?.length ? input.tags : undefined; c.channel = input.channel; if (c.kind === 'auto') c.trigger = input.trigger; else c.audience = input.audience; if (c.kind === 'survey') c.metric = input.metric; if (/Email/.test(c.channel)) c.subject = input.subject; toast('Campaign saved', c.name) }
+    return done()
+  },
+  remove(id: string) { const t = store.get(); const c = t.campaigns.find(x => x.id === id); t.campaigns = t.campaigns.filter(x => x.id !== id); if (c) toast('Campaign deleted', c.name); return done() },
   /** How many leads a one-off send to this audience would reach (opted-out contacts are skipped). */
   audience: (key: AudienceKey): Promise<{ total: number; optedOut: number; sample?: Lead }> => {
     const people = srv.audience(key)
@@ -154,7 +166,7 @@ export const searchApi = {
     t.services.filter(s => has(s.name, s.description, s.practice))
       .forEach(s => hits.push({ group: 'Services', title: s.name, subtitle: `${s.practice} · ${s.active ? 'Active' : 'Inactive'}`, target: { type: 'service', id: s.id } }))
     t.campaigns.filter(c => has(c.name, c.body, c.subject))
-      .forEach(c => hits.push({ group: 'Campaigns', title: c.name, subtitle: `${c.kind === 'auto' ? 'Automatic' : 'One-off'} · ${c.channel}`, target: { type: 'campaign', id: c.id } }))
+      .forEach(c => hits.push({ group: 'Campaigns', title: c.name, subtitle: `${c.kind === 'auto' ? 'Automatic' : c.kind === 'survey' ? (c.metric === 'csat' ? 'CSAT survey' : 'NPS survey') : 'One-off'} · ${c.channel}`, target: { type: 'campaign', id: c.id } }))
     return reply(hits.slice(0, 40))
   },
 }
@@ -174,4 +186,43 @@ export function useQuery<T>(fn: () => Promise<T>, deps: unknown[] = []): T | und
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [version, ...deps])
   return data
+}
+
+/* ---------- intelligence ---------- */
+export interface BotInput { name: string; description: string; instructions: string; model: BotModel; tools: BotTool[]; actions: BotAction[]; external: ExternalTool[]; active: boolean }
+export const botsApi = {
+  list: (): Promise<Bot[]> => reply([...store.get().bots].sort((a, b) => b.updatedAt - a.updatedAt)),
+  get: (id: string): Promise<Bot | undefined> => reply(store.get().bots.find(a => a.id === id)),
+  /** Creates an empty draft bot. */
+  create(): Promise<Bot> {
+    const now = Date.now()
+    const a: Bot = { id: srv.uid('a'), name: 'Untitled bot', description: '', instructions: '', model: 'balanced', tools: ['leads'], actions: [], external: [], active: false, runs: 0, createdAt: now, updatedAt: now, updatedBy: 'Sarah Mitchell' }
+    store.get().bots.unshift(a); store.commit()
+    return reply(a)
+  },
+  update(id: string, input: BotInput) {
+    const a = store.get().bots.find(x => x.id === id)
+    if (a) { Object.assign(a, input, { updatedAt: Date.now(), updatedBy: 'Sarah Mitchell' }); toast('Bot saved', a.name) }
+    return done()
+  },
+  remove(id: string) {
+    const t = store.get(); const a = t.bots.find(x => x.id === id)
+    t.bots = t.bots.filter(x => x.id !== id)
+    t.conversations = t.conversations.filter(c => c.botId !== id)
+    if (a) toast('Bot deleted', a.name)
+    return done()
+  },
+}
+
+export const chatApi = {
+  list: (): Promise<ChatConversation[]> => reply([...store.get().conversations].sort((a, b) => b.updatedAt - a.updatedAt)),
+  create(botId: string | null): Promise<ChatConversation> { const c = srv.createConversation(botId); store.commit(); return reply(c) },
+  /** Adds the message and, a moment later, the assistant's answer. */
+  send(id: string, text: string) { srv.sendChat(id, text); return done() },
+  markRead(id: string) { const c = store.get().conversations.find(x => x.id === id); if (c?.unread) { c.unread = false; return done() } return Promise.resolve() },
+  /** Carries out the change the assistant proposed. */
+  approve(id: string, messageId: string) { srv.approveChat(id, messageId); return done() },
+  decline(id: string, messageId: string) { srv.declineChat(id, messageId); return done() },
+  setBot(id: string, botId: string | null) { const c = store.get().conversations.find(x => x.id === id); if (c) c.botId = botId; return done() },
+  remove(id: string) { const t = store.get(); t.conversations = t.conversations.filter(c => c.id !== id); return done() },
 }

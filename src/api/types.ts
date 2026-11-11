@@ -111,11 +111,23 @@ export interface Recipient {
   at?: number
   opened?: boolean
   replied?: boolean
+  /** The score this person gave a survey: 0 to 10 for NPS, 1 to 5 for CSAT. */
+  score?: number
 }
+
+/** An input a campaign message can use, e.g. {phone}: filled from the person's ticket (or the firm) for each recipient. */
+export interface CampaignTag { id: string; label: string; source: FieldSource }
+
+export type CampaignKind = 'auto' | 'broadcast' | 'survey'
+export type SurveyMetric = 'nps' | 'csat'
 
 export interface Campaign {
   id: string
-  kind: 'auto' | 'broadcast'
+  kind: CampaignKind
+  /** For surveys: NPS (0 to 10) or CSAT (1 to 5). */
+  metric?: SurveyMetric
+  /** Inputs added to this campaign beyond the built-in first name, matter and firm name. */
+  tags?: CampaignTag[]
   name: string
   channel: CampaignChannel
   steps: number
@@ -125,6 +137,8 @@ export interface Campaign {
   recipients: Recipient[]
   trigger?: string
   active?: boolean
+  /** Saved but not sent or running yet. Turning it on sends it (or starts it, for an automatic campaign). */
+  draft?: boolean
   audience?: AudienceKey
   sentAt?: number
 }
@@ -137,8 +151,8 @@ export interface NewLeadInput {
   name: string; phone?: string; practice: string; matter: string; value?: number; note?: string
 }
 export interface NewCampaignInput {
-  kind: 'auto' | 'broadcast'; name: string; channel: CampaignChannel; subject?: string; body: string
-  audience?: AudienceKey; trigger?: string
+  kind: CampaignKind; name: string; channel: CampaignChannel; subject?: string; body: string
+  audience?: AudienceKey; trigger?: string; metric?: SurveyMetric; draft?: boolean; tags?: CampaignTag[]
 }
 
 /** Metadata the UI needs to render forms and labels. Served by the backend as configuration. */
@@ -178,4 +192,91 @@ export interface Service {
   active: boolean
   createdAt: number
   updatedAt: number
+}
+
+/* ---------- intelligence: AI bots and chat ---------- */
+
+/** What a bot is allowed to look at. A bot can only answer from the tools switched on for it. */
+export type BotTool = 'leads' | 'tasks' | 'documents' | 'campaigns' | 'messages' | 'services'
+export const BOT_TOOLS: Record<BotTool, { label: string; hint: string }> = {
+  leads: { label: 'Leads and contacts', hint: 'Read tickets, stages, fees and activity' },
+  tasks: { label: 'Tasks', hint: 'Read and book calls, meetings and deadlines' },
+  documents: { label: 'Documents', hint: 'Read the library and what has been sent or signed' },
+  campaigns: { label: 'Campaigns', hint: 'Read campaigns, surveys and their results' },
+  messages: { label: 'Messages', hint: 'Read texts and emails, and draft replies' },
+  services: { label: 'Services', hint: 'Read the service catalog and default pricing' },
+}
+/** Changes a bot may make inside the portal. Anything not listed is read-only for it. */
+export type BotAction = 'create_lead' | 'move_stage' | 'book_task' | 'send_text' | 'set_services'
+export const BOT_ACTIONS: Record<BotAction, { label: string; hint: string }> = {
+  create_lead: { label: 'Create an enquiry', hint: 'Add a new lead to the pipeline' },
+  move_stage: { label: 'Move a ticket', hint: 'Change a ticket’s stage' },
+  book_task: { label: 'Book a task', hint: 'Add a call, meeting, reminder or deadline' },
+  send_text: { label: 'Send a text', hint: 'Text a lead from the firm’s number' },
+  set_services: { label: 'Set services', hint: 'Choose the services a ticket takes from the catalog' },
+}
+/** What a bot can reach outside the portal. */
+export type ExternalTool = 'web' | 'pages' | 'browser' | 'email' | 'calendar' | 'files' | 'api'
+export const EXTERNAL_TOOLS: Record<ExternalTool, { label: string; hint: string }> = {
+  web: { label: 'Search the web', hint: 'Look things up online, such as legal updates or court information' },
+  pages: { label: 'Read web pages', hint: 'Open a link you paste and read it' },
+  browser: { label: 'Use a browser', hint: 'Open websites and do things on them for you, like filling a form' },
+  email: { label: 'Email', hint: 'Read and send from a connected inbox outside the portal' },
+  calendar: { label: 'Calendar', hint: 'Read and book on your Google or Outlook calendar' },
+  files: { label: 'Files and drives', hint: 'Read and write documents in Drive, Dropbox or OneDrive' },
+  api: { label: 'Call external APIs', hint: 'Send requests to other services and webhooks you connect' },
+}
+export type BotModel = 'fast' | 'balanced' | 'advanced'
+export const BOT_MODELS: Record<BotModel, { label: string; hint: string }> = {
+  fast: { label: 'Fast', hint: 'Quick answers for simple work' },
+  balanced: { label: 'Balanced', hint: 'A good default for most bots' },
+  advanced: { label: 'Advanced', hint: 'Careful reasoning for complex work' },
+}
+
+export interface Bot {
+  id: string
+  name: string
+  description: string
+  /** The standing instructions the bot follows (its system prompt). */
+  instructions: string
+  model: BotModel
+  tools: BotTool[]
+  /** What it may change inside the portal. */
+  actions: BotAction[]
+  /** What it may use outside the portal. */
+  external: ExternalTool[]
+  /** Only active bots can be chatted with. */
+  active: boolean
+  runs: number
+  createdAt: number
+  updatedAt: number
+  updatedBy: string
+}
+
+/** A change the assistant proposes to make in the portal. It only happens once the person approves it. */
+export interface ChatAction {
+  kind: BotAction
+  summary: string
+  params: Record<string, string>
+  status: 'proposed' | 'done' | 'cancelled' | 'failed'
+  result?: string
+}
+export interface ChatMessage {
+  id: string; role: 'user' | 'assistant'; text: string; at: number
+  /** The tools the assistant used to answer, shown above the answer. */
+  steps?: string[]
+  action?: ChatAction
+}
+export interface ChatConversation {
+  id: string
+  title: string
+  /** The bot answering, or none for the general assistant. */
+  botId: string | null
+  createdAt: number
+  updatedAt: number
+  messages: ChatMessage[]
+  /** True while the assistant is working on a reply. */
+  pending?: boolean
+  /** The bot has replied and the thread has not been opened since. */
+  unread?: boolean
 }

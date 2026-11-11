@@ -10,6 +10,7 @@ import { toast } from '../../shared/toast'
 import { when } from '../../shared/format'
 import { KIND_OPTIONS, SOURCE_OPTIONS, fromTicket, kindLabel, sourceLabel } from './documentFields'
 import { fileUrl, formatSize, rememberFile } from './fileStore'
+import { InfoTip } from '../../shared/InfoTip'
 
 const toInput = (d: PortalDocument): DocumentInput => ({ name: d.name, category: d.category, description: d.description, file: d.file, fields: d.fields.map(f => ({ ...f })), active: d.active })
 const newField = (): DocField => ({ id: 'f' + Math.random().toString(36).slice(2, 8), label: '', source: 'manual', kind: 'text', required: false })
@@ -152,7 +153,7 @@ export default function DocumentDetail() {
 
         <section className="docv__card docv__card--wide">
           <div className="docv__cardhead">
-            <div><h3 className="lead__label">Inputs</h3><p className="caption">What this document needs. Inputs filled from the ticket are completed automatically when it is sent.</p></div>
+            <div className="titlerow"><h3 className="lead__label">Inputs</h3><InfoTip text="What this document needs. Inputs filled from the ticket are completed automatically when it is sent." label="About inputs" /></div>
             {editing && <button className="btn btn--sm" type="button" onClick={() => set({ fields: [...view.fields, newField()] })}><IconPlus size={15} stroke={2.2} />Add input</button>}
           </div>
 

@@ -3,6 +3,7 @@ import { Icon } from './Icon'
 import { usePhone } from './useMedia'
 import type { Lead } from '../api/types'
 import { config } from '../api/mockData'
+import { InfoTip } from './InfoTip'
 
 export const Tag = ({ tone, icon, children }: { tone?: 'tint' | 'green' | 'orange' | 'red' | 'accent'; icon?: string; children: ReactNode }) => (
   <span className={'tag' + (tone ? ' tag--' + tone : '')}>{icon && <Icon name={icon} />}{children}</span>
@@ -33,8 +34,8 @@ export function StageTag({ lead }: { lead: Lead }) {
 }
 
 /** Centered dialog on desktop, bottom sheet on phones. Closes on scrim click and Escape. */
-export function Sheet({ title, sub, onClose, wide, children, onSubmit, foot, className = '', icon }: {
-  title: ReactNode; sub?: ReactNode; onClose: () => void; wide?: boolean; children: ReactNode; className?: string; icon?: ReactNode
+export function Sheet({ title, sub, info, onClose, wide, children, onSubmit, foot, className = '', icon }: {
+  title: ReactNode; sub?: ReactNode; /** A short explanation shown as a tooltip beside the title. */ info?: string; onClose: () => void; wide?: boolean; children: ReactNode; className?: string; icon?: ReactNode
   onSubmit?: (e: React.FormEvent<HTMLFormElement>) => void; foot?: ReactNode
 }) {
   const inner = (
@@ -42,7 +43,7 @@ export function Sheet({ title, sub, onClose, wide, children, onSubmit, foot, cla
       <span className="grabber" aria-hidden="true" />
       <div className="sheet-head">
         {icon && <span className="sheet-head__icon" aria-hidden="true">{icon}</span>}
-        <div className="sheet-head__title"><h2 id="m-title">{title}</h2>{sub && <span className="footnote">{sub}</span>}</div>
+        <div className="sheet-head__title"><div className="titlerow"><h2 id="m-title">{title}</h2>{info && <InfoTip text={info} label="About this dialog" />}</div>{sub && <span className="footnote">{sub}</span>}</div>
         <button className="closebtn" type="button" onClick={onClose} aria-label="Close"><Icon name="x" /></button>
       </div>
       <div className="sheet__body">{children}</div>

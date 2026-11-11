@@ -2,6 +2,7 @@ import { campaignsApi, leadsApi, useQuery } from '../../api'
 import type { Lead } from '../../api/types'
 import { money } from '../../shared/format'
 import { SOURCES, STAGES, isWon } from '../lead/selectors'
+import { InfoTip } from '../../shared/InfoTip'
 
 const Bar = ({ label, n, max, tone }: { label: string; n: number; max: number; tone?: 'green' | 'red' }) => (
   <div className="bar"><span>{label}</span><div className="bar__track"><div className={'bar__fill' + (tone ? ' ' + tone : '')} style={{ transform: `scaleX(${n / max})` }} /></div><b>{n}</b></div>
@@ -34,7 +35,7 @@ export default function Reports() {
         <div className="tile"><span>Campaign Messages</span><b>{camps.reduce((a, c) => a + c.sent, 0)}</b></div>
       </div>
       <section className="group">
-        <div className="group__head"><h2>What Converts by Source</h2><span className="footnote">Signed of closed</span></div>
+        <div className="group__head"><div className="titlerow"><h2>What Converts by Source</h2><InfoTip text="Of the leads that were closed (signed or lost), the share that signed." label="About conversion" /></div></div>
         <div className="table-wrap only-desk"><table style={{ minWidth: 600 }}>
           <thead><tr><th>Source</th><th>Leads</th><th>Signed</th><th>Lost</th><th>Conversion</th><th style={{ width: '30%' }}>Share of Leads</th></tr></thead>
           <tbody>{entries.map(([k, ls]) => { const c = conv(ls); return (

@@ -12,6 +12,7 @@ import { NAV, TABS, VIEW, VIEWS } from './nav'
 import { UiProvider, useUi } from './UiContext'
 import { Layers } from './Layers'
 import { Tour } from '../modules/tour/Tour'
+import { InfoTip } from '../shared/InfoTip'
 
 const WIDTH = 248
 const RAIL = 60
@@ -121,12 +122,11 @@ function Toolbar() {
       </nav>
       <header className="toolbar">
         <div className="toolbar__title">
-          <h1>{v.label}</h1>
-          <p className="footnote toolbar__sub">{id === 'dashboard' ? `${greeting()}, Sarah. Here is what needs your attention today.` : v.sub}</p>
+          <div className="titlerow"><h1>{v.label}</h1>{id !== 'dashboard' && <InfoTip text={v.sub} label={`About ${v.label}`} />}</div>
+          {id === 'dashboard' && <p className="footnote toolbar__sub">{`${greeting()}, Sarah. Here is what needs your attention today.`}</p>}
         </div>
         <div className="toolbar__actions" id="toolbar-actions">
           {seg}
-          {id === 'campaigns' && <button className="btn" type="button" onClick={() => openModal({ type: 'newcamp', kind: 'broadcast' })}><Icon name="plus" small />New Campaign</button>}
         </div>
       </header>
     </>
