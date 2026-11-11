@@ -108,9 +108,9 @@ export function AgentInspector({ bot, isNew, onClose, onDeleted }: { bot: Bot; i
             <BotAvatar bot={bot} size={72} muted={!draft.active} />
             <div className="grid w-full gap-1">
               <input ref={name} aria-label="Agent name" value={draft.name} onChange={e => set({ name: e.target.value })} placeholder="Agent name"
-                className="w-full rounded-lg bg-transparent px-2 py-1 text-center text-[22px] font-semibold tracking-[-0.02em] text-ios-label outline-none placeholder:text-ios-tertiary hover:bg-black/[0.03] focus:bg-white focus-visible:ring-2 focus-visible:ring-ios-accent/40" />
+                className="w-full rounded-lg bg-transparent px-2 py-1 text-center text-[22px] font-semibold tracking-[-0.02em] text-ios-label outline-none placeholder:text-ios-tertiary hover:bg-black/[0.03] focus:bg-white focus-visible:ring-2 focus-visible:ring-ios-accent/[0.12]" />
               <textarea aria-label="Description" rows={2} value={draft.description} onChange={e => set({ description: e.target.value })} placeholder="What is this agent for?"
-                className="w-full resize-none rounded-lg bg-transparent px-2 py-1 text-center text-[14px] leading-5 text-ios-secondary outline-none placeholder:text-ios-tertiary hover:bg-black/[0.03] focus:bg-white focus-visible:ring-2 focus-visible:ring-ios-accent/40" />
+                className="w-full resize-none rounded-lg bg-transparent px-2 py-1 text-center text-[14px] leading-5 text-ios-secondary outline-none placeholder:text-ios-tertiary hover:bg-black/[0.03] focus:bg-white focus-visible:ring-2 focus-visible:ring-ios-accent/[0.12]" />
             </div>
           </div>
 
@@ -148,7 +148,7 @@ export function AgentInspector({ bot, isNew, onClose, onDeleted }: { bot: Bot; i
           <Group title="Instructions" footer="Followed in every chat: its job, its tone and what it must never do.">
             <textarea aria-label="Instructions" rows={7} value={draft.instructions} onChange={e => set({ instructions: e.target.value })}
               placeholder="e.g. You help the intake team. Draft a warm first reply, suggest the next step, and never give legal advice."
-              className="block w-full resize-y bg-white px-4 py-3 text-[15px] leading-[22px] text-ios-label outline-none placeholder:text-ios-tertiary focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ios-accent/40" />
+              className="block w-full resize-y bg-white px-4 py-3 text-[15px] leading-[22px] text-ios-label outline-none placeholder:text-ios-tertiary focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ios-accent/[0.12]" />
           </Group>
 
           <Group footer={`${bot.runs} ${bot.runs === 1 ? 'run' : 'runs'} · Updated ${when(bot.updatedAt)} by ${bot.updatedBy}`}>

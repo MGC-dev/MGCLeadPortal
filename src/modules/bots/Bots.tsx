@@ -71,7 +71,7 @@ function Composer({ placeholder, disabled, busy, focusKey, onSend }: { placehold
   const ready = !!text.trim() && !busy && !disabled
   return (
     <form onSubmit={e => { e.preventDefault(); send() }}
-      className={cn('flex items-end gap-2 rounded-[20px] border border-[#d1d1d6] bg-white py-[3px] pr-[3px] pl-3.5 transition-colors focus-within:border-ios-accent/60 focus-within:ring-2 focus-within:ring-ios-accent/15', disabled && 'bg-white/60')}>
+      className={cn('flex items-end gap-2 rounded-[20px] border border-[#d1d1d6] bg-white py-[3px] pr-[3px] pl-3.5 transition-colors focus-within:border-ios-accent/40 focus-within:ring-2 focus-within:ring-ios-accent/[0.07]', disabled && 'bg-white/60')}>
       <textarea ref={box} rows={1} value={text} disabled={disabled} aria-label="Message" placeholder={placeholder}
         onChange={e => setText(e.target.value)}
         onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send() } }}
@@ -162,7 +162,7 @@ export default function Bots() {
       {show.list && (
         <aside aria-label="Agents" className="flex min-h-0 flex-col border-r border-ios-separator max-md:border-r-0">
           <div className="flex shrink-0 items-center gap-2 px-3 pt-3 pb-2">
-            <label className="flex h-9 min-w-0 flex-1 items-center gap-1.5 rounded-[10px] bg-ios-field px-2.5 text-[#8e8e93] focus-within:ring-2 focus-within:ring-ios-accent/40">
+            <label className="flex h-9 min-w-0 flex-1 items-center gap-1.5 rounded-[10px] bg-ios-field px-2.5 text-[#8e8e93] focus-within:ring-2 focus-within:ring-ios-accent/[0.12]">
               <IconSearch className="size-4 shrink-0" stroke={2} aria-hidden="true" />
               <span className="sr-only">Search agents</span>
               <input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Search"

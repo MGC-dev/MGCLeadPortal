@@ -1125,3 +1125,14 @@ body.portal-lock { overflow: hidden; }
 .portal .chip--practice { color: #fff; font-weight: 600; border: 0; }
 /* Documents: solid icon tiles instead of the see-through tint (white on the portal blue, 6.6:1). */
 .portal .ltable__avatar--doc, .portal .docv__filetile { background: var(--tint); color: #fff; box-shadow: 0 1px 2px rgba(15, 35, 71, 0.18); }
+
+/* Quiet focus for every text field, dropdown and search box: the border tints a little and a faint 2px halo
+   appears, instead of a heavy blue glow or outline. Buttons, switches and checkboxes keep their own focus rings. */
+.portal { --field-focus-border: rgba(31, 79, 216, 0.38); --field-focus-halo: 0 0 0 2px rgba(31, 79, 216, 0.07); }
+.portal :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select):focus-visible { outline: none; }
+.portal :is(.enq input, .enq select, .enq textarea, .docv__name, .docv__input, .docv__textarea, .sdoc__field input, .sdoc__field textarea, .inputsbar__form input):focus,
+.portal :is(.select:focus-visible, .select[aria-expanded="true"]),
+.portal :is(.search, .xsearch.is-open, .pick__search, .bm__search, .chat__composer, .topnav .gsearch__field):focus-within { border-color: var(--field-focus-border); box-shadow: var(--field-focus-halo); }
+.portal .gsearch__field:focus-within { box-shadow: var(--field-focus-halo), var(--shadow-hover); }
+.portal .field:focus-within { box-shadow: inset 2px 0 0 var(--field-focus-border); }
+.portal .sig input:focus-visible { outline: none; box-shadow: var(--field-focus-halo); border-color: var(--field-focus-border); }

@@ -286,7 +286,7 @@ export function ThinkingPromptInput({
           </div>
         </div>
       )}
-      <form data-composer className="relative mt-auto shrink-0 rounded-[22px] border border-input bg-card p-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.05)] transition-[border-color,box-shadow] focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/15" onSubmit={(event) => { event.preventDefault(); submit(); }}>
+      <form data-composer className="relative mt-auto shrink-0 rounded-[22px] border border-input bg-card p-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.05)] transition-[border-color,box-shadow] focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/[0.07]" onSubmit={(event) => { event.preventDefault(); submit(); }}>
         <textarea
           ref={textarea}
           aria-label={inputPlaceholder}
