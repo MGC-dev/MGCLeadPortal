@@ -28,7 +28,6 @@ export default function Contacts() {
   const cols = useMemo<Col<Lead>[]>(() => [
     { id: 'contact', label: 'Contact', locked: true, sort: l => l.name.toLowerCase(), render: l => (
       <span className="ltable__who">
-        <span className="ltable__avatar" aria-hidden="true">{initials(l.name)}</span>
         <span><b>{l.name}</b><small>{l.email}</small></span>
       </span>) },
     { id: 'phone', label: 'Phone', defaultOn: true, sort: l => l.phone, render: l => <span className="ltable__text ltable__phone">{l.phone}</span> },
@@ -68,7 +67,7 @@ export default function Contacts() {
             <ul className="lcards only-phone">{rows.map(l => (
               <li key={l.id}>
                 <button type="button" className="lcard" onClick={() => openProfile(l.id)}>
-                  <span className="lcard__top"><span className="ltable__avatar" aria-hidden="true">{initials(l.name)}</span>
+                  <span className="lcard__top">
                     <span className="lcard__who"><b>{l.name}</b><small>{l.phone}</small></span></span>
                   <span className="lcard__meta"><PracticeTag area={l.practice} /><span className="caption">Contact since {when(contactSince(l))}</span></span>
                 </button>
