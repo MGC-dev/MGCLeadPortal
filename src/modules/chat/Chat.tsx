@@ -275,6 +275,13 @@ export default function Chat() {
               <p className="text-[15px] text-muted-foreground">Ask about your portal, or tell me to do something in it.</p>
             </div>
           )}
+          {empty && (
+            <Suggestions onSelect={value => send(value)} className="w-full max-w-[720px]">
+              <SuggestionList className="max-w-[640px] self-center">
+                {SUGGESTIONS.map(s => <Suggestion key={s} variant="outline">{s}</Suggestion>)}
+              </SuggestionList>
+            </Suggestions>
+          )}
           <ThinkingPromptInput
             className={cn('max-w-[720px]', empty ? 'h-auto flex-none' : 'flex-1')}
             status={status}
@@ -293,13 +300,6 @@ export default function Chat() {
             history={conv && turns.slice(0, -1).map(t => <PastTurn key={t.user.id} turn={t} convId={conv.id} />)}
             answerFooter={conv && reply?.action ? <ActionCard convId={conv.id} m={reply} /> : undefined}
           />
-          {empty && (
-            <Suggestions onSelect={value => send(value)} className="w-full max-w-[720px]">
-              <SuggestionList className="max-w-[640px] self-center">
-                {SUGGESTIONS.map(s => <Suggestion key={s} variant="outline">{s}</Suggestion>)}
-              </SuggestionList>
-            </Suggestions>
-          )}
           <p className="mt-2 text-center text-xs text-muted-foreground/80">Answers come from this portal’s sample data. Enter sends, Shift and Enter adds a line.</p>
         </div>
       </section>
