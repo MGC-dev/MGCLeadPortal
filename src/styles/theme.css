@@ -1103,3 +1103,16 @@ body.portal-lock { overflow: hidden; }
 .portal .col__count { background: rgba(255, 255, 255, 0.24); color: #fff; }
 .portal .col__value { color: #fff; font-weight: 600; }
 .portal .col.is-over { background: var(--tint-soft); box-shadow: inset 0 0 0 2px var(--tone); }
+
+/* Pipeline fills the page: the board runs to the bottom of the window, so the horizontal scroll bar sits at the
+   bottom edge. Each column stretches to full height and scrolls its own cards when they don't fit. */
+.portal .view:has(.board-wrap) { padding-bottom: 10px; }
+.portal .board-wrap { height: calc(100dvh - 163px - 10px); min-height: 360px; padding-bottom: 0; overflow-y: hidden; }
+.portal .board { height: 100%; align-items: stretch; }
+.portal .col { min-height: 0; height: 100%; }
+.portal .col__cards { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin-inline: calc(-1 * var(--s3)); padding: 2px var(--s3) var(--s3); scrollbar-width: thin; }
+@media (max-width: 760px) {
+  .portal .view:has(.board-wrap) { padding-bottom: calc(var(--tab-h) + 10px + env(safe-area-inset-bottom, 0px)); }
+  .portal .board-wrap { height: calc(100dvh - 135px - var(--tab-h) - 10px - env(safe-area-inset-bottom, 0px)); min-height: 300px; }
+  .portal .col { min-height: 0; }
+}
