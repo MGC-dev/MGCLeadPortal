@@ -1237,6 +1237,9 @@ body.portal-lock { overflow: hidden; }
 .portal .tasktabs::-webkit-scrollbar { display: none; }
 .portal .tasktabs .seg { flex-shrink: 0; }
 /* Month view: the full-screen calendar component, filling the calendar card. */
+/* EventManager: its own header and card, straight on the page */
+.portal .calx.calx--em { background: transparent; border: 0; box-shadow: none; border-radius: 0; overflow: visible; }
+.portal .calx--em [data-slot=card], .portal .calx--em > div > .rounded-lg { box-shadow: var(--shadow-card); }
 .portal .calx__fsc { display: flex; flex-direction: column; flex: 1; min-height: 0; --background: #fff; }
 @media (max-width: 1023px) { .portal .calx__fsc { display: block; overflow-y: auto; overscroll-behavior: contain; } }
 /* A help tooltip's hidden bubble could reach past the right edge and let the page slide sideways on phones. */
