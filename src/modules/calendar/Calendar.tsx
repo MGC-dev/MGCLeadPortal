@@ -10,6 +10,7 @@ import { Seg } from '../../shared/ui'
 import { dayAt, timeOf } from '../../shared/format'
 import { TASK_LOOK, TASK_TYPES, TaskSheet } from '../tasks/TaskSheet'
 import { calEvents, type CalEvent } from './calendarEvents'
+import { FullScreenCalendar, type CalendarData, type Event as MonthEvent } from '@/components/ui/fullscreen-calendar'
 
 type Mode = 'day' | 'week' | 'month'
 /** Height of one hour in the day and week views. The whole day scrolls; it opens at 7 AM (or just before now). */
@@ -99,6 +100,18 @@ export default function Calendar() {
   }
 
   const legend = [...new Set(all.map(x => (x.taskId ? x.type! : 'firm')))]
+  const viewSwitch = <Seg<Mode> value={mode} onChange={m => setFilter('calmode', m)} label="Calendar view" options={[['day', 'Day'], ['week', 'Week'], ['month', 'Month']]} />
+  // The month view's items, grouped by day, keyed back to the calendar item they came from.
+  const byKey = new Map<string, CalEvent>()
+  const monthData: CalendarData[] = []
+  for (const x of [...all].sort((p, q) => p.t - q.t)) {
+    const key = `${x.taskId ?? 'e'}-${x.t}-${x.title}`
+    byKey.set(key, x)
+    const d = new Date(x.t), day = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+    const ev: MonthEvent = { id: key, name: x.title, time: timeOf(x.t), datetime: d.toISOString(), color: x.done ? '#8e8e93' : colorOf(x), done: x.done, late: x.late }
+    const slot = monthData.find(m => +m.day === +day)
+    if (slot) slot.events.push(ev); else monthData.push({ day, events: [ev] })
+  }
   return (
     <>
       <HeaderActions>
@@ -110,7 +123,7 @@ export default function Calendar() {
       </HeaderActions>
 
       <section className={'calx calx--' + mode} aria-label="Calendar">
-        <div className="calx__bar">
+        {mode !== 'month' && <div className="calx__bar">
           <button className="btn btn--sm" type="button" onClick={() => setCalAt(dayAt(0))}>Today</button>
           <span className="calx__nav">
             <button className="iconbtn iconbtn--sm" type="button" onClick={() => shift(-1)} aria-label={`Previous ${mode}`}><IconChevronLeft size={18} stroke={2.2} /></button>
@@ -120,28 +133,22 @@ export default function Calendar() {
           <span className="calx__legend" aria-label="Colour key">
             {legend.map(k => <span key={k}><i style={{ background: k === 'firm' ? FIRM : TASK_LOOK[k as keyof typeof TASK_LOOK].color }} />{k === 'firm' ? 'Firm event' : TASK_TYPES[k as keyof typeof TASK_TYPES]}</span>)}
           </span>
-          <Seg<Mode> value={mode} onChange={m => setFilter('calmode', m)} label="Calendar view" options={[['day', 'Day'], ['week', 'Week'], ['month', 'Month']]} />
-        </div>
+          {viewSwitch}
+        </div>}
 
         {mode === 'month' ? (
-          <div className="calx__month">
-            <div className="calx__dow">{days.slice(0, 7).map(d => <span key={+d}>{fmt(d, { weekday: 'short' })}</span>)}</div>
-            <div className="calx__cells">
-              {days.map(d => {
-                const list = on(d), out = d.getMonth() !== anchor.getMonth(), isToday = sameDay(d, today)
-                return (
-                  <div key={+d} className={'calx__cell' + (out ? ' is-out' : '') + (isToday ? ' is-today' : '') + (d.getDay() % 6 === 0 ? ' is-weekend' : '')}>
-                    <button type="button" className="calx__date" onClick={() => goDay(d)} aria-label={`Open ${fmt(d, { weekday: 'long', month: 'long', day: 'numeric' })}`}>{d.getDate()}</button>
-                    {list.slice(0, 3).map(x => (
-                      <button key={x.t + x.title} type="button" className={'calx__chip' + (x.done ? ' is-done' : '')} style={evtStyle(x)} onClick={() => open(x)} aria-label={label(x)}>
-                        <i /><span className={'calx__chip-time' + (x.late ? ' is-late' : '')}>{timeOf(x.t).replace(':00', '')}</span><span className="calx__chip-title">{x.title}</span>
-                      </button>
-                    ))}
-                    {list.length > 3 && <button type="button" className="calx__more" onClick={() => goDay(d)}>{list.length - 3} more</button>}
-                  </div>
-                )
-              })}
-            </div>
+          <div className="ai-surface calx__fsc">
+            <FullScreenCalendar
+              key={anchor.getFullYear() * 12 + anchor.getMonth()}
+              initialMonth={anchor}
+              data={monthData}
+              perDay={2}
+              newLabel="Schedule"
+              onNewEvent={d => setSheet({ at: +new Date(d.getFullYear(), d.getMonth(), d.getDate(), 10) })}
+              onEventClick={ev => { const x = byKey.get(String(ev.id)); if (x) open(x) }}
+              onDayOpen={goDay}
+              headerEnd={viewSwitch}
+            />
           </div>
         ) : (
           <div className="calx__time" style={{ ['--days' as string]: days.length, ['--row' as string]: ROW + 'px' }}>

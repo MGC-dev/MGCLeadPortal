@@ -114,3 +114,5 @@ body { @apply bg-slate-50 text-slate-800 antialiased; }
 @keyframes ai-orb-spin-back { to { transform: rotate(-360deg); } }
 @keyframes ai-orb-float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-3%) scale(1.03); } }
 @theme { --color-ios-page: #f3f6fb; }
+/* shadcn components expect borders in the border colour by default (Tailwind 4 uses currentColor). */
+@layer base { .ai-surface *, .ai-surface ::before, .ai-surface ::after { border-color: var(--border); } }

@@ -1236,3 +1236,8 @@ body.portal-lock { overflow: hidden; }
 .portal .tasktabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
 .portal .tasktabs::-webkit-scrollbar { display: none; }
 .portal .tasktabs .seg { flex-shrink: 0; }
+/* Month view: the full-screen calendar component, filling the calendar card. */
+.portal .calx__fsc { display: flex; flex-direction: column; flex: 1; min-height: 0; --background: #fff; }
+@media (max-width: 1023px) { .portal .calx__fsc { display: block; overflow-y: auto; overscroll-behavior: contain; } }
+/* A help tooltip's hidden bubble could reach past the right edge and let the page slide sideways on phones. */
+body { overflow-x: clip; }
