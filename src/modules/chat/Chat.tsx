@@ -268,17 +268,10 @@ export default function Chat() {
       {showList && history}
 
       <section aria-label="Conversation" className="flex min-h-0 min-w-0 flex-col">
-        <header className="grid h-[52px] shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-2 px-2">
+        <header className="flex h-[52px] shrink-0 items-center justify-between gap-2 px-2">
           <span>
             <button type="button" onClick={() => (phone ? setList(true) : fold())} aria-label={phone ? 'Show chats' : folded ? 'Show chats' : 'Hide chats'} title={folded ? 'Show chats' : 'Hide chats'} aria-pressed={phone ? undefined : !folded}
               className={cn('grid size-9 place-items-center rounded-lg text-ios-accent hover:bg-ios-accent/10', focusRing)}><IconLayoutSidebar className="size-[21px]" stroke={1.8} /></button>
-          </span>
-          <span className="flex min-w-0 items-center gap-2">
-            <AiOrb size={26} />
-            <span className="grid min-w-0 leading-tight">
-              <b className="truncate text-[15px] font-semibold text-ios-label">{conv?.title ?? 'New chat'}</b>
-              <small className="truncate text-[12px] text-ios-secondary">UNIR Assistant · works inside the portal</small>
-            </span>
           </span>
           <span className="flex justify-end">
             <button type="button" onClick={newChat} aria-label="New chat" title="New chat" disabled={empty}
