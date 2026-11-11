@@ -328,7 +328,7 @@ interface Reply { text: string; steps?: string[]; action?: ChatAction }
 function proposal(text: string, bot: Bot | undefined): Reply | null {
   const who = bot ? bold(bot.name) : 'The assistant'
   const need = (kind: BotAction, build: () => Reply): Reply => (bot && !bot.actions.includes(kind)
-    ? { text: `${who} isn't set up to ${BOT_ACTIONS[kind].label.toLowerCase()}. Switch it on under Bots, in "Can do in the portal".` } : build())
+    ? { text: `${who} isn't set up to ${BOT_ACTIONS[kind].label.toLowerCase()}. Switch it on under Agents, in "Can do in the portal".` } : build())
   const missing = (name: string): Reply => ({ text: `I couldn't find a lead called ${bold(name)}. Check the name and try again.` })
   let m: RegExpMatchArray | null
 
@@ -378,16 +378,16 @@ function answer(text: string, bot: Bot | undefined): Reply {
   if (url) {
     return bot?.external.includes('pages')
       ? { text: `I opened ${url} and read it. (Sample mode: no page was fetched. A connected backend returns a summary and its sources here.)`, steps: [EXTERNAL_TOOLS.pages.label] }
-      : { text: `I can only work inside the portal. To read a web page, create a bot with "${EXTERNAL_TOOLS.pages.label}" switched on, then chat with it.` }
+      : { text: `I can only work inside the portal. To read a web page, create an agent with "${EXTERNAL_TOOLS.pages.label}" switched on, then chat with it.` }
   }
   if (/\b(search|look up|google|latest|news|online|on the web)\b/i.test(text)) {
     return bot?.external.includes('web')
       ? { text: `I searched the web for “${text.replace(/[?.!]+$/, '')}”. (Sample mode: no real search ran. A connected backend returns the findings with their sources here.)`, steps: [EXTERNAL_TOOLS.web.label] }
-      : { text: `I can only work inside the portal. To look something up online, create a bot with "${EXTERNAL_TOOLS.web.label}" switched on, then chat with it.` }
+      : { text: `I can only work inside the portal. To look something up online, create an agent with "${EXTERNAL_TOOLS.web.label}" switched on, then chat with it.` }
   }
   const tool = TOOL_OF.find(([re]) => re.test(text))?.[1]
   if (tool && bot && !bot.tools.includes(tool)) {
-    return { text: `I can't look at ${TOOL_LABEL[tool].toLowerCase()} yet, because that tool is switched off for ${bold(name)}. Turn it on under Bots, then ask me again.` }
+    return { text: `I can't look at ${TOOL_LABEL[tool].toLowerCase()} yet, because that tool is switched off for ${bold(name)}. Turn it on under Agents, then ask me again.` }
   }
   const open = t.leads.filter(l => !['delivered', 'lost'].includes(l.stage))
   const used = tool ? [TOOL_LABEL[tool]] : undefined

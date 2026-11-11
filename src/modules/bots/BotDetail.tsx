@@ -43,8 +43,8 @@ export default function BotDetail() {
   if (!bots) return null
   if (!bot) return (
     <div className="docv">
-      <button type="button" className="docv__back" onClick={() => navigate('/bots')}><IconArrowLeft size={16} stroke={2.2} />Bots</button>
-      <div className="group empty"><Icon name="bot" /><p>This bot no longer exists.</p></div>
+      <button type="button" className="docv__back" onClick={() => navigate('/agents')}><IconArrowLeft size={16} stroke={2.2} />Agents</button>
+      <div className="group empty"><Icon name="bot" /><p>This agent no longer exists.</p></div>
     </div>
   )
 
@@ -56,26 +56,26 @@ export default function BotDetail() {
   const cancel = () => { setEditing(false); setDraft(undefined); setError('') }
   const save = async () => {
     if (!draft) return
-    if (!draft.name.trim()) return setError('Give the bot a name.')
-    if (draft.active && !draft.instructions.trim()) return setError('Write the instructions before switching the bot on.')
+    if (!draft.name.trim()) return setError('Give the agent a name.')
+    if (draft.active && !draft.instructions.trim()) return setError('Write the instructions before switching the agent on.')
     await botsApi.update(bot.id, { ...draft, name: draft.name.trim() })
     setEditing(false); setDraft(undefined); setError('')
   }
   const remove = async () => {
     if (!confirm(`Delete “${bot.name}”? Chats with it keep their history and move to the assistant.`)) return
     await botsApi.remove(bot.id)
-    navigate('/bots')
+    navigate('/agents')
   }
 
   return (
     <div className="docv">
-      <button type="button" className="docv__back" onClick={() => navigate(`/bots/${bot.id}`)}><IconArrowLeft size={16} stroke={2.2} />Back to chat</button>
+      <button type="button" className="docv__back" onClick={() => navigate(`/agents/${bot.id}`)}><IconArrowLeft size={16} stroke={2.2} />Back to chat</button>
 
       <section className="docv__head">
         <span className="docv__avatar"><BotAvatar bot={bot} size={46} /></span>
         <div className="docv__title">
           {editing
-            ? <input ref={nameInput} className="docv__name" aria-label="Bot name" value={view.name} onChange={e => set({ name: e.target.value })} placeholder="Bot name" />
+            ? <input ref={nameInput} className="docv__name" aria-label="Agent name" value={view.name} onChange={e => set({ name: e.target.value })} placeholder="Agent name" />
             : <h2>{bot.name}</h2>}
           <div className="docv__meta">
             <Tag tone="tint">{BOT_MODELS[view.model].label}</Tag>
@@ -91,7 +91,7 @@ export default function BotDetail() {
             </>
           ) : (
             <>
-              <button type="button" className="docv__edit" aria-label="Edit bot" title="Edit bot" onClick={startEdit}><IconPencil size={18} stroke={2} />Edit</button>
+              <button type="button" className="docv__edit" aria-label="Edit agent" title="Edit agent" onClick={startEdit}><IconPencil size={18} stroke={2} />Edit</button>
             </>
           )}
         </div>
@@ -105,7 +105,7 @@ export default function BotDetail() {
             <div className="docv__row docv__row--top">
               <span>Description</span>
               {editing
-                ? <textarea className="docv__textarea" rows={3} value={view.description} onChange={e => set({ description: e.target.value })} placeholder="What is this bot for?" />
+                ? <textarea className="docv__textarea" rows={3} value={view.description} onChange={e => set({ description: e.target.value })} placeholder="What is this agent for?" />
                 : <p>{view.description || <em>No description</em>}</p>}
             </div>
             <div className="docv__row">
@@ -126,7 +126,7 @@ export default function BotDetail() {
         </section>
 
         <section className="docv__card">
-          <div className="titlerow"><h3 className="lead__label">Can look at</h3><InfoTip text="What the bot can read in the portal. If it is asked about something it cannot see, it says so." label="About what it can look at" /></div>
+          <div className="titlerow"><h3 className="lead__label">Can look at</h3><InfoTip text="What the agent can read in the portal. If it is asked about something it cannot see, it says so." label="About what it can look at" /></div>
           <ul className="bottools">
             {(Object.entries(BOT_TOOLS) as [BotTool, { label: string; hint: string }][]).map(([k, t]) => (
               <Check key={k} on={view.tools.includes(k)} editing={editing} label={t.label} hint={t.hint} onClick={() => set({ tools: flip(view.tools, k) })} />
@@ -135,7 +135,7 @@ export default function BotDetail() {
         </section>
 
         <section className="docv__card">
-          <div className="titlerow"><h3 className="lead__label">Can do in the portal</h3><InfoTip text="Changes the bot may make for you. In Chat it shows what it is about to do and waits for your approval first." label="About what it can do" /></div>
+          <div className="titlerow"><h3 className="lead__label">Can do in the portal</h3><InfoTip text="Changes the agent may make for you. In Chat it shows what it is about to do and waits for your approval first." label="About what it can do" /></div>
           <ul className="bottools">
             {(Object.entries(BOT_ACTIONS) as [BotAction, { label: string; hint: string }][]).map(([k, t]) => (
               <Check key={k} on={view.actions.includes(k)} editing={editing} label={t.label} hint={t.hint} onClick={() => set({ actions: flip(view.actions, k) })} />
@@ -144,7 +144,7 @@ export default function BotDetail() {
         </section>
 
         <section className="docv__card">
-          <div className="titlerow"><h3 className="lead__label">Outside the portal</h3><InfoTip text="What the bot can reach beyond this portal. The general assistant in Chat only works inside the portal, so use a bot for anything online." label="About outside tools" /></div>
+          <div className="titlerow"><h3 className="lead__label">Outside the portal</h3><InfoTip text="What the agent can reach beyond this portal. The general assistant in Chat only works inside the portal, so use an agent for anything online." label="About outside tools" /></div>
           <ul className="bottools">
             {(Object.entries(EXTERNAL_TOOLS) as [ExternalTool, { label: string; hint: string }][]).map(([k, t]) => (
               <Check key={k} on={view.external.includes(k)} editing={editing} label={t.label} hint={t.hint} onClick={() => set({ external: flip(view.external, k) })} />
@@ -153,7 +153,7 @@ export default function BotDetail() {
         </section>
 
         <section className="docv__card docv__card--wide">
-          <div className="titlerow"><h3 className="lead__label">Instructions</h3><InfoTip text="The standing instructions this bot follows on every chat: its job, its tone and what it must never do." label="About instructions" /></div>
+          <div className="titlerow"><h3 className="lead__label">Instructions</h3><InfoTip text="The standing instructions this agent follows on every chat: its job, its tone and what it must never do." label="About instructions" /></div>
           {editing
             ? <textarea className="docv__textarea bot__instr" rows={8} aria-label="Instructions" value={view.instructions} onChange={e => set({ instructions: e.target.value })} placeholder="e.g. You help the intake team. Draft a warm first reply, suggest the next step, and never give legal advice." />
             : view.instructions ? <p className="bot__instr-read">{view.instructions}</p> : <p className="docv__empty">No instructions yet.{' '}Edit this bot to write them.</p>}
@@ -162,7 +162,7 @@ export default function BotDetail() {
 
       {editing && (
         <div className="docv__foot">
-          <button type="button" className="btn btn--destructive" onClick={remove}><IconTrash size={16} stroke={1.9} />Delete bot</button>
+          <button type="button" className="btn btn--destructive" onClick={remove}><IconTrash size={16} stroke={1.9} />Delete agent</button>
           <span className="docv__spacer" />
           <button className="btn" type="button" onClick={cancel}>Cancel</button>
           <button className="btn btn--prominent" type="button" onClick={save}>Save changes</button>

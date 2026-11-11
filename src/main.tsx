@@ -46,9 +46,11 @@ createRoot(document.getElementById('root')!).render(
           <Route path="reports" element={<Reports />} />
           <Route path="chat" element={<Chat />} />
           <Route path="chat/:id" element={<Chat />} />
-          <Route path="bots" element={<Bots />} />
-          <Route path="bots/:id" element={<Bots />} />
-          <Route path="bots/:id/settings" element={<BotDetail />} />
+          <Route path="agents" element={<Bots />} />
+          {/* Bots were renamed Agents: old links still land in the right place. */}
+          <Route path="bots/*" element={<Navigate to="/agents" replace />} />
+          <Route path="agents/:id" element={<Bots />} />
+          <Route path="agents/:id/settings" element={<BotDetail />} />
           <Route path="services" element={<Services />} />
           <Route path="integrations" element={<Integrations />} />
           <Route path="settings" element={<Settings />} />

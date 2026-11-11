@@ -196,20 +196,20 @@ export const botsApi = {
   /** Creates an empty draft bot. */
   create(): Promise<Bot> {
     const now = Date.now()
-    const a: Bot = { id: srv.uid('a'), name: 'Untitled bot', description: '', instructions: '', model: 'balanced', tools: ['leads'], actions: [], external: [], active: false, runs: 0, createdAt: now, updatedAt: now, updatedBy: 'Sarah Mitchell' }
+    const a: Bot = { id: srv.uid('a'), name: 'Untitled agent', description: '', instructions: '', model: 'balanced', tools: ['leads'], actions: [], external: [], active: false, runs: 0, createdAt: now, updatedAt: now, updatedBy: 'Sarah Mitchell' }
     store.get().bots.unshift(a); store.commit()
     return reply(a)
   },
   update(id: string, input: BotInput) {
     const a = store.get().bots.find(x => x.id === id)
-    if (a) { Object.assign(a, input, { updatedAt: Date.now(), updatedBy: 'Sarah Mitchell' }); toast('Bot saved', a.name) }
+    if (a) { Object.assign(a, input, { updatedAt: Date.now(), updatedBy: 'Sarah Mitchell' }); toast('Agent saved', a.name) }
     return done()
   },
   remove(id: string) {
     const t = store.get(); const a = t.bots.find(x => x.id === id)
     t.bots = t.bots.filter(x => x.id !== id)
     t.conversations = t.conversations.filter(c => c.botId !== id)
-    if (a) toast('Bot deleted', a.name)
+    if (a) toast('Agent deleted', a.name)
     return done()
   },
 }

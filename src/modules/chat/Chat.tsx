@@ -262,7 +262,7 @@ export default function Chat() {
           <div className="chat__title">
             <b>{conv?.title ?? 'New chat'}</b>
             <span className="titlerow"><small>UNIR Assistant</small>
-              <InfoTip label="About this chat" text="Ask about your leads, tasks, documents and campaigns, or tell it to create a lead, move a ticket, book a task or send a text. Changes wait for your approval. For anything outside the portal, use a bot." /></span>
+              <InfoTip label="About this chat" text="Ask about your leads, tasks, documents and campaigns, or tell it to create a lead, move a ticket, book a task or send a text. Changes wait for your approval. For anything outside the portal, use an agent." /></span>
           </div>
           {!empty && <Button type="button" variant="ghost" size="sm" className="ai-surface h-8 gap-1.5 rounded-full px-3 text-[13px] text-muted-foreground hover:text-foreground" onClick={newChat}><IconPlus className="size-4" stroke={2} aria-hidden="true" />New chat</Button>}
         </header>

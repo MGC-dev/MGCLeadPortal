@@ -229,7 +229,7 @@ export const EXTERNAL_TOOLS: Record<ExternalTool, { label: string; hint: string 
 export type BotModel = 'fast' | 'balanced' | 'advanced'
 export const BOT_MODELS: Record<BotModel, { label: string; hint: string }> = {
   fast: { label: 'Fast', hint: 'Quick answers for simple work' },
-  balanced: { label: 'Balanced', hint: 'A good default for most bots' },
+  balanced: { label: 'Balanced', hint: 'A good default for most agents' },
   advanced: { label: 'Advanced', hint: 'Careful reasoning for complex work' },
 }
 
