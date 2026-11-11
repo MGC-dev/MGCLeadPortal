@@ -9,6 +9,7 @@ import { ExpandingSearch, FilterMenu, OWNER_SECTION } from '../../shared/HeaderT
 import { Empty, StageTag } from '../../shared/ui'
 import { initials, money, when } from '../../shared/format'
 import { SOURCES, STAGES, STAGE, isContact, nextStep, feeKnown } from '../lead/selectors'
+import { PracticeTag } from '../../shared/PracticeTag'
 
 // v2: the default columns changed (Email instead of Stage), so choices saved before that are ignored
 const STORE = 'unir-leads-columns-v2'
@@ -31,7 +32,7 @@ export default function Leads() {
         <span className="ltable__avatar" aria-hidden="true">{initials(l.name)}</span>
         <span><b>{l.name}</b><small>{l.phone}</small></span>
       </span>) },
-    { id: 'matter', label: 'Matter', defaultOn: true, sort: l => l.matter.toLowerCase(), render: l => <span className="ltable__matter"><b>{l.matter}</b><span className="chip chip--soft">{l.practice}</span></span> },
+    { id: 'matter', label: 'Matter', defaultOn: true, sort: l => l.matter.toLowerCase(), render: l => <span className="ltable__matter"><b>{l.matter}</b><PracticeTag area={l.practice} /></span> },
     { id: 'email', label: 'Email', defaultOn: true, sort: l => l.email.toLowerCase(), render: l => { const [user, domain] = l.email.split('@'); return <span className="ltable__text">{user}@<wbr />{domain}</span> } },
     { id: 'fee', label: 'Fee', defaultOn: true, firstDir: 'desc', className: 'ltable__fee', sort: l => (feeKnown(l) ? l.value : -1), render: l => (feeKnown(l) ? money(l.value) : <span className="ltable__none">—</span>) },
     { id: 'owner', label: 'Owner', defaultOn: true, sort: l => l.owner.toLowerCase(), render: l => <span className="ltable__owner"><i aria-hidden="true">{initials(l.owner)}</i>{l.owner.split(' ')[0]}</span> },
@@ -73,7 +74,7 @@ export default function Leads() {
               <button type="button" className="lcard" onClick={() => openProfile(l.id)}>
                 <span className="lcard__top"><span className="ltable__avatar" aria-hidden="true">{initials(l.name)}</span>
                   <span className="lcard__who"><b>{l.name}</b><small>{l.matter}</small></span>{feeKnown(l) && <span className="lcard__fee num">{money(l.value)}</span>}</span>
-                <span className="lcard__meta"><StageTag lead={l} /><span className="chip chip--soft">{l.practice}</span></span>
+                <span className="lcard__meta"><StageTag lead={l} /><PracticeTag area={l.practice} /></span>
               </button>
             </li>
           ))}</ul>

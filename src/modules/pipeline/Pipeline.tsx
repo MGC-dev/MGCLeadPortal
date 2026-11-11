@@ -8,6 +8,7 @@ import { Icon } from '../../shared/Icon'
 import { toast } from '../../shared/toast'
 import { money } from '../../shared/format'
 import { STAGES, STAGE, feeKnown } from '../lead/selectors'
+import { PracticeTag } from '../../shared/PracticeTag'
 
 /** A pipeline card shows only what the Add Enquiry form collects: name, phone, matter, fee, practice area and notes. */
 function Card({ l, onDragStart }: { l: Lead; onDragStart: (id: string) => void }) {
@@ -21,7 +22,7 @@ function Card({ l, onDragStart }: { l: Lead; onDragStart: (id: string) => void }
       </span>
       <span className="card__phone"><Icon name="phone" small />{l.phone}</span>
       <span className="card__tags">
-        <span className="chip chip--soft">{l.practice}</span>
+        <PracticeTag area={l.practice} />
       </span>
       {l.notes && <span className="card__notes">{l.notes}</span>}
     </button>

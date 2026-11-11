@@ -1116,3 +1116,10 @@ body.portal-lock { overflow: hidden; }
   .portal .board-wrap { height: calc(100dvh - 135px - var(--tab-h) - 10px - env(safe-area-inset-bottom, 0px)); min-height: 300px; }
   .portal .col { min-height: 0; }
 }
+/* Touchpad: sideways swipes over a column pass through to the board (columns only hold on to up/down scrolling),
+   and the board no longer snaps back to a column edge on desktop. Phones keep the snap. */
+.portal .col__cards { overflow-x: hidden; overscroll-behavior-x: auto; overscroll-behavior-y: contain; }
+.portal .board-wrap { scroll-snap-type: none; }
+@media (max-width: 760px) { .portal .board-wrap { scroll-snap-type: x proximity; } }
+/* Practice areas: solid tags, colour set per area in PracticeTag. */
+.portal .chip--practice { color: #fff; font-weight: 600; border: 0; }

@@ -9,6 +9,7 @@ import { ExpandingSearch, FilterMenu, OWNER_SECTION } from '../../shared/HeaderT
 import { Empty } from '../../shared/ui'
 import { initials, money, when } from '../../shared/format'
 import { SOURCES, contactSince, isContact } from '../lead/selectors'
+import { PracticeTag } from '../../shared/PracticeTag'
 
 const STORE = 'unir-contacts-columns-v2'
 
@@ -31,7 +32,7 @@ export default function Contacts() {
         <span><b>{l.name}</b><small>{l.email}</small></span>
       </span>) },
     { id: 'phone', label: 'Phone', defaultOn: true, sort: l => l.phone, render: l => <span className="ltable__text ltable__phone">{l.phone}</span> },
-    { id: 'matter', label: 'Matter', defaultOn: true, sort: l => l.matter.toLowerCase(), render: l => <span className="ltable__matter"><b>{l.matter}</b><span className="chip chip--soft">{l.practice}</span></span> },
+    { id: 'matter', label: 'Matter', defaultOn: true, sort: l => l.matter.toLowerCase(), render: l => <span className="ltable__matter"><b>{l.matter}</b><PracticeTag area={l.practice} /></span> },
     { id: 'owner', label: 'Owner', defaultOn: true, sort: l => l.owner.toLowerCase(), render: l => <span className="ltable__owner"><i aria-hidden="true">{initials(l.owner)}</i>{l.owner.split(' ')[0]}</span> },
     { id: 'since', label: 'Contact since', defaultOn: false, firstDir: 'desc', sort: l => contactSince(l), render: l => <span className="ltable__text">{when(contactSince(l))}</span> },
     { id: 'fee', label: 'Fee', firstDir: 'desc', className: 'ltable__fee', sort: l => l.value, render: l => money(l.value) },
@@ -69,7 +70,7 @@ export default function Contacts() {
                 <button type="button" className="lcard" onClick={() => openProfile(l.id)}>
                   <span className="lcard__top"><span className="ltable__avatar" aria-hidden="true">{initials(l.name)}</span>
                     <span className="lcard__who"><b>{l.name}</b><small>{l.phone}</small></span></span>
-                  <span className="lcard__meta"><span className="chip chip--soft">{l.practice}</span><span className="caption">Contact since {when(contactSince(l))}</span></span>
+                  <span className="lcard__meta"><PracticeTag area={l.practice} /><span className="caption">Contact since {when(contactSince(l))}</span></span>
                 </button>
               </li>
             ))}</ul>
