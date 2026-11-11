@@ -47,14 +47,14 @@ body { background: #f3f6fb; }
 .portal .col__count { background: #fff; }
 .portal .col.is-over { background: var(--tint-soft); box-shadow: inset 0 0 0 2px var(--tint); }
 /* pipeline: one blue ramp from first contact to won, then status colours */
-.portal .board > .col:nth-child(1) { --tone: #8fa9e8 !important; }
-.portal .board > .col:nth-child(2) { --tone: #6e8fe0 !important; }
-.portal .board > .col:nth-child(3) { --tone: #4c72d6 !important; }
-.portal .board > .col:nth-child(4) { --tone: #c79a3e !important; }
-.portal .board > .col:nth-child(5) { --tone: #2f9e75 !important; }
-.portal .board > .col:nth-child(6) { --tone: #3aa6b9 !important; }
+.portal .board > .col:nth-child(1) { --tone: #61729d !important; }
+.portal .board > .col:nth-child(2) { --tone: #5772b3 !important; }
+.portal .board > .col:nth-child(3) { --tone: #4a6fd1 !important; }
+.portal .board > .col:nth-child(4) { --tone: #8f6e2c !important; }
+.portal .board > .col:nth-child(5) { --tone: #278462 !important; }
+.portal .board > .col:nth-child(6) { --tone: #2c7e8c !important; }
 .portal .board > .col:nth-child(7) { --tone: #1f7a6a !important; }
-.portal .board > .col:nth-child(8) { --tone: #c94c5a !important; }
+.portal .board > .col:nth-child(8) { --tone: #c44a58 !important; }
 
 /* ---------- top bar ---------- */
 .portal .toolbar { background: rgba(255, 255, 255, 0.92); border-bottom: 1px solid var(--separator-soft); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
@@ -1093,3 +1093,13 @@ body.portal-lock { overflow: hidden; }
 .portal .chat__collapse, .portal .chat__history { gap: 6px; }
 .portal .chat__collapse.is-on { background: var(--tint-soft); border-color: var(--tint); color: var(--tint); }
 @media (max-width: 900px) { .portal .chat__history { display: inline-flex; } }
+
+/* Pipeline columns: neutral grey bodies, each stage's header a solid band of its colour so stages read apart at a
+   glance. Header colours are dark enough for white text (4.6:1 to 5.2:1). */
+.portal .col { background: #edf0f5; border: 1px solid #e2e6ee; padding-top: 0; overflow: hidden; }
+.portal .col__head { margin: 0 calc(-1 * var(--s3)) var(--s1); padding: 11px var(--s3); min-height: 44px; background: var(--tone); border-bottom: 0; color: #fff; }
+.portal .col__title::before { display: none; }
+.portal .col__title b, .portal .col--lost .col__title b { color: #fff; font-weight: 650; }
+.portal .col__count { background: rgba(255, 255, 255, 0.24); color: #fff; }
+.portal .col__value { color: #fff; font-weight: 600; }
+.portal .col.is-over { background: var(--tint-soft); box-shadow: inset 0 0 0 2px var(--tone); }
