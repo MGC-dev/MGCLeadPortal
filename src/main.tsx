@@ -18,6 +18,9 @@ import Campaigns from './modules/campaigns/Campaigns'
 import CampaignDetail from './modules/campaigns/CampaignDetail'
 import Chat from './modules/chat/Chat'
 import Bots from './modules/bots/Bots'
+import BillingDashboard from './modules/billing/BillingDashboard'
+import Invoices from './modules/billing/Invoices'
+import InvoiceDetail from './modules/billing/InvoiceDetail'
 import Documents from './modules/documents/Documents'
 import DocumentDetail from './modules/documents/DocumentDetail'
 import Reports from './modules/reports/Reports'
@@ -40,6 +43,9 @@ createRoot(document.getElementById('root')!).render(
           <Route path="messages" element={<Messages />} />
           <Route path="campaigns" element={<Campaigns />} />
           <Route path="campaigns/:id" element={<CampaignDetail />} />
+          <Route path="billing" element={<BillingDashboard />} />
+          <Route path="billing/invoices" element={<Invoices />} />
+          <Route path="billing/invoices/:id" element={<InvoiceDetail />} />
           <Route path="documents" element={<Documents />} />
           <Route path="documents/:id" element={<DocumentDetail />} />
           <Route path="reports" element={<Reports />} />

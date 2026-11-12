@@ -9,6 +9,7 @@ export const VIEWS: View[] = [
   { id: 'tasks', path: '/tasks', label: 'Tasks', icon: 'tasks', sub: 'Every call, meeting, task and deadline in one place. Pipeline moves add the next step for you.' },
   { id: 'messages', path: '/messages', label: 'Messages', icon: 'messages', sub: 'Emails and texts, sent from your firm’s own domain and number.' },
   { id: 'campaigns', path: '/campaigns', label: 'Campaigns', icon: 'campaigns', sub: 'One-off and automatic emails and texts, from your firm’s own domain and number.' },
+  { id: 'billing', path: '/billing', label: 'Billing & Payments', icon: 'reports', sub: 'Invoices, payments and financial activity for your organization.' },
   { id: 'documents', path: '/documents', label: 'Documents', icon: 'folder', sub: 'Engagement letters, their signing status, and the templates they come from.' },
   { id: 'reports', path: '/reports', label: 'Reports', icon: 'reports', sub: 'Where leads come from, what converts, and why leads are lost.' },
   { id: 'chat', path: '/chat', label: 'Chat', icon: 'orb', sub: 'Ask questions about your leads, tasks, documents and campaigns, or chat with one of your agents.' },
@@ -23,6 +24,7 @@ export const NAV: { label: string; ids: string[] }[] = [
   { label: 'Workspace', ids: ['dashboard', 'pipeline', 'leads', 'contacts', 'calendar', 'tasks'] },
   { label: 'Outreach', ids: ['messages', 'campaigns'] },
   { label: 'Records', ids: ['documents', 'reports'] },
+  { label: 'Finance', ids: ['billing'] },
   { label: 'Intelligence', ids: ['chat', 'bots'] },
   { label: 'Firm', ids: ['services', 'integrations', 'settings'] },
 ]
