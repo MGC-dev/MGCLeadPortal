@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { IconReceipt2, IconFileInvoice, IconCreditCard, IconCalendarDollar, IconListDetails } from '@tabler/icons-react'
 import { Outlet, matchPath, useHref, useLocation, useNavigate } from 'react-router-dom'
 import { Sidebar, SidebarFooter, SidebarHeader, SidebarItem, SidebarNav, SidebarSection, SidebarToggle, useSidebar } from '@/components/ui/sidebar'
 import { tasksApi, firmApi, leadsApi, useQuery } from '../api'
@@ -17,6 +18,15 @@ import { InfoTip } from '../shared/InfoTip'
 const WIDTH = 248
 const RAIL = 60
 
+// Distinct Tabler icons for the Finance navigation items.
+const FINANCE_NAV_ICONS: Record<string, React.ReactNode> = {
+  'billing-overview': <IconReceipt2 size={19} stroke={1.8} />,
+  'billing-invoice': <IconFileInvoice size={19} stroke={1.8} />,
+  'billing-payment': <IconCreditCard size={19} stroke={1.8} />,
+  'billing-plan': <IconCalendarDollar size={19} stroke={1.8} />,
+  'billing-installment': <IconListDetails size={19} stroke={1.8} />,
+}
+
 function useViewId() {
   const { pathname } = useLocation()
   // nested pages (e.g. /documents/abc) belong to their module
@@ -28,11 +38,12 @@ function NavItem({ to, label, icon, badge, onClick }: { to?: string; label: stri
   const href = useHref(to ?? '/')
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const active = !!to && !!matchPath({ path: to, end: to === '/' }, pathname)
+  // const active = !!to && !!matchPath({ path: to, end: to === '/' }, pathname)
+  const active = !!to && (pathname === to || (to !== '/' && to !== '/billing' && pathname.startsWith(`${to}/`)))
   return (
     <SidebarItem
       href={to ? href : undefined}
-      icon={<Icon name={icon} />}
+      icon={FINANCE_NAV_ICONS[icon] ?? <Icon name={icon} />}
       active={active}
       badge={badge}
       onClick={e => {
@@ -73,6 +84,12 @@ const countBadge = (n: number, cls = '') => n > 0 ? <span className={`rounded-md
 
 function AppSidebar({ collapsed, setCollapsed }: { collapsed: boolean; setCollapsed: (c: boolean) => void }) {
   const { openModal } = useUi()
+  const { pathname } = useLocation()
+  useEffect(() => {
+    // Keep the current menu item visible even when the Finance section is below the fold.
+    const activeItem = document.querySelector<HTMLElement>('.sidebar-nav [data-slot="sidebar-item"][data-active="true"]')
+    activeItem?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [pathname])
   const leads = useQuery(() => leadsApi.list())
   const tasks = useQuery(() => tasksApi.list())
   const firm = useQuery(() => firmApi.get())
@@ -113,6 +130,7 @@ function Toolbar() {
   const seg = {
     messages: <Seg value={filter.inbox} onChange={x => setFilter('inbox', x)} options={[['all', 'All'], ['text', 'Texts'], ['email', 'Emails']]} />,
   }[id]
+    
   return (
     <>
       <nav className="topnav" aria-label="Portal">

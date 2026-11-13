@@ -1,27 +1,36 @@
-import { useNavigate, useParams } from 'react-router-dom'
-import { IconArrowLeft, IconPrinter } from '@tabler/icons-react'
-import { billingStore, useInvoices } from './billingStore'
+import { useState } from 'react'
+import { useNavigate,useParams } from 'react-router-dom'
+import { IconArrowLeft,IconPrinter,IconPencil,IconCreditCard,IconCopy,IconClock,IconUser,IconActivity,IconFileText } from '@tabler/icons-react'
 import { Tag } from '../../shared/ui'
-import type { InvoiceStatus } from './types'
+import { leadsApi,useQuery } from '../../api'
+import { billingStore,useInvoices,usePayments } from './billingStore'
+import { InvoiceForm } from './InvoiceForm'
+import type { InvoiceInput,InvoiceStatus } from './types'
 import './billing.css'
-
-const labels:Record<InvoiceStatus,string>={draft:'Draft',sent:'Sent',partially_paid:'Partially paid',paid:'Paid',overdue:'Overdue',void:'Void'}
-const tones:Record<InvoiceStatus,'tint'|'green'|'orange'|'red'>={draft:'tint',sent:'tint',partially_paid:'orange',paid:'green',overdue:'red',void:'tint'}
-const amount=(n:number,currency:string)=>new Intl.NumberFormat(undefined,{style:'currency',currency,maximumFractionDigits:2}).format(n)
-const date=(n:number)=>new Date(n).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})
-export default function InvoiceDetail(){
-  const {id=''}=useParams(); const navigate=useNavigate(); useInvoices()
-  const invoice=billingStore.getById(id)
-  if(!invoice)return <div className="billing-page"><button className="btn" onClick={()=>navigate('/billing/invoices')}><IconArrowLeft size={16}/> Back to invoices</button><p className="billing-empty">Invoice not found.</p></div>
-  return <div className="billing-page">
-    <div className="billing-detail-actions"><button className="btn btn--plain" onClick={()=>navigate('/billing/invoices')}><IconArrowLeft size={16}/>Invoices</button><button className="btn" onClick={()=>window.print()}><IconPrinter size={16}/>Print preview</button></div>
-    <section className="billing-panel billing-invoice-paper">
-      <div className="billing-invoice-head"><div><span className="billing-brand">MGC CRM</span><h2>INVOICE</h2><p>{invoice.number}</p></div><Tag tone={tones[invoice.status]}>{labels[invoice.status]}</Tag></div>
-      <div className="billing-invoice-meta"><div><small>Bill to</small><b>{invoice.customerName}</b><span>{invoice.customerEmail}</span></div><div><small>Invoice date</small><b>{date(invoice.invoiceDate)}</b><small>Due date</small><b>{date(invoice.dueDate)}</b></div></div>
-      <div className="billing-table-wrap"><table className="billing-table"><thead><tr><th>Description</th><th>Quantity</th><th>Unit price</th><th>Amount</th></tr></thead><tbody>{invoice.items.map(item=><tr key={item.id}><td>{item.description}</td><td>{item.quantity}</td><td>{amount(item.unitPrice,invoice.currency)}</td><td><b>{amount(item.quantity*item.unitPrice,invoice.currency)}</b></td></tr>)}</tbody></table></div>
-      <div className="billing-invoice-totals"><div><span>Subtotal</span><b>{amount(invoice.subtotal,invoice.currency)}</b></div><div><span>Discount</span><b>-{amount(invoice.discount,invoice.currency)}</b></div><div><span>Tax ({invoice.taxRate}%)</span><b>{amount(invoice.taxAmount,invoice.currency)}</b></div><div className="is-total"><span>Total</span><b>{amount(invoice.total,invoice.currency)}</b></div><div><span>Amount paid</span><b>{amount(invoice.amountPaid,invoice.currency)}</b></div><div className="is-balance"><span>Balance due</span><b>{amount(invoice.balanceDue,invoice.currency)}</b></div></div>
-      {invoice.notes&&<div className="billing-invoice-notes"><small>Notes</small><p>{invoice.notes}</p></div>}
-    </section>
-    <p className="billing-footnote">Frontend preview only. Printing uses your browser. No invoice has been emailed or posted to an accounting system.</p>
-  </div>
+const labels:Record<InvoiceStatus,string>={draft:'Draft',sent:'Sent',partially_paid:'Partially paid',paid:'Paid',overdue:'Overdue',void:'Void'};const tones:Record<InvoiceStatus,'tint'|'green'|'orange'|'red'>={draft:'tint',sent:'tint',partially_paid:'orange',paid:'green',overdue:'red',void:'tint'}
+const amount=(n:number,c:string)=>new Intl.NumberFormat(undefined,{style:'currency',currency:c,maximumFractionDigits:2}).format(n);const date=(n:number)=>new Date(n).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});const stamp=(n:number)=>new Date(n).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})
+export default function InvoiceDetail(){const {id=''}=useParams();const navigate=useNavigate();useInvoices();const leads=useQuery(()=>leadsApi.list())??[];const payments=usePayments().filter(p=>p.invoiceId===id);const [editing,setEditing]=useState(false);const invoice=billingStore.getById(id)
+ if(!invoice)return <div className="billing-page"><button className="btn" onClick={()=>navigate('/billing/invoices')}><IconArrowLeft size={16}/> Back to invoices</button><p className="billing-empty">Invoice not found.</p></div>
+ const save=(input:InvoiceInput)=>{billingStore.update(id,input);setEditing(false)}
+ return <div className="billing-page">
+  <div className="billing-detail-actions"><button className="btn btn--plain" onClick={()=>navigate('/billing/invoices')}><IconArrowLeft size={16}/>All invoices</button><div className="billing-action-group"><button className="btn" onClick={()=>setEditing(true)}><IconPencil size={15}/>Edit invoice</button><button className="btn" onClick={()=>navigate(`/billing/payments?invoice=${invoice.id}`)}><IconCreditCard size={15}/>Record payment</button><button className="btn btn--prominent" onClick={()=>window.print()}><IconPrinter size={15}/>Print / Save PDF</button></div></div>
+  <div className="billing-detail-title"><div><p className="footnote">Invoice record</p><h2>{invoice.number}</h2><p>{invoice.customerName} · Created {date(invoice.createdAt)}</p></div><Tag tone={tones[invoice.status]}>{labels[invoice.status]}</Tag></div>
+  <div className="billing-detail-kpis"><div><span>Invoice total</span><b>{amount(invoice.total,invoice.currency)}</b></div><div><span>Amount paid</span><b className="positive">{amount(invoice.amountPaid,invoice.currency)}</b></div><div><span>Balance due</span><b>{amount(invoice.balanceDue,invoice.currency)}</b></div><div><span>Late fees</span><b>{amount(invoice.lateFeeAmount,invoice.currency)}</b></div></div>
+  <div className="billing-detail-grid"><div className="billing-detail-main">
+   <section className="billing-panel"><div className="billing-panel__head"><div><h3>Invoice information</h3><p className="footnote">Billing details and customer information</p></div><span className="billing-detail-number">{invoice.number}</span></div><div className="billing-info-grid"><div><small>Bill to</small><b>{invoice.customerName}</b><span>{invoice.customerEmail||'No email provided'}</span></div><div><small>Invoice date</small><b>{date(invoice.invoiceDate)}</b><small className="sub-label">Due date</small><b>{date(invoice.dueDate)}</b></div><div><small>Currency</small><b>{invoice.currency}</b><small className="sub-label">Linked CRM lead</small><b>{invoice.relatedLeadId||'Not linked'}</b></div></div>
+    <div className="billing-panel__head"><div><h3>Invoice line items</h3><p className="footnote">Services, fees and quantities billed</p></div></div><div className="billing-table-wrap"><table className="billing-table"><thead><tr><th>Description</th><th>Quantity</th><th>Unit price</th><th>Line total</th></tr></thead><tbody>{invoice.items.map(x=><tr key={x.id}><td><b>{x.description}</b></td><td>{x.quantity}</td><td>{amount(x.unitPrice,invoice.currency)}</td><td><b>{amount(x.quantity*x.unitPrice,invoice.currency)}</b></td></tr>)}</tbody></table></div>
+    <div className="billing-detail-bottom"><div className="billing-notes"><h4>Notes & payment instructions</h4><p>{invoice.notes||'No additional notes.'}</p></div><div className="billing-invoice-totals"><div><span>Subtotal</span><b>{amount(invoice.subtotal,invoice.currency)}</b></div><div><span>Discount</span><b>−{amount(invoice.discount,invoice.currency)}</b></div><div><span>Tax ({invoice.taxRate}%)</span><b>{amount(invoice.taxAmount,invoice.currency)}</b></div><div className="is-total"><span>Invoice total</span><b>{amount(invoice.total,invoice.currency)}</b></div><div><span>Payments received</span><b>{amount(invoice.amountPaid,invoice.currency)}</b></div><div className="is-balance"><span>Balance due</span><b>{amount(invoice.balanceDue,invoice.currency)}</b></div></div></div>
+   </section>
+   <section className="billing-panel"><div className="billing-panel__head"><div><h3>Late fee details</h3><p className="footnote">Late fee assessment for this invoice</p></div><Tag tone={invoice.lateFeeAmount>0?'orange':'tint'}>{invoice.lateFeeAmount>0?'Applied':'Not applied'}</Tag></div><div className="billing-latefee"><div><small>Late fee amount</small><b>{amount(invoice.lateFeeAmount,invoice.currency)}</b></div><div><small>Applied policy</small><b>{invoice.lateFeeRule}</b></div>
+   {/* <p>Late-fee calculation is displayed for transparency. Automatic assessment and firm-specific rules will be configured in Billing Settings during the backend phase.</p> */}
+   </div></section>
+   <section className="billing-panel"><div className="billing-panel__head"><div><h3>Payment history</h3><p className="footnote">Payments linked to this invoice</p></div><button className="btn btn--plain btn--sm" onClick={()=>navigate(`/billing/payments?invoice=${invoice.id}`)}>View payments</button></div>{payments.length?<div className="billing-table-wrap"><table className="billing-table"><thead><tr><th>Reference</th><th>Date</th><th>Method</th><th>Amount</th><th>Status</th></tr></thead><tbody>{payments.map(p=><tr key={p.id}><td><b>{p.reference}</b></td><td>{date(p.date)}</td><td>{p.method}</td><td><b>{amount(p.amount,p.currency)}</b></td><td>{p.status}</td></tr>)}</tbody></table></div>:<p className="billing-empty">No payments have been recorded against this invoice yet.</p>}</section>
+  </div><aside className="billing-detail-side">
+   <section className="billing-panel"><div className="billing-panel__head"><div><h3>Record ownership</h3><p className="footnote">Audit information</p></div><IconUser size={17}/></div><div className="billing-owner"><div className="billing-avatar">{invoice.createdBy.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()}</div><div><small>Created by</small><b>{invoice.createdBy}</b><span>{stamp(invoice.createdAt)}</span></div></div><div className="billing-owner"><div className="billing-avatar muted">{invoice.updatedBy.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()}</div><div><small>Last updated by</small><b>{invoice.updatedBy}</b><span>{stamp(invoice.updatedAt)}</span></div></div></section>
+   {/* <section className="billing-panel"><div className="billing-panel__head"><div><h3>Activity timeline</h3><p className="footnote">Changes and events</p></div><IconActivity size={17}/></div><div className="billing-timeline">{invoice.activity.map(a=><div className="billing-timeline-item" key={a.id}><i/><div><b>{a.action}</b><span>{a.by} · {stamp(a.at)}</span>{a.detail&&<small>{a.detail}</small>}</div></div>)}</div></section> */}
+   <section className="billing-panel billing-quick-links"><div className="billing-panel__head"><h3>Related records</h3></div><button onClick={()=>navigate(`/billing/payments?invoice=${invoice.id}`)}><IconCreditCard size={16}/>Payments <span>→</span></button><button onClick={()=>navigate('/billing/payment-plans')}><IconClock size={16}/>Payment plans <span>→</span></button><button onClick={()=>navigate('/billing/installments')}><IconFileText size={16}/>Installments <span>→</span></button></section>
+  </aside></div>
+  {/* <p className="billing-footnote">Demo data only. Audit identity, payment gateway status, invoice delivery and late-fee calculations will be supplied by the authenticated backend.</p> */}
+  {editing&&<InvoiceForm leads={leads} initial={invoice} onClose={()=>setEditing(false)} onSave={save}/>}
+ </div>
 }

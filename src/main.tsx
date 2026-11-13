@@ -21,6 +21,9 @@ import Bots from './modules/bots/Bots'
 import BillingDashboard from './modules/billing/BillingDashboard'
 import Invoices from './modules/billing/Invoices'
 import InvoiceDetail from './modules/billing/InvoiceDetail'
+import Payments from './modules/billing/Payments'
+import PaymentPlans from './modules/billing/PaymentPlans'
+import Installments from './modules/billing/Installments'
 import Documents from './modules/documents/Documents'
 import DocumentDetail from './modules/documents/DocumentDetail'
 import Reports from './modules/reports/Reports'
@@ -45,7 +48,11 @@ createRoot(document.getElementById('root')!).render(
           <Route path="campaigns/:id" element={<CampaignDetail />} />
           <Route path="billing" element={<BillingDashboard />} />
           <Route path="billing/invoices" element={<Invoices />} />
+          <Route path="billing/invoices/new" element={<Invoices openCreateOnLoad />} />
           <Route path="billing/invoices/:id" element={<InvoiceDetail />} />
+          <Route path="billing/payments" element={<Payments />} />
+          <Route path="billing/payment-plans" element={<PaymentPlans />} />
+          <Route path="billing/installments" element={<Installments />} />
           <Route path="documents" element={<Documents />} />
           <Route path="documents/:id" element={<DocumentDetail />} />
           <Route path="reports" element={<Reports />} />

@@ -1,63 +1,35 @@
 import { useState } from 'react'
+import { IconPlus, IconTrash, IconReceipt, IconUser, IconCalendar, IconFileText } from '@tabler/icons-react'
 import type { Lead } from '../../api/types'
 import { Sheet, SheetFoot, Field } from '../../shared/ui'
-import type { BillingCurrency, InvoiceInput } from './types'
+import type { BillingCurrency, Invoice, InvoiceInput } from './types'
 import './billing.css'
-
-const today = () => new Date().toISOString().slice(0,10)
-const dateValue = (s:string) => new Date(`${s}T12:00:00`).getTime()
-
-export function InvoiceForm({ leads, onClose, onSave }: { leads: Lead[]; onClose:()=>void; onSave:(input:InvoiceInput)=>void }) {
-  const [leadId,setLeadId] = useState('')
-  const [customerName,setCustomerName] = useState('')
-  const [customerEmail,setCustomerEmail] = useState('')
-  const [invoiceDate,setInvoiceDate] = useState(today())
-  const [dueDate,setDueDate] = useState(new Date(Date.now()+30*86400000).toISOString().slice(0,10))
-  const [currency,setCurrency] = useState<BillingCurrency>('USD')
-  const [description,setDescription] = useState('Professional services')
-  const [quantity,setQuantity] = useState('1')
-  const [unitPrice,setUnitPrice] = useState('')
-  const [discount,setDiscount] = useState('0')
-  const [taxRate,setTaxRate] = useState('0')
-  const [notes,setNotes] = useState('')
-  const [error,setError] = useState('')
-  const subtotal = Math.max(0,Number(quantity)||0)*Math.max(0,Number(unitPrice)||0)
-  const total = Math.max(0,subtotal-(Number(discount)||0))*(1+(Number(taxRate)||0)/100)
-  const selectLead = (id:string) => { setLeadId(id); const l=leads.find(x=>x.id===id); if(l){setCustomerName(l.name);setCustomerEmail(l.email)} }
-  const valid = !!customerName.trim() && !!description.trim() && Number(quantity)>0 && unitPrice.trim() !== '' && Number(unitPrice)>=0 && dueDate>=invoiceDate
-  const submit = () => {
-    if (!valid) { setError('Enter a customer, item description, positive quantity, valid amount and a due date on or after the invoice date.'); return }
-    onSave({ customerName:customerName.trim(),customerEmail:customerEmail.trim(),relatedLeadId:leadId||undefined,invoiceDate:dateValue(invoiceDate),dueDate:dateValue(dueDate),currency,items:[{description:description.trim(),quantity:Number(quantity),unitPrice:Number(unitPrice)}],discount:Number(discount)||0,taxRate:Number(taxRate)||0,notes:notes.trim()||undefined })
-  }
-  return <Sheet wide title="Create invoice" sub="Add customer and billing details. This creates a local draft only." onClose={onClose} foot={<SheetFoot onCancel={onClose} primary="Create draft invoice" disabled={!valid}/> } onSubmit={e=>{e.preventDefault();submit()}}>
-    <div className="billing-form">
-      <div className="billing-form__section"><h3>Customer information</h3>
-        <Field label="Select CRM lead (optional)" id="invoice-lead"><select id="invoice-lead" value={leadId} onChange={e=>selectLead(e.target.value)}><option value="">Choose a lead or enter manually</option>{leads.map(l=><option key={l.id} value={l.id}>{l.name} · {l.matter}</option>)}</select></Field>
-        <div className="billing-form__two">
-          <Field label="Customer name" id="invoice-customer"><input id="invoice-customer" value={customerName} onChange={e=>setCustomerName(e.target.value)} placeholder="Customer / client name" required/></Field>
-          <Field label="Email address" id="invoice-email"><input id="invoice-email" type="email" value={customerEmail} onChange={e=>setCustomerEmail(e.target.value)} placeholder="name@example.com"/></Field>
-        </div>
-      </div>
-      <div className="billing-form__section"><h3>Invoice details</h3>
-        <div className="billing-form__three">
-          <Field label="Invoice date" id="invoice-date"><input id="invoice-date" type="date" value={invoiceDate} onChange={e=>setInvoiceDate(e.target.value)}/></Field>
-          <Field label="Due date" id="invoice-due"><input id="invoice-due" type="date" value={dueDate} onChange={e=>setDueDate(e.target.value)}/></Field>
-          <Field label="Currency" id="invoice-currency"><select id="invoice-currency" value={currency} onChange={e=>setCurrency(e.target.value as BillingCurrency)}>{['USD','INR','EUR','GBP','CAD','AUD'].map(c=><option key={c}>{c}</option>)}</select></Field>
-        </div>
-      </div>
-      <div className="billing-form__section"><h3>Invoice item</h3>
-        <Field label="Description" id="invoice-item"><input id="invoice-item" value={description} onChange={e=>setDescription(e.target.value)} placeholder="Service or product description"/></Field>
-        <div className="billing-form__three">
-          <Field label="Quantity" id="invoice-qty"><input id="invoice-qty" type="number" min="1" step="1" value={quantity} onChange={e=>setQuantity(e.target.value)}/></Field>
-          <Field label="Unit price" id="invoice-price"><input id="invoice-price" type="number" min="0" step="0.01" value={unitPrice} onChange={e=>setUnitPrice(e.target.value)} placeholder="0.00"/></Field>
-          <Field label="Discount" id="invoice-discount"><input id="invoice-discount" type="number" min="0" step="0.01" value={discount} onChange={e=>setDiscount(e.target.value)}/></Field>
-        </div>
-        <Field label="Tax rate (%)" id="invoice-tax"><input id="invoice-tax" type="number" min="0" max="100" step="0.01" value={taxRate} onChange={e=>setTaxRate(e.target.value)}/></Field>
-        <div className="billing-form__total"><span>Estimated total</span><b>{currency} {total.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</b></div>
-      </div>
-      <div className="billing-form__section"><h3>Additional notes</h3><Field label="Notes (optional)" id="invoice-notes"><textarea id="invoice-notes" rows={3} value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Payment instructions or notes for the customer"/></Field></div>
-      {error && <p className="billing-error">{error}</p>}
-      <p className="billing-form__hint">Amounts are entered in the selected currency. Tax rules and invoice numbering will be configured in the backend phase.</p>
-    </div>
-  </Sheet>
+const today=()=>new Date().toISOString().slice(0,10)
+const dateValue=(s:string)=>new Date(`${s}T12:00:00`).getTime()
+const dateString=(n:number)=>new Date(n).toISOString().slice(0,10)
+type DraftItem={description:string;quantity:string;unitPrice:string}
+export function InvoiceForm({leads,onClose,onSave,initial}:{leads:Lead[];onClose:()=>void;onSave:(input:InvoiceInput)=>void;initial?:Invoice}){
+ const [leadId,setLeadId]=useState(initial?.relatedLeadId??'');const [customerName,setCustomerName]=useState(initial?.customerName??'');const [customerEmail,setCustomerEmail]=useState(initial?.customerEmail??'');const [invoiceDate,setInvoiceDate]=useState(initial?dateString(initial.invoiceDate):today());const [dueDate,setDueDate]=useState(initial?dateString(initial.dueDate):new Date(Date.now()+30*86400000).toISOString().slice(0,10));const [currency,setCurrency]=useState<BillingCurrency>(initial?.currency??'USD');const [items,setItems]=useState<DraftItem[]>(initial?.items.map(x=>({description:x.description,quantity:String(x.quantity),unitPrice:String(x.unitPrice) }))??[{description:'Professional services',quantity:'1',unitPrice:''}]);const [discount,setDiscount]=useState(String(initial?.discount??0));const [taxRate,setTaxRate]=useState(String(initial?.taxRate??0));const [notes,setNotes]=useState(initial?.notes??'');const [error,setError]=useState('')
+ const subtotal=items.reduce((s,x)=>s+(Number(x.quantity)||0)*(Number(x.unitPrice)||0),0);const discountValue=Number(discount)||0;const taxValue=Math.max(0,subtotal-discountValue)*((Number(taxRate)||0)/100);const total=Math.max(0,subtotal-discountValue+taxValue);const fmt=(n:number)=>new Intl.NumberFormat(undefined,{style:'currency',currency}).format(n)
+ const updateItem=(i:number,key:keyof DraftItem,value:string)=>setItems(old=>old.map((x,n)=>n===i?{...x,[key]:value}:x));const selectLead=(id:string)=>{setLeadId(id);const l=leads.find(x=>x.id===id);if(l){setCustomerName(l.name);setCustomerEmail(l.email)}}
+ const valid=!!customerName.trim()&&items.length>0&&items.every(x=>x.description.trim()&&Number(x.quantity)>0&&x.unitPrice!==''&&Number(x.unitPrice)>=0)&&discountValue<=subtotal&&dueDate>=invoiceDate
+ const submit=()=>{if(!valid){setError('Complete the required customer and line-item fields. Check that the due date is not before the invoice date and discount does not exceed the subtotal.');return}onSave({customerName:customerName.trim(),customerEmail:customerEmail.trim(),relatedLeadId:leadId||undefined,invoiceDate:dateValue(invoiceDate),dueDate:dateValue(dueDate),currency,items:items.map(x=>({description:x.description.trim(),quantity:Number(x.quantity),unitPrice:Number(x.unitPrice)})),discount:discountValue,taxRate:Number(taxRate)||0,notes:notes.trim()||undefined})}
+ return <Sheet className="billing-editor" wide title={initial?`Edit ${initial.number}`:'Create invoice'} sub="Prepare a clear, itemized invoice for your client. Fields marked * are required." onClose={onClose} foot={<SheetFoot onCancel={onClose} primary={initial?'Save changes':'Save as draft'}/>} onSubmit={e=>{e.preventDefault();submit()}}>
+  <div className="billing-form">
+   <section className="billing-form__section">
+    <div className="billing-section-title"><span><IconUser size={17}/></span>
+    <div><h3>Customer information</h3><p>Choose an existing CRM lead or enter the billing contact.</p></div></div>
+    <Field label="Link to CRM lead (optional)" id="invoice-lead"><select id="invoice-lead" value={leadId} onChange={e=>selectLead(e.target.value)}><option value="">Select a lead or enter details manually</option>{leads.map(l=><option key={l.id} value={l.id}>{l.name} · {l.matter}</option>)}</select></Field>
+    <div className="billing-form__two"><Field label="Customer / client name *" id="invoice-customer"><input id="invoice-customer" value={customerName} onChange={e=>setCustomerName(e.target.value)} placeholder="Full legal name" required/></Field><Field label="Email address" id="invoice-email"><input id="invoice-email" type="email" value={customerEmail} onChange={e=>setCustomerEmail(e.target.value)} placeholder="client@example.com"/></Field></div>
+   </section>
+   <section className="billing-form__section"><div className="billing-section-title"><span><IconCalendar size={17}/></span><div><h3>Invoice settings</h3><p>Set the invoice dates and billing currency.</p></div></div><div className="billing-form__three"><Field label="Issue date *" id="invoice-date"><input id="invoice-date" type="date" value={invoiceDate} onChange={e=>setInvoiceDate(e.target.value)}/></Field><Field label="Payment due date *" id="invoice-due"><input id="invoice-due" type="date" value={dueDate} onChange={e=>setDueDate(e.target.value)}/></Field><Field label="Currency" id="invoice-currency"><select id="invoice-currency" value={currency} onChange={e=>setCurrency(e.target.value as BillingCurrency)}>{['USD','INR','EUR','GBP','CAD','AUD'].map(c=><option key={c}>{c}</option>)}</select></Field></div></section>
+   <section className="billing-form__section"><div className="billing-section-title"><span><IconReceipt size={17}/></span><div><h3>Services and charges</h3><p>Add one or more services, fees or other billable items.</p></div></div>
+    <div className="billing-line-items"><div className="billing-line-head"><span>Description</span><span>Qty</span><span>Unit price</span><span>Amount</span><span/></div>{items.map((item,i)=><div className="billing-line-row" key={i}><input aria-label="Description" value={item.description} onChange={e=>updateItem(i,'description',e.target.value)} placeholder="Service / fee description"/><input aria-label="Quantity" type="number" min="0.01" step="0.01" value={item.quantity} onChange={e=>updateItem(i,'quantity',e.target.value)}/><input aria-label="Unit price" type="number" min="0" step="0.01" value={item.unitPrice} onChange={e=>updateItem(i,'unitPrice',e.target.value)} placeholder="0.00"/><b>{fmt((Number(item.quantity)||0)*(Number(item.unitPrice)||0))}</b><button type="button" className="billing-icon-button" aria-label="Remove item" disabled={items.length===1} onClick={()=>setItems(old=>old.filter((_,n)=>n!==i))}><IconTrash size={16}/></button></div>)}</div>
+    <button type="button" className="btn btn--plain billing-add-item" onClick={()=>setItems(old=>[...old,{description:'',quantity:'1',unitPrice:''}])}><IconPlus size={15}/> Add line item</button>
+    <div className="billing-adjustments"><div><Field label="Discount" id="invoice-discount"><input id="invoice-discount" type="number" min="0" step="0.01" value={discount} onChange={e=>setDiscount(e.target.value)}/></Field><Field label="Tax rate (%)" id="invoice-tax"><input id="invoice-tax" type="number" min="0" max="100" step="0.01" value={taxRate} onChange={e=>setTaxRate(e.target.value)}/></Field></div><div className="billing-totals-preview"><div><span>Subtotal</span><b>{fmt(subtotal)}</b></div><div><span>Discount</span><b>−{fmt(discountValue)}</b></div><div><span>Tax</span><b>{fmt(taxValue)}</b></div><div className="grand"><span>Invoice total</span><b>{fmt(total)}</b></div></div></div>
+   </section>
+   <section className="billing-form__section"><div className="billing-section-title"><span><IconFileText size={17}/></span><div><h3>Notes and payment instructions</h3><p>Optional information to appear on the invoice.</p></div></div><Field label="Customer-facing notes" id="invoice-notes"><textarea id="invoice-notes" rows={3} value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Payment instructions, service notes or terms..."/></Field></section>
+   {error&&<p className="billing-error">{error}</p>}<p className="billing-form__hint">This frontend preview saves a draft in this browser only. Tax treatment, numbering, late-fee rules and delivery will be configured with the backend.</p>
+  </div>
+ </Sheet>
 }

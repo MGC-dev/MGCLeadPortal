@@ -36,9 +36,11 @@ export default function BillingDashboard() {
   return (
     <div className="billing-page">
       <HeaderActions>
-        <button className="btn btn--prominent" type="button" onClick={() => navigate('/billing/invoices')}><IconPlus size={16} />New invoice</button>
+        <button className="btn btn--prominent" type="button" onClick={() => navigate('/billing/invoices/new')}><IconPlus size={16} />New invoice</button>
       </HeaderActions>
-      <div className="billing-intro"><div><p className="footnote">Financial overview</p><h2>Billing overview</h2><p>Track invoices, collections and outstanding balances across your organization.</p></div></div>
+      {/* <div className="billing-intro">
+        <div><p>Track invoices, collections and outstanding balances across your organization.</p></div>
+      </div> */}
       <div className="billing-kpis">
         {cards.map(c => <section className="billing-kpi" key={c.label}><span className="billing-kpi__icon">{c.icon}</span><span className="billing-kpi__label">{c.label}</span><b>{c.value}</b><small>{c.note}</small></section>)}
       </div>
@@ -67,7 +69,7 @@ export default function BillingDashboard() {
           {recent.map(inv => <tr key={inv.id} onClick={() => navigate(`/billing/invoices/${inv.id}`)}><td><b>{inv.number}</b></td><td>{inv.customerName}<small>{inv.customerEmail}</small></td><td>{dateLabel(inv.dueDate)}</td><td><b>{money(inv.total)}</b></td><td><Tag tone={statusTone[inv.status]}>{statusLabel[inv.status]}</Tag></td></tr>)}
         </tbody></table></div> : <p className="billing-empty">No invoices have been created.</p>}
       </section>
-      <p className="billing-footnote">This is a frontend demonstration. Invoice and payment figures are sample data saved in this browser only.</p>
+      {/* <p className="billing-footnote">This is a frontend demonstration. Invoice and payment figures are sample data saved in this browser only.</p> */}
     </div>
   )
 }
